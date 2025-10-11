@@ -1,0 +1,919 @@
+-- 1. User & Access Management
+CREATE TABLE AppUserMaster (
+    AppUserId BIGINT IDENTITY(1,1) NOT NULL,
+    CenterId BIGINT NOT NULL,
+    Username NVARCHAR(50) NOT NULL,
+    PasswordHash NVARCHAR(256) NOT NULL,
+    Email NVARCHAR(100),
+    Phone NVARCHAR(15),
+    FirstName NVARCHAR(50),
+    LastName NVARCHAR(50),
+    IsActive BIT DEFAULT 1,
+    CreatedAt DATETIME2 DEFAULT SYSUTCDATETIME(),
+    UpdatedAt DATETIME2 DEFAULT SYSUTCDATETIME(),
+    CONSTRAINT PK_AppUserMaster PRIMARY KEY CLUSTERED (AppUserId),
+    INDEX IX_AppUserMaster_CenterId NONCLUSTERED (CenterId),
+    INDEX IX_AppUserMaster_Username NONCLUSTERED (Username)
+);
+
+CREATE TABLE RoleMaster (
+    RoleId BIGINT IDENTITY(1,1) NOT NULL,
+    RoleName NVARCHAR(50) NOT NULL,
+    Details NVARCHAR(MAX),
+    IsActive BIT DEFAULT 1,
+    CreatedAt DATETIME2 DEFAULT SYSUTCDATETIME(),
+    CONSTRAINT PK_RoleMaster PRIMARY KEY CLUSTERED (RoleId)
+);
+
+CREATE TABLE AppUserRoleMap (
+    AppUserRoleMapId BIGINT IDENTITY(1,1) NOT NULL,
+    AppUserId BIGINT NOT NULL,
+    RoleId BIGINT NOT NULL,
+    CenterId BIGINT NOT NULL,
+    AssignedAt DATETIME2 DEFAULT SYSUTCDATETIME(),
+    CONSTRAINT PK_AppUserRoleMap PRIMARY KEY CLUSTERED (AppUserRoleMapId),
+    INDEX IX_AppUserRoleMap_AppUserId NONCLUSTERED (AppUserId),
+    INDEX IX_AppUserRoleMap_RoleId NONCLUSTERED (RoleId),
+    INDEX IX_AppUserRoleMap_CenterId NONCLUSTERED (CenterId)
+);
+
+CREATE TABLE LoginHistory (
+    LoginHistoryId BIGINT IDENTITY(1,1) NOT NULL,
+    AppUserId BIGINT NOT NULL,
+    CenterId BIGINT NOT NULL,
+    LoginTime DATETIME2 DEFAULT SYSUTCDATETIME(),
+    IpAddress NVARCHAR(45),
+    DeviceInfo NVARCHAR(255),
+    CONSTRAINT PK_LoginHistory PRIMARY KEY CLUSTERED (LoginHistoryId),
+    INDEX IX_LoginHistory_AppUserId NONCLUSTERED (AppUserId),
+    INDEX IX_LoginHistory_CenterId NONCLUSTERED (CenterId)
+);
+
+CREATE TABLE AuditLog (
+    AuditLogId BIGINT IDENTITY(1,1) NOT NULL,
+    AppUserId BIGINT NOT NULL,
+    CenterId BIGINT NOT NULL,
+    Action NVARCHAR(100) NOT NULL,
+    EntityName NVARCHAR(50),
+    EntityId BIGINT,
+    ActionTime DATETIME2 DEFAULT SYSUTCDATETIME(),
+    Details NVARCHAR(MAX),
+    CONSTRAINT PK_AuditLog PRIMARY KEY CLUSTERED (AuditLogId),
+    INDEX IX_AuditLog_AppUserId NONCLUSTERED (AppUserId),
+    INDEX IX_AuditLog_CenterId NONCLUSTERED (CenterId),
+    INDEX IX_AuditLog_ActionTime NONCLUSTERED (ActionTime)
+);
+
+CREATE TABLE PermissionMaster (
+    PermissionId BIGINT IDENTITY(1,1) NOT NULL,
+    PermissionName NVARCHAR(50) NOT NULL,
+    Details NVARCHAR(MAX),
+    Module NVARCHAR(50),
+    IsActive BIT DEFAULT 1,
+    CONSTRAINT PK_PermissionMaster PRIMARY KEY CLUSTERED (PermissionId)
+);
+
+CREATE TABLE RolePermissionMap (
+    RolePermissionMapId BIGINT IDENTITY(1,1) NOT NULL,
+    RoleId BIGINT NOT NULL,
+    PermissionId BIGINT NOT NULL,
+    AssignedAt DATETIME2 DEFAULT SYSUTCDATETIME(),
+    CONSTRAINT PK_RolePermissionMap PRIMARY KEY CLUSTERED (RolePermissionMapId),
+    INDEX IX_RolePermissionMap_RoleId NONCLUSTERED (RoleId),
+    INDEX IX_RolePermissionMap_PermissionId NONCLUSTERED (PermissionId)
+);
+
+-- 2. Blood Center & Infrastructure
+CREATE TABLE BloodCenterMaster (
+    CenterId BIGINT IDENTITY(1,1) NOT NULL,
+    CenterName NVARCHAR(100) NOT NULL,
+    Location NVARCHAR(MAX),
+    CityId BIGINT,
+    Phone NVARCHAR(15),
+    Email NVARCHAR(100),
+    LicenseNumber NVARCHAR(50),
+    IsActive BIT DEFAULT 1,
+    CreatedAt DATETIME2 DEFAULT SYSUTCDATETIME(),
+    CONSTRAINT PK_BloodCenterMaster PRIMARY KEY CLUSTERED (CenterId),
+    INDEX IX_BloodCenterMaster_CityId NONCLUSTERED (CityId)
+);
+
+CREATE TABLE BranchMaster (
+    BranchId BIGINT IDENTITY(1,1) NOT NULL,
+    CenterId BIGINT NOT NULL,
+    BranchName NVARCHAR(100) NOT NULL,
+    Location NVARCHAR(MAX),
+    CityId BIGINT,
+    IsActive BIT DEFAULT 1,
+    CONSTRAINT PK_BranchMaster PRIMARY KEY CLUSTERED (BranchId),
+    INDEX IX_BranchMaster_CenterId NONCLUSTERED (CenterId),
+    INDEX IX_BranchMaster_CityId NONCLUSTERED (CityId)
+);
+
+CREATE TABLE DepartmentMaster (
+    DepartmentId BIGINT IDENTITY(1,1) NOT NULL,
+    CenterId BIGINT NOT NULL,
+    DepartmentName NVARCHAR(50) NOT NULL,
+    Details NVARCHAR(MAX),
+    CONSTRAINT PK_DepartmentMaster PRIMARY KEY CLUSTERED (DepartmentId),
+    INDEX IX_DepartmentMaster_CenterId NONCLUSTERED (CenterId)
+);
+
+CREATE TABLE EmployeeMaster (
+    EmployeeId BIGINT IDENTITY(1,1) NOT NULL,
+    CenterId BIGINT NOT NULL,
+    AppUserId BIGINT, -- Links to AppUserMaster for login
+    DepartmentId BIGINT,
+    DesignationId BIGINT,
+    FirstName NVARCHAR(50),
+    LastName NVARCHAR(50),
+    Email NVARCHAR(100),
+    Phone NVARCHAR(15),
+    IsActive BIT DEFAULT 1,
+    CONSTRAINT PK_EmployeeMaster PRIMARY KEY CLUSTERED (EmployeeId),
+    INDEX IX_EmployeeMaster_CenterId NONCLUSTERED (CenterId),
+    INDEX IX_EmployeeMaster_AppUserId NONCLUSTERED (AppUserId),
+    INDEX IX_EmployeeMaster_DepartmentId NONCLUSTERED (DepartmentId),
+    INDEX IX_EmployeeMaster_DesignationId NONCLUSTERED (DesignationId)
+);
+
+CREATE TABLE DesignationMaster (
+    DesignationId BIGINT IDENTITY(1,1) NOT NULL,
+    DesignationName NVARCHAR(50) NOT NULL,
+    Details NVARCHAR(MAX),
+    CONSTRAINT PK_DesignationMaster PRIMARY KEY CLUSTERED (DesignationId)
+);
+
+CREATE TABLE DeviceMaster (
+    DeviceId BIGINT IDENTITY(1,1) NOT NULL,
+    CenterId BIGINT NOT NULL,
+    DeviceName NVARCHAR(100) NOT NULL,
+    DeviceCategory NVARCHAR(50),
+    SerialNumber NVARCHAR(50),
+    CalibrationRecordDate DATE,
+    CONSTRAINT PK_DeviceMaster PRIMARY KEY CLUSTERED (DeviceId),
+    INDEX IX_DeviceMaster_CenterId NONCLUSTERED (CenterId),
+    INDEX IX_DeviceMaster_SerialNumber NONCLUSTERED (SerialNumber)
+);
+
+CREATE TABLE FridgeStorageMaster (
+    FridgeId BIGINT IDENTITY(1,1) NOT NULL,
+    CenterId BIGINT NOT NULL,
+    FridgeName NVARCHAR(50) NOT NULL,
+    Location NVARCHAR(100),
+    Capacity INT,
+    CONSTRAINT PK_FridgeStorageMaster PRIMARY KEY CLUSTERED (FridgeId),
+    INDEX IX_FridgeStorageMaster_CenterId NONCLUSTERED (CenterId)
+);
+
+CREATE TABLE LookupCategory (
+    LookupCategoryId BIGINT IDENTITY(1,1) NOT NULL,
+    CategoryName NVARCHAR(50) NOT NULL,
+    Details NVARCHAR(MAX),
+    CONSTRAINT PK_LookupCategory PRIMARY KEY CLUSTERED (LookupCategoryId)
+);
+
+CREATE TABLE LookupValue (
+    LookupValueId BIGINT IDENTITY(1,1) NOT NULL,
+    LookupCategoryId BIGINT NOT NULL,
+    ValueName NVARCHAR(50) NOT NULL,
+    DisplayOrder INT,
+    CONSTRAINT PK_LookupValue PRIMARY KEY CLUSTERED (LookupValueId),
+    INDEX IX_LookupValue_LookupCategoryId NONCLUSTERED (LookupCategoryId)
+);
+
+-- 3. Donor Management
+CREATE TABLE DonorMaster (
+    DonorId BIGINT IDENTITY(1,1) NOT NULL,
+    CenterId BIGINT NOT NULL,
+    FirstName NVARCHAR(50),
+    LastName NVARCHAR(50),
+    BloodGroupId BIGINT,
+    BirthDate DATE,
+    Gender NVARCHAR(10),
+    Phone NVARCHAR(15),
+    Email NVARCHAR(100),
+    Location NVARCHAR(MAX),
+    CreatedAt DATETIME2 DEFAULT SYSUTCDATETIME(),
+    CONSTRAINT PK_DonorMaster PRIMARY KEY CLUSTERED (DonorId),
+    INDEX IX_DonorMaster_CenterId NONCLUSTERED (CenterId),
+    INDEX IX_DonorMaster_BloodGroupId NONCLUSTERED (BloodGroupId),
+    INDEX IX_DonorMaster_Phone NONCLUSTERED (Phone)
+);
+
+CREATE TABLE DonorHealthHistory (
+    HealthHistoryId BIGINT IDENTITY(1,1) NOT NULL,
+    DonorId BIGINT NOT NULL,
+    CenterId BIGINT NOT NULL,
+    ScreeningRecordDate DATETIME2 DEFAULT SYSUTCDATETIME(),
+    HealthDetails NVARCHAR(MAX),
+    CONSTRAINT PK_DonorHealthHistory PRIMARY KEY CLUSTERED (HealthHistoryId),
+    INDEX IX_DonorHealthHistory_DonorId NONCLUSTERED (DonorId),
+    INDEX IX_DonorHealthHistory_CenterId NONCLUSTERED (CenterId),
+    INDEX IX_DonorHealthHistory_ScreeningRecordDate NONCLUSTERED (ScreeningRecordDate)
+);
+
+CREATE TABLE DonorDonationHistory (
+    DonationHistoryId BIGINT IDENTITY(1,1) NOT NULL,
+    DonorId BIGINT NOT NULL,
+    CenterId BIGINT NOT NULL,
+    DonationRecordDate DATETIME2 DEFAULT SYSUTCDATETIME(),
+    BloodBagNumber NVARCHAR(50) NOT NULL,
+    CONSTRAINT PK_DonorDonationHistory PRIMARY KEY CLUSTERED (DonationHistoryId),
+    INDEX IX_DonorDonationHistory_DonorId NONCLUSTERED (DonorId),
+    INDEX IX_DonorDonationHistory_CenterId NONCLUSTERED (CenterId),
+    INDEX IX_DonorDonationHistory_BloodBagNumber NONCLUSTERED (BloodBagNumber)
+);
+
+CREATE TABLE DeferralRecord (
+    DeferralId BIGINT IDENTITY(1,1) NOT NULL,
+    DonorId BIGINT NOT NULL,
+    CenterId BIGINT NOT NULL,
+    ReasonId BIGINT,
+    DeferralStartRecordDate DATE,
+    DeferralEndRecordDate DATE,
+    IsPermanent BIT DEFAULT 0,
+    CONSTRAINT PK_DeferralRecord PRIMARY KEY CLUSTERED (DeferralId),
+    INDEX IX_DeferralRecord_DonorId NONCLUSTERED (DonorId),
+    INDEX IX_DeferralRecord_CenterId NONCLUSTERED (CenterId),
+    INDEX IX_DeferralRecord_ReasonId NONCLUSTERED (ReasonId)
+);
+
+CREATE TABLE DonorAppointment (
+    AppointmentId BIGINT IDENTITY(1,1) NOT NULL,
+    DonorId BIGINT NOT NULL,
+    CenterId BIGINT NOT NULL,
+    AppointmentRecordDate DATETIME2,
+    Status NVARCHAR(20),
+    CONSTRAINT PK_DonorAppointment PRIMARY KEY CLUSTERED (AppointmentId),
+    INDEX IX_DonorAppointment_DonorId NONCLUSTERED (DonorId),
+    INDEX IX_DonorAppointment_CenterId NONCLUSTERED (CenterId),
+    INDEX IX_DonorAppointment_AppointmentRecordDate NONCLUSTERED (AppointmentRecordDate)
+);
+
+CREATE TABLE DonorCommunicationLog (
+    CommunicationId BIGINT IDENTITY(1,1) NOT NULL,
+    DonorId BIGINT NOT NULL,
+    CenterId BIGINT NOT NULL,
+    CommunicationCategory NVARCHAR(20),
+    MessageContent NVARCHAR(MAX),
+    SentAt DATETIME2 DEFAULT SYSUTCDATETIME(),
+    CONSTRAINT PK_DonorCommunicationLog PRIMARY KEY CLUSTERED (CommunicationId),
+    INDEX IX_DonorCommunicationLog_DonorId NONCLUSTERED (DonorId),
+    INDEX IX_DonorCommunicationLog_CenterId NONCLUSTERED (CenterId),
+    INDEX IX_DonorCommunicationLog_SentAt NONCLUSTERED (SentAt)
+);
+
+-- 4. Blood Camps & Collection
+CREATE TABLE BloodCampMaster (
+    CampId BIGINT IDENTITY(1,1) NOT NULL,
+    CenterId BIGINT NOT NULL,
+    CampName NVARCHAR(100) NOT NULL,
+    OrganizerId BIGINT,
+    Venue NVARCHAR(MAX),
+    CampRecordDate DATE,
+    Status NVARCHAR(20),
+    CONSTRAINT PK_BloodCampMaster PRIMARY KEY CLUSTERED (CampId),
+    INDEX IX_BloodCampMaster_CenterId NONCLUSTERED (CenterId),
+    INDEX IX_BloodCampMaster_OrganizerId NONCLUSTERED (OrganizerId),
+    INDEX IX_BloodCampMaster_CampRecordDate NONCLUSTERED (CampRecordDate)
+);
+
+CREATE TABLE CampOrganizer (
+    OrganizerId BIGINT IDENTITY(1,1) NOT NULL,
+    OrganizerName NVARCHAR(100) NOT NULL,
+    ContactPerson NVARCHAR(50),
+    Phone NVARCHAR(15),
+    Email NVARCHAR(100),
+    CONSTRAINT PK_CampOrganizer PRIMARY KEY CLUSTERED (OrganizerId),
+    INDEX IX_CampOrganizer_OrganizerName NONCLUSTERED (OrganizerName)
+);
+
+CREATE TABLE CampDonorMap (
+    CampDonorMapId BIGINT IDENTITY(1,1) NOT NULL,
+    CampId BIGINT NOT NULL,
+    DonorId BIGINT NOT NULL,
+    CenterId BIGINT NOT NULL,
+    CONSTRAINT PK_CampDonorMap PRIMARY KEY CLUSTERED (CampDonorMapId),
+    INDEX IX_CampDonorMap_CampId NONCLUSTERED (CampId),
+    INDEX IX_CampDonorMap_DonorId NONCLUSTERED (DonorId),
+    INDEX IX_CampDonorMap_CenterId NONCLUSTERED (CenterId)
+);
+
+CREATE TABLE CollectionRecord (
+    CollectionId BIGINT IDENTITY(1,1) NOT NULL,
+    CenterId BIGINT NOT NULL,
+    DonorId BIGINT NOT NULL,
+    CampId BIGINT,
+    BloodBagNumber NVARCHAR(50) NOT NULL,
+    CollectionRecordDate DATETIME2 DEFAULT SYSUTCDATETIME(),
+    Volume INT,
+    CONSTRAINT PK_CollectionRecord PRIMARY KEY CLUSTERED (CollectionId),
+    INDEX IX_CollectionRecord_CenterId NONCLUSTERED (CenterId),
+    INDEX IX_CollectionRecord_DonorId NONCLUSTERED (DonorId),
+    INDEX IX_CollectionRecord_CampId NONCLUSTERED (CampId),
+    INDEX IX_CollectionRecord_BloodBagNumber NONCLUSTERED (BloodBagNumber)
+);
+
+CREATE TABLE CollectionStaffMap (
+    CollectionStaffMapId BIGINT IDENTITY(1,1) NOT NULL,
+    CollectionId BIGINT NOT NULL,
+    EmployeeId BIGINT NOT NULL,
+    CenterId BIGINT NOT NULL,
+    CONSTRAINT PK_CollectionStaffMap PRIMARY KEY CLUSTERED (CollectionStaffMapId),
+    INDEX IX_CollectionStaffMap_CollectionId NONCLUSTERED (CollectionId),
+    INDEX IX_CollectionStaffMap_EmployeeId NONCLUSTERED (EmployeeId),
+    INDEX IX_CollectionStaffMap_CenterId NONCLUSTERED (CenterId)
+);
+
+CREATE TABLE CampInventory (
+    CampInventoryId BIGINT IDENTITY(1,1) NOT NULL,
+    CampId BIGINT NOT NULL,
+    CenterId BIGINT NOT NULL,
+    ItemName NVARCHAR(100),
+    Quantity INT,
+    CONSTRAINT PK_CampInventory PRIMARY KEY CLUSTERED (CampInventoryId),
+    INDEX IX_CampInventory_CampId NONCLUSTERED (CampId),
+    INDEX IX_CampInventory_CenterId NONCLUSTERED (CenterId)
+);
+
+CREATE TABLE CampExpenseLog (
+    CampExpenseId BIGINT IDENTITY(1,1) NOT NULL,
+    CampId BIGINT NOT NULL,
+    CenterId BIGINT NOT NULL,
+    ExpenseCategory NVARCHAR(50),
+    Amount DECIMAL(10,2),
+    ExpenseRecordDate DATE,
+    CONSTRAINT PK_CampExpenseLog PRIMARY KEY CLUSTERED (CampExpenseId),
+    INDEX IX_CampExpenseLog_CampId NONCLUSTERED (CampId),
+    INDEX IX_CampExpenseLog_CenterId NONCLUSTERED (CenterId)
+);
+
+-- 5. Blood Testing & Screening
+CREATE TABLE BloodTestRecord (
+    TestRecordId BIGINT IDENTITY(1,1) NOT NULL,
+    CenterId BIGINT NOT NULL,
+    BloodBagNumber NVARCHAR(50) NOT NULL,
+    TestRecordDate DATETIME2 DEFAULT SYSUTCDATETIME(),
+    CONSTRAINT PK_BloodTestRecord PRIMARY KEY CLUSTERED (TestRecordId),
+    INDEX IX_BloodTestRecord_CenterId NONCLUSTERED (CenterId),
+    INDEX IX_BloodTestRecord_BloodBagNumber NONCLUSTERED (BloodBagNumber),
+    INDEX IX_BloodTestRecord_TestRecordDate NONCLUSTERED (TestRecordDate)
+);
+
+CREATE TABLE TestResultDetail (
+    TestResultId BIGINT IDENTITY(1,1) NOT NULL,
+    TestRecordId BIGINT NOT NULL,
+    ParameterName NVARCHAR(50),
+    ResultValue NVARCHAR(50),
+    IsNormal BIT,
+    CONSTRAINT PK_TestResultDetail PRIMARY KEY CLUSTERED (TestResultId),
+    INDEX IX_TestResultDetail_TestRecordId NONCLUSTERED (TestRecordId)
+);
+
+CREATE TABLE TestKitMaster (
+    TestKitId BIGINT IDENTITY(1,1) NOT NULL,
+    CenterId BIGINT NOT NULL,
+    KitName NVARCHAR(100),
+    ExpiryRecordDate DATE,
+    BatchNumber NVARCHAR(50),
+    CONSTRAINT PK_TestKitMaster PRIMARY KEY CLUSTERED (TestKitId),
+    INDEX IX_TestKitMaster_CenterId NONCLUSTERED (CenterId),
+    INDEX IX_TestKitMaster_BatchNumber NONCLUSTERED (BatchNumber)
+);
+
+CREATE TABLE TestTechnicianMap (
+    TestTechnicianMapId BIGINT IDENTITY(1,1) NOT NULL,
+    TestRecordId BIGINT NOT NULL,
+    EmployeeId BIGINT NOT NULL,
+    CenterId BIGINT NOT NULL,
+    CONSTRAINT PK_TestTechnicianMap PRIMARY KEY CLUSTERED (TestTechnicianMapId),
+    INDEX IX_TestTechnicianMap_TestRecordId NONCLUSTERED (TestRecordId),
+    INDEX IX_TestTechnicianMap_EmployeeId NONCLUSTERED (EmployeeId),
+    INDEX IX_TestTechnicianMap_CenterId NONCLUSTERED (CenterId)
+);
+
+CREATE TABLE QualityControlRecord (
+    QCRecordId BIGINT IDENTITY(1,1) NOT NULL,
+    CenterId BIGINT NOT NULL,
+    DeviceId BIGINT,
+    QCRecordDate DATETIME2 DEFAULT SYSUTCDATETIME(),
+    Result NVARCHAR(MAX),
+    CONSTRAINT PK_QualityControlRecord PRIMARY KEY CLUSTERED (QCRecordId),
+    INDEX IX_QualityControlRecord_CenterId NONCLUSTERED (CenterId),
+    INDEX IX_QualityControlRecord_DeviceId NONCLUSTERED (DeviceId)
+);
+
+-- 6. Component Preparation & Storage
+CREATE TABLE ComponentPreparation (
+    ComponentPrepId BIGINT IDENTITY(1,1) NOT NULL,
+    CenterId BIGINT NOT NULL,
+    BloodBagNumber NVARCHAR(50) NOT NULL,
+    ComponentCategoryId BIGINT,
+    PrepRecordDate DATETIME2 DEFAULT SYSUTCDATETIME(),
+    CONSTRAINT PK_ComponentPreparation PRIMARY KEY CLUSTERED (ComponentPrepId),
+    INDEX IX_ComponentPreparation_CenterId NONCLUSTERED (CenterId),
+    INDEX IX_ComponentPreparation_BloodBagNumber NONCLUSTERED (BloodBagNumber),
+    INDEX IX_ComponentPreparation_ComponentCategoryId NONCLUSTERED (ComponentCategoryId)
+);
+
+CREATE TABLE ComponentStorage (
+    StorageId BIGINT IDENTITY(1,1) NOT NULL,
+    CenterId BIGINT NOT NULL,
+    ComponentPrepId BIGINT NOT NULL,
+    FridgeId BIGINT,
+    StorageRecordDate DATETIME2 DEFAULT SYSUTCDATETIME(),
+    CONSTRAINT PK_ComponentStorage PRIMARY KEY CLUSTERED (StorageId),
+    INDEX IX_ComponentStorage_CenterId NONCLUSTERED (CenterId),
+    INDEX IX_ComponentStorage_ComponentPrepId NONCLUSTERED (ComponentPrepId),
+    INDEX IX_ComponentStorage_FridgeId NONCLUSTERED (FridgeId)
+);
+
+CREATE TABLE ComponentTransferLog (
+    TransferId BIGINT IDENTITY(1,1) NOT NULL,
+    ComponentPrepId BIGINT NOT NULL,
+    FromCenterId BIGINT NOT NULL,
+    ToCenterId BIGINT NOT NULL,
+    TransferRecordDate DATETIME2 DEFAULT SYSUTCDATETIME(),
+    CONSTRAINT PK_ComponentTransferLog PRIMARY KEY CLUSTERED (TransferId),
+    INDEX IX_ComponentTransferLog_ComponentPrepId NONCLUSTERED (ComponentPrepId),
+    INDEX IX_ComponentTransferLog_FromCenterId NONCLUSTERED (FromCenterId),
+    INDEX IX_ComponentTransferLog_ToCenterId NONCLUSTERED (ToCenterId)
+);
+
+CREATE TABLE DiscardRecord (
+    DiscardId BIGINT IDENTITY(1,1) NOT NULL,
+    CenterId BIGINT NOT NULL,
+    ComponentPrepId BIGINT NOT NULL,
+    ReasonId BIGINT,
+    DiscardRecordDate DATETIME2 DEFAULT SYSUTCDATETIME(),
+    CONSTRAINT PK_DiscardRecord PRIMARY KEY CLUSTERED (DiscardId),
+    INDEX IX_DiscardRecord_CenterId NONCLUSTERED (CenterId),
+    INDEX IX_DiscardRecord_ComponentPrepId NONCLUSTERED (ComponentPrepId),
+    INDEX IX_DiscardRecord_ReasonId NONCLUSTERED (ReasonId)
+);
+
+-- 7. Inventory & Issue Management
+CREATE TABLE InventoryStock (
+    StockId BIGINT IDENTITY(1,1) NOT NULL,
+    CenterId BIGINT NOT NULL,
+    ComponentCategoryId BIGINT NOT NULL,
+    BloodGroupId BIGINT NOT NULL,
+    Quantity INT,
+    LastUpdated DATETIME2 DEFAULT SYSUTCDATETIME(),
+    CONSTRAINT PK_InventoryStock PRIMARY KEY CLUSTERED (StockId),
+    INDEX IX_InventoryStock_CenterId NONCLUSTERED (CenterId),
+    INDEX IX_InventoryStock_ComponentCategoryId NONCLUSTERED (ComponentCategoryId),
+    INDEX IX_InventoryStock_BloodGroupId NONCLUSTERED (BloodGroupId)
+);
+
+CREATE TABLE IssueRecord (
+    IssueId BIGINT IDENTITY(1,1) NOT NULL,
+    CenterId BIGINT NOT NULL,
+    HospitalId BIGINT,
+    ComponentPrepId BIGINT NOT NULL,
+    IssueRecordDate DATETIME2 DEFAULT SYSUTCDATETIME(),
+    Quantity INT,
+    CONSTRAINT PK_IssueRecord PRIMARY KEY CLUSTERED (IssueId),
+    INDEX IX_IssueRecord_CenterId NONCLUSTERED (CenterId),
+    INDEX IX_IssueRecord_HospitalId NONCLUSTERED (HospitalId),
+    INDEX IX_IssueRecord_ComponentPrepId NONCLUSTERED (ComponentPrepId)
+);
+
+CREATE TABLE HospitalMaster (
+    HospitalId BIGINT IDENTITY(1,1) NOT NULL,
+    HospitalName NVARCHAR(100) NOT NULL,
+    Location NVARCHAR(MAX),
+    CityId BIGINT,
+    Phone NVARCHAR(15),
+    CONSTRAINT PK_HospitalMaster PRIMARY KEY CLUSTERED (HospitalId),
+    INDEX IX_HospitalMaster_CityId NONCLUSTERED (CityId)
+);
+
+CREATE TABLE PatientRequest (
+    RequestId BIGINT IDENTITY(1,1) NOT NULL,
+    CenterId BIGINT NOT NULL,
+    HospitalId BIGINT,
+    PatientName NVARCHAR(100),
+    BloodGroupId BIGINT,
+    ComponentCategoryId BIGINT,
+    RequestRecordDate DATETIME2 DEFAULT SYSUTCDATETIME(),
+    Status NVARCHAR(20),
+    CONSTRAINT PK_PatientRequest PRIMARY KEY CLUSTERED (RequestId),
+    INDEX IX_PatientRequest_CenterId NONCLUSTERED (CenterId),
+    INDEX IX_PatientRequest_HospitalId NONCLUSTERED (HospitalId),
+    INDEX IX_PatientRequest_BloodGroupId NONCLUSTERED (BloodGroupId),
+    INDEX IX_PatientRequest_ComponentCategoryId NONCLUSTERED (ComponentCategoryId)
+);
+
+CREATE TABLE CrossMatchRecord (
+    CrossMatchId BIGINT IDENTITY(1,1) NOT NULL,
+    CenterId BIGINT NOT NULL,
+    RequestId BIGINT NOT NULL,
+    ComponentPrepId BIGINT NOT NULL,
+    TestRecordDate DATETIME2 DEFAULT SYSUTCDATETIME(),
+    Result NVARCHAR(20),
+    CONSTRAINT PK_CrossMatchRecord PRIMARY KEY CLUSTERED (CrossMatchId),
+    INDEX IX_CrossMatchRecord_CenterId NONCLUSTERED (CenterId),
+    INDEX IX_CrossMatchRecord_RequestId NONCLUSTERED (RequestId),
+    INDEX IX_CrossMatchRecord_ComponentPrepId NONCLUSTERED (ComponentPrepId)
+);
+
+CREATE TABLE ReturnRecord (
+    ReturnId BIGINT IDENTITY(1,1) NOT NULL,
+    CenterId BIGINT NOT NULL,
+    IssueId BIGINT NOT NULL,
+    ReturnRecordDate DATETIME2 DEFAULT SYSUTCDATETIME(),
+    ReasonId BIGINT,
+    CONSTRAINT PK_ReturnRecord PRIMARY KEY CLUSTERED (ReturnId),
+    INDEX IX_ReturnRecord_CenterId NONCLUSTERED (CenterId),
+    INDEX IX_ReturnRecord_IssueId NONCLUSTERED (IssueId),
+    INDEX IX_ReturnRecord_ReasonId NONCLUSTERED (ReasonId)
+);
+
+CREATE TABLE ReplacementDonor (
+    ReplacementId BIGINT IDENTITY(1,1) NOT NULL,
+    CenterId BIGINT NOT NULL,
+    RequestId BIGINT NOT NULL,
+    DonorId BIGINT NOT NULL,
+    DonationRecordDate DATETIME2 DEFAULT SYSUTCDATETIME(),
+    CONSTRAINT PK_ReplacementDonor PRIMARY KEY CLUSTERED (ReplacementId),
+    INDEX IX_ReplacementDonor_CenterId NONCLUSTERED (CenterId),
+    INDEX IX_ReplacementDonor_RequestId NONCLUSTERED (RequestId),
+    INDEX IX_ReplacementDonor_DonorId NONCLUSTERED (DonorId)
+);
+
+-- 8. Billing & Finance
+CREATE TABLE ServiceChargeMaster (
+    ServiceChargeId BIGINT IDENTITY(1,1) NOT NULL,
+    CenterId BIGINT NOT NULL,
+    ComponentCategoryId BIGINT,
+    ServiceName NVARCHAR(50),
+    Amount DECIMAL(10,2),
+    CONSTRAINT PK_ServiceChargeMaster PRIMARY KEY CLUSTERED (ServiceChargeId),
+    INDEX IX_ServiceChargeMaster_CenterId NONCLUSTERED (CenterId),
+    INDEX IX_ServiceChargeMaster_ComponentCategoryId NONCLUSTERED (ComponentCategoryId)
+);
+
+CREATE TABLE BillingTransaction (
+    BillingId BIGINT IDENTITY(1,1) NOT NULL,
+    CenterId BIGINT NOT NULL,
+    HospitalId BIGINT,
+    InvoiceNumber NVARCHAR(50) NOT NULL,
+    BillingRecordDate DATETIME2 DEFAULT SYSUTCDATETIME(),
+    TotalAmount DECIMAL(10,2),
+    CONSTRAINT PK_BillingTransaction PRIMARY KEY CLUSTERED (BillingId),
+    INDEX IX_BillingTransaction_CenterId NONCLUSTERED (CenterId),
+    INDEX IX_BillingTransaction_HospitalId NONCLUSTERED (HospitalId),
+    INDEX IX_BillingTransaction_InvoiceNumber NONCLUSTERED (InvoiceNumber)
+);
+
+CREATE TABLE InvoiceDetail (
+    InvoiceDetailId BIGINT IDENTITY(1,1) NOT NULL,
+    BillingId BIGINT NOT NULL,
+    ServiceChargeId BIGINT,
+    Quantity INT,
+    Amount DECIMAL(10,2),
+    CONSTRAINT PK_InvoiceDetail PRIMARY KEY CLUSTERED (InvoiceDetailId),
+    INDEX IX_InvoiceDetail_BillingId NONCLUSTERED (BillingId)
+);
+
+CREATE TABLE PaymentRecord (
+    PaymentId BIGINT IDENTITY(1,1) NOT NULL,
+    BillingId BIGINT NOT NULL,
+    CenterId BIGINT NOT NULL,
+    PaymentMode NVARCHAR(20),
+    Amount DECIMAL(10,2),
+    PaymentRecordDate DATETIME2 DEFAULT SYSUTCDATETIME(),
+    CONSTRAINT PK_PaymentRecord PRIMARY KEY CLUSTERED (PaymentId),
+    INDEX IX_PaymentRecord_BillingId NONCLUSTERED (BillingId),
+    INDEX IX_PaymentRecord_CenterId NONCLUSTERED (CenterId)
+);
+
+CREATE TABLE ExpenseMaster (
+    ExpenseId BIGINT IDENTITY(1,1) NOT NULL,
+    CenterId BIGINT NOT NULL,
+    ExpenseCategory NVARCHAR(50),
+    Amount DECIMAL(10,2),
+    ExpenseRecordDate DATE,
+    CONSTRAINT PK_ExpenseMaster PRIMARY KEY CLUSTERED (ExpenseId),
+    INDEX IX_ExpenseMaster_CenterId NONCLUSTERED (CenterId)
+);
+
+-- 9. Reporting & Compliance
+CREATE TABLE MonthlyReportLog (
+    ReportId BIGINT IDENTITY(1,1) NOT NULL,
+    CenterId BIGINT NOT NULL,
+    ReportMonth DATE,
+    ReportData NVARCHAR(MAX),
+    GeneratedAt DATETIME2 DEFAULT SYSUTCDATETIME(),
+    CONSTRAINT PK_MonthlyReportLog PRIMARY KEY CLUSTERED (ReportId),
+    INDEX IX_MonthlyReportLog_CenterId NONCLUSTERED (CenterId),
+    INDEX IX_MonthlyReportLog_ReportMonth NONCLUSTERED (ReportMonth)
+);
+
+CREATE TABLE ExportFileLog (
+    ExportId BIGINT IDENTITY(1,1) NOT NULL,
+    CenterId BIGINT NOT NULL,
+    FileCategory NVARCHAR(20),
+    FilePath NVARCHAR(255),
+    GeneratedAt DATETIME2 DEFAULT SYSUTCDATETIME(),
+    CONSTRAINT PK_ExportFileLog PRIMARY KEY CLUSTERED (ExportId),
+    INDEX IX_ExportFileLog_CenterId NONCLUSTERED (CenterId)
+);
+
+CREATE TABLE DataUploadHistory (
+    UploadId BIGINT IDENTITY(1,1) NOT NULL,
+    CenterId BIGINT NOT NULL,
+    ReportId BIGINT,
+    UploadRecordDate DATETIME2 DEFAULT SYSUTCDATETIME(),
+    Status NVARCHAR(20),
+    CONSTRAINT PK_DataUploadHistory PRIMARY KEY CLUSTERED (UploadId),
+    INDEX IX_DataUploadHistory_CenterId NONCLUSTERED (CenterId),
+    INDEX IX_DataUploadHistory_ReportId NONCLUSTERED (ReportId)
+);
+
+CREATE TABLE ReportTemplate (
+    TemplateId BIGINT IDENTITY(1,1) NOT NULL,
+    TemplateName NVARCHAR(100),
+    TemplateContent NVARCHAR(MAX),
+    CreatedAt DATETIME2 DEFAULT SYSUTCDATETIME(),
+    CONSTRAINT PK_ReportTemplate PRIMARY KEY CLUSTERED (TemplateId)
+);
+
+CREATE TABLE AnalyticsDashboardData (
+    AnalyticsId BIGINT IDENTITY(1,1) NOT NULL,
+    CenterId BIGINT NOT NULL,
+    MetricName NVARCHAR(50),
+    MetricValue NVARCHAR(MAX),
+    GeneratedAt DATETIME2 DEFAULT SYSUTCDATETIME(),
+    CONSTRAINT PK_AnalyticsDashboardData PRIMARY KEY CLUSTERED (AnalyticsId),
+    INDEX IX_AnalyticsDashboardData_CenterId NONCLUSTERED (CenterId),
+    INDEX IX_AnalyticsDashboardData_MetricName NONCLUSTERED (MetricName)
+);
+
+-- 10. Communication & Outreach
+CREATE TABLE NotificationMaster (
+    NotificationId BIGINT IDENTITY(1,1) NOT NULL,
+    CenterId BIGINT NOT NULL,
+    NotificationCategory NVARCHAR(20),
+    MessageContent NVARCHAR(MAX),
+    CreatedAt DATETIME2 DEFAULT SYSUTCDATETIME(),
+    CONSTRAINT PK_NotificationMaster PRIMARY KEY CLUSTERED (NotificationId),
+    INDEX IX_NotificationMaster_CenterId NONCLUSTERED (CenterId)
+);
+
+CREATE TABLE SmsTemplateMaster (
+    SmsTemplateId BIGINT IDENTITY(1,1) NOT NULL,
+    CenterId BIGINT NOT NULL,
+    TemplateName NVARCHAR(50),
+    TemplateContent NVARCHAR(MAX),
+    CONSTRAINT PK_SmsTemplateMaster PRIMARY KEY CLUSTERED (SmsTemplateId),
+    INDEX IX_SmsTemplateMaster_CenterId NONCLUSTERED (CenterId)
+);
+
+CREATE TABLE EmailTemplateMaster (
+    EmailTemplateId BIGINT IDENTITY(1,1) NOT NULL,
+    CenterId BIGINT NOT NULL,
+    TemplateName NVARCHAR(50),
+    TemplateContent NVARCHAR(MAX),
+    CONSTRAINT PK_EmailTemplateMaster PRIMARY KEY CLUSTERED (EmailTemplateId),
+    INDEX IX_EmailTemplateMaster_CenterId NONCLUSTERED (CenterId)
+);
+
+CREATE TABLE OutboxLog (
+    OutboxId BIGINT IDENTITY(1,1) NOT NULL,
+    CenterId BIGINT NOT NULL,
+    RecipientId BIGINT,
+    MessageCategory NVARCHAR(20),
+    MessageContent NVARCHAR(MAX),
+    SentAt DATETIME2 DEFAULT SYSUTCDATETIME(),
+    CONSTRAINT PK_OutboxLog PRIMARY KEY CLUSTERED (OutboxId),
+    INDEX IX_OutboxLog_CenterId NONCLUSTERED (CenterId),
+    INDEX IX_OutboxLog_RecipientId NONCLUSTERED (RecipientId)
+);
+
+CREATE TABLE FeedbackMaster (
+    FeedbackId BIGINT IDENTITY(1,1) NOT NULL,
+    CenterId BIGINT NOT NULL,
+    DonorId BIGINT,
+    HospitalId BIGINT,
+    FeedbackText NVARCHAR(MAX),
+    SubmittedAt DATETIME2 DEFAULT SYSUTCDATETIME(),
+    CONSTRAINT PK_FeedbackMaster PRIMARY KEY CLUSTERED (FeedbackId),
+    INDEX IX_FeedbackMaster_CenterId NONCLUSTERED (CenterId),
+    INDEX IX_FeedbackMaster_DonorId NONCLUSTERED (DonorId),
+    INDEX IX_FeedbackMaster_HospitalId NONCLUSTERED (HospitalId)
+);
+
+CREATE TABLE NewsletterSubscription (
+    SubscriptionId BIGINT IDENTITY(1,1) NOT NULL,
+    CenterId BIGINT NOT NULL,
+    Email NVARCHAR(100),
+    SubscribedAt DATETIME2 DEFAULT SYSUTCDATETIME(),
+    CONSTRAINT PK_NewsletterSubscription PRIMARY KEY CLUSTERED (SubscriptionId),
+    INDEX IX_NewsletterSubscription_CenterId NONCLUSTERED (CenterId),
+    INDEX IX_NewsletterSubscription_Email NONCLUSTERED (Email)
+);
+
+-- 11. System Configuration & Support
+CREATE TABLE SystemConfig (
+    ConfigId BIGINT IDENTITY(1,1) NOT NULL,
+    ConfigKey NVARCHAR(50) NOT NULL,
+    ConfigValue NVARCHAR(MAX),
+    CenterId BIGINT,
+    CONSTRAINT PK_SystemConfig PRIMARY KEY CLUSTERED (ConfigId),
+    INDEX IX_SystemConfig_CenterId NONCLUSTERED (CenterId),
+    INDEX IX_SystemConfig_ConfigKey NONCLUSTERED (ConfigKey)
+);
+
+CREATE TABLE BackupLog (
+    BackupId BIGINT IDENTITY(1,1) NOT NULL,
+    CenterId BIGINT NOT NULL,
+    BackupTime DATETIME2 DEFAULT SYSUTCDATETIME(),
+    BackupPath NVARCHAR(255),
+    Status NVARCHAR(20),
+    CONSTRAINT PK_BackupLog PRIMARY KEY CLUSTERED (BackupId),
+    INDEX IX_BackupLog_CenterId NONCLUSTERED (CenterId)
+);
+
+CREATE TABLE ErrorLog (
+    ErrorId BIGINT IDENTITY(1,1) NOT NULL,
+    CenterId BIGINT,
+    ErrorMessage NVARCHAR(MAX),
+    ErrorTime DATETIME2 DEFAULT SYSUTCDATETIME(),
+    StackTrace NVARCHAR(MAX),
+    CONSTRAINT PK_ErrorLog PRIMARY KEY CLUSTERED (ErrorId),
+    INDEX IX_ErrorLog_CenterId NONCLUSTERED (CenterId),
+    INDEX IX_ErrorLog_ErrorTime NONCLUSTERED (ErrorTime)
+);
+
+CREATE TABLE ApiIntegrationMaster (
+    ApiIntegrationId BIGINT IDENTITY(1,1) NOT NULL,
+    CenterId BIGINT NOT NULL,
+    ApiName NVARCHAR(50),
+    ApiKey NVARCHAR(255),
+    EndpointUrl NVARCHAR(255),
+    CONSTRAINT PK_ApiIntegrationMaster PRIMARY KEY CLUSTERED (ApiIntegrationId),
+    INDEX IX_ApiIntegrationMaster_CenterId NONCLUSTERED (CenterId)
+);
+
+CREATE TABLE SchedulerJobLog (
+    JobId BIGINT IDENTITY(1,1) NOT NULL,
+    CenterId BIGINT NOT NULL,
+    JobName NVARCHAR(50),
+    ExecutionTime DATETIME2 DEFAULT SYSUTCDATETIME(),
+    Status NVARCHAR(20),
+    CONSTRAINT PK_SchedulerJobLog PRIMARY KEY CLUSTERED (JobId),
+    INDEX IX_SchedulerJobLog_CenterId NONCLUSTERED (CenterId),
+    INDEX IX_SchedulerJobLog_JobName NONCLUSTERED (JobName)
+);
+
+-- 12. Master & Reference Data
+CREATE TABLE StateMaster (
+    StateId BIGINT IDENTITY(1,1) NOT NULL,
+    StateName NVARCHAR(50) NOT NULL,
+    CONSTRAINT PK_StateMaster PRIMARY KEY CLUSTERED (StateId),
+    INDEX IX_StateMaster_StateName NONCLUSTERED (StateName)
+);
+
+CREATE TABLE DistrictMaster (
+    DistrictId BIGINT IDENTITY(1,1) NOT NULL,
+    StateId BIGINT NOT NULL,
+    DistrictName NVARCHAR(50) NOT NULL,
+    CONSTRAINT PK_DistrictMaster PRIMARY KEY CLUSTERED (DistrictId),
+    INDEX IX_DistrictMaster_StateId NONCLUSTERED (StateId),
+    INDEX IX_DistrictMaster_DistrictName NONCLUSTERED (DistrictName)
+);
+
+CREATE TABLE CityMaster (
+    CityId BIGINT IDENTITY(1,1) NOT NULL,
+    DistrictId BIGINT NOT NULL,
+    CityName NVARCHAR(50) NOT NULL,
+    CONSTRAINT PK_CityMaster PRIMARY KEY CLUSTERED (CityId),
+    INDEX IX_CityMaster_DistrictId NONCLUSTERED (DistrictId),
+    INDEX IX_CityMaster_CityName NONCLUSTERED (CityName)
+);
+
+CREATE TABLE PincodeMaster (
+    PincodeId BIGINT IDENTITY(1,1) NOT NULL,
+    CityId BIGINT NOT NULL,
+    Pincode NVARCHAR(10) NOT NULL,
+    CONSTRAINT PK_PincodeMaster PRIMARY KEY CLUSTERED (PincodeId),
+    INDEX IX_PincodeMaster_CityId NONCLUSTERED (CityId),
+    INDEX IX_PincodeMaster_Pincode NONCLUSTERED (Pincode)
+);
+
+CREATE TABLE BloodGroupMaster (
+    BloodGroupId BIGINT IDENTITY(1,1) NOT NULL,
+    BloodGroupName NVARCHAR(10) NOT NULL,
+    CONSTRAINT PK_BloodGroupMaster PRIMARY KEY CLUSTERED (BloodGroupId),
+    INDEX IX_BloodGroupMaster_BloodGroupName NONCLUSTERED (BloodGroupName)
+);
+
+CREATE TABLE ComponentCategoryMaster (
+    ComponentCategoryId BIGINT IDENTITY(1,1) NOT NULL,
+    ComponentName NVARCHAR(50) NOT NULL,
+    CONSTRAINT PK_ComponentCategoryMaster PRIMARY KEY CLUSTERED (ComponentCategoryId),
+    INDEX IX_ComponentCategoryMaster_ComponentName NONCLUSTERED (ComponentName)
+);
+
+CREATE TABLE ReasonMaster (
+    ReasonId BIGINT IDENTITY(1,1) NOT NULL,
+    ReasonCategory NVARCHAR(50),
+    ReasonDetails NVARCHAR(MAX),
+    CONSTRAINT PK_ReasonMaster PRIMARY KEY CLUSTERED (ReasonId),
+    INDEX IX_ReasonMaster_ReasonCategory NONCLUSTERED (ReasonCategory)
+);
+
+CREATE TABLE HolidayMaster (
+    HolidayId BIGINT IDENTITY(1,1) NOT NULL,
+    HolidayRecordDate DATE NOT NULL,
+    HolidayName NVARCHAR(50),
+    CONSTRAINT PK_HolidayMaster PRIMARY KEY CLUSTERED (HolidayId),
+    INDEX IX_HolidayMaster_HolidayRecordDate NONCLUSTERED (HolidayRecordDate)
+);
+
+-- 13. Emergency & Donation Requests
+CREATE TABLE EmergencyRequest (
+    EmergencyRequestId BIGINT IDENTITY(1,1) NOT NULL,
+    CenterId BIGINT NOT NULL,
+    HospitalId BIGINT,
+    BloodGroupId BIGINT,
+    ComponentCategoryId BIGINT,
+    RequestRecordDate DATETIME2 DEFAULT SYSUTCDATETIME(),
+    Status NVARCHAR(20),
+    CONSTRAINT PK_EmergencyRequest PRIMARY KEY CLUSTERED (EmergencyRequestId),
+    INDEX IX_EmergencyRequest_CenterId NONCLUSTERED (CenterId),
+    INDEX IX_EmergencyRequest_HospitalId NONCLUSTERED (HospitalId),
+    INDEX IX_EmergencyRequest_BloodGroupId NONCLUSTERED (BloodGroupId),
+    INDEX IX_EmergencyRequest_ComponentCategoryId NONCLUSTERED (ComponentCategoryId)
+);
+
+CREATE TABLE EmergencyDonorResponse (
+    ResponseId BIGINT IDENTITY(1,1) NOT NULL,
+    EmergencyRequestId BIGINT NOT NULL,
+    DonorId BIGINT NOT NULL,
+    CenterId BIGINT NOT NULL,
+    ResponseRecordDate DATETIME2 DEFAULT SYSUTCDATETIME(),
+    CONSTRAINT PK_EmergencyDonorResponse PRIMARY KEY CLUSTERED (ResponseId),
+    INDEX IX_EmergencyDonorResponse_EmergencyRequestId NONCLUSTERED (EmergencyRequestId),
+    INDEX IX_EmergencyDonorResponse_DonorId NONCLUSTERED (DonorId),
+    INDEX IX_EmergencyDonorResponse_CenterId NONCLUSTERED (CenterId)
+);
+
+CREATE TABLE RequestStatusLog (
+    StatusLogId BIGINT IDENTITY(1,1) NOT NULL,
+    EmergencyRequestId BIGINT NOT NULL,
+    CenterId BIGINT NOT NULL,
+    Status NVARCHAR(20),
+    StatusRecordDate DATETIME2 DEFAULT SYSUTCDATETIME(),
+    CONSTRAINT PK_RequestStatusLog PRIMARY KEY CLUSTERED (StatusLogId),
+    INDEX IX_RequestStatusLog_EmergencyRequestId NONCLUSTERED (EmergencyRequestId),
+    INDEX IX_RequestStatusLog_CenterId NONCLUSTERED (CenterId)
+);
+
+-- 14. Multi-Center & API Integration
+CREATE TABLE CenterAppUserMap (
+    CenterAppUserMapId BIGINT IDENTITY(1,1) NOT NULL,
+    AppUserId BIGINT NOT NULL,
+    CenterId BIGINT NOT NULL,
+    AssignedAt DATETIME2 DEFAULT SYSUTCDATETIME(),
+    CONSTRAINT PK_CenterAppUserMap PRIMARY KEY CLUSTERED (CenterAppUserMapId),
+    INDEX IX_CenterAppUserMap_AppUserId NONCLUSTERED (AppUserId),
+    INDEX IX_CenterAppUserMap_CenterId NONCLUSTERED (CenterId)
+);
+
+CREATE TABLE CenterConfig (
+    CenterConfigId BIGINT IDENTITY(1,1) NOT NULL,
+    CenterId BIGINT NOT NULL,
+    ConfigKey NVARCHAR(50) NOT NULL,
+    ConfigValue NVARCHAR(MAX),
+    CONSTRAINT PK_CenterConfig PRIMARY KEY CLUSTERED (CenterConfigId),
+    INDEX IX_CenterConfig_CenterId NONCLUSTERED (CenterId),
+    INDEX IX_CenterConfig_ConfigKey NONCLUSTERED (ConfigKey)
+);
+
+CREATE TABLE PortalUploadQueue (
+    UploadQueueId BIGINT IDENTITY(1,1) NOT NULL,
+    CenterId BIGINT NOT NULL,
+    ReportId BIGINT,
+    DataPayload NVARCHAR(MAX),
+    QueueRecordDate DATETIME2 DEFAULT SYSUTCDATETIME(),
+    Status NVARCHAR(20),
+    CONSTRAINT PK_PortalUploadQueue PRIMARY KEY CLUSTERED (UploadQueueId),
+    INDEX IX_PortalUploadQueue_CenterId NONCLUSTERED (CenterId),
+    INDEX IX_PortalUploadQueue_ReportId NONCLUSTERED (ReportId)
+);
+
+CREATE TABLE ApiResponseLog (
+    ApiResponseId BIGINT IDENTITY(1,1) NOT NULL,
+    CenterId BIGINT NOT NULL,
+    ApiIntegrationId BIGINT,
+    ResponseCode NVARCHAR(10),
+    ResponseData NVARCHAR(MAX),
+    ResponseTime DATETIME2 DEFAULT SYSUTCDATETIME(),
+    CONSTRAINT PK_ApiResponseLog PRIMARY KEY CLUSTERED (ApiResponseId),
+    INDEX IX_ApiResponseLog_CenterId NONCLUSTERED (CenterId),
+    INDEX IX_ApiResponseLog_ApiIntegrationId NONCLUSTERED (ApiIntegrationId)
+);
