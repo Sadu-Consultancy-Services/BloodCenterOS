@@ -122,7 +122,7 @@ We are pleased to announce that this repository has been officially **transferre
 This transition ensures continued **development, support, and maintenance** under the official management of Sadu Consultancy Services.
 
 For any queries or collaboration requests, please contact:  
-📧 **bloodcenteros@saduitcs.com** | 📱 [Chat on WhatsApp](https://wa.me/+919765975757?text=Hello%20BloodCenterOS%20Team%2C%20I%20am%20interested%20in%20the%20application.%20Please%20contact%20me.)  
+📧 **bloodcenteros@saducs.com** | 📱 [Chat on WhatsApp](https://wa.me/+919765975757?text=Hello%20BloodCenterOS%20Team%2C%20I%20am%20interested%20in%20the%20application.%20Please%20contact%20me.)  
 
 🌐 [www.saducs.com/bloodcenteros](https://www.saducs.com/bloodcenteros) | Pune, Maharashtra, India  
 
@@ -151,7 +151,7 @@ For any queries or collaboration requests, please contact:
 
 > 📢 **Queries & Collaboration:**  
 > Have questions or want to contribute?  
-> Contact us at [bloodcenteros@saduitcs.com](mailto:bloodcenteros@saduitcs.com)  
+> Contact us at [bloodcenteros@saducs.com](mailto:bloodcenteros@saducs.com)  
 > or message on WhatsApp — [Click Here](https://wa.me/+919765975757?text=Hello%20BloodCenterOS%20Team%2C%20I%20am%20interested%20in%20the%20application.%20Please%20contact%20me.)
 
 ---
