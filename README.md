@@ -1,7 +1,7 @@
 # 🩸 BloodCenterOS  
 ### Open Source Blood Center Management System for India  
 Developed & Maintained by **Sadu Consultancy Services**  
-🌐 [www.saducs.com](http://www.saducs.com) | 📍 Pune, Maharashtra, India | 📞 +91 9765975757  
+🌐 [www.saducs.com](http://www.saducs.com/bloodcenteros) | 📍 Pune, Maharashtra, India | 📞 +91 9765975757  
 
 ---
 
@@ -138,7 +138,7 @@ You are free to **use, modify, and distribute** this software (with attribution)
 
 **Sadu Consultancy Services**  
 📍 Pune, Maharashtra, India  
-🌐 [www.saducs.com](http://www.saducs.com)  
+🌐 [www.saducs.com](http://www.saducs.com/bloodcenteros)  
 📞 +91 9765975757  
 
 ---
