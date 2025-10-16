@@ -1,7 +1,7 @@
 # 🩸 BloodCenterOS  
 ### Open Source Blood Center Management System for India  
 Developed & Maintained by **Sadu Consultancy Services**  
-🌐 [www.saducs.com](http://www.saducs.com/bloodcenteros) | 📍 Pune, Maharashtra, India | 📞 +91 9765975757  
+🌐 [www.saducs.com/bloodcenteros](https://www.saducs.com/bloodcenteros) | 📍 Pune, Maharashtra, India | 📞 +91 9765975757  
 
 ---
 
@@ -116,10 +116,50 @@ Developed using **.NET 9**, **SQL Server**, and **Stored Procedures** (without E
 
 ---
 
+## 📢 Official Announcement
+
+We are pleased to announce that this repository has been officially **transferred to [Sadu Consultancy Services](https://www.saducs.com/bloodcenteros)**.  
+This transition ensures continued **development, support, and maintenance** under the official management of Sadu Consultancy Services.
+
+For any queries or collaboration requests, please contact:  
+📧 **bloodcenteros@saduitcs.com** | 📱 [Chat on WhatsApp](https://wa.me/+919765975757?text=Hello%20BloodCenterOS%20Team%2C%20I%20am%20interested%20in%20the%20application.%20Please%20contact%20me.)  
+
+🌐 [www.saducs.com/bloodcenteros](https://www.saducs.com/bloodcenteros) | Pune, Maharashtra, India  
+
+---
+
+## 🧭 Development Roadmap
+
+> **Project Duration:** 9 Months (Ongoing)  
+> **Current Phase:** Phase 1 – Analysis & Database Design  
+> **Maintained by:** [Sadu Consultancy Services](https://www.saducs.com/bloodcenteros)
+
+| Phase | Focus Area | Description | Status |
+|-------|-------------|--------------|--------|
+| **Phase 1** | Analysis & Database Design | Requirements gathering, schema design (~90 tables), and stored procedure planning. | 🟢 In Progress |
+| **Phase 2** | API Development | Secure .NET 9 Web API with authentication, multi-center logic, and audit integration. | ⏳ Upcoming |
+| **Phase 3** | Frontend (Web) | Razor Pages + Bootstrap 5 for admin, center, and hospital dashboards. | ⏳ Planned |
+| **Phase 4** | Reporting | Excel (ClosedXML) and PDF (QuestPDF/Autovitia) export for NACO/state uploads. | ⏳ Planned |
+| **Phase 5** | Deployment & Documentation | Hosting setup, data migration guides, and API documentation. | ⏳ Planned |
+
+### 🔍 Future Enhancements
+- Cloud multi-center architecture  
+- Mobile app for donor and camp management  
+- Integration with hospital systems (FHIR/API)  
+- AI-based donor eligibility suggestions  
+- Real-time dashboard for authorities  
+
+> 📢 **Queries & Collaboration:**  
+> Have questions or want to contribute?  
+> Contact us at [bloodcenteros@saduitcs.com](mailto:bloodcenteros@saduitcs.com)  
+> or message on WhatsApp — [Click Here](https://wa.me/+919765975757?text=Hello%20BloodCenterOS%20Team%2C%20I%20am%20interested%20in%20the%20application.%20Please%20contact%20me.)
+
+---
+
 ## ⚠️ Disclaimer
 
 This application is provided **“as-is”**, without any warranties or guarantees.  
-**Sadu Consultancy Services** and project contributors are **not responsible for any data loss, incorrect reports, or operational errors** arising from the use or modification of this software.  
+**[Sadu Consultancy Services](https://www.saducs.com/bloodcenteros)** and project contributors are **not responsible for any data loss, incorrect reports, or operational errors** arising from the use or modification of this software.  
 
 Users must validate all operational workflows as per their organization and government compliance requirements.
 
@@ -136,9 +176,9 @@ You are free to **use, modify, and distribute** this software (with attribution)
 
 ## 💬 Contact & Support
 
-**Sadu Consultancy Services**  
+**[Sadu Consultancy Services](https://www.saducs.com/bloodcenteros)**  
 📍 Pune, Maharashtra, India  
-🌐 [www.saducs.com](http://www.saducs.com/bloodcenteros)  
+🌐 [www.saducs.com/bloodcenteros](https://www.saducs.com/bloodcenteros)  
 📞 +91 9765975757  
 
 ---
@@ -157,5 +197,5 @@ for India — promoting safety, traceability, and collaboration through technolo
 
 ---
 
-© 2025 **Sadu Consultancy Services** — All rights reserved.  
+© 2025 **[Sadu Consultancy Services](https://www.saducs.com/bloodcenteros)** — All rights reserved.  
 Released under the **Apache License 2.0**.
