@@ -126,6 +126,25 @@ For any queries or collaboration requests, please contact:
 
 🌐 [www.saducs.com/bloodcenteros](https://www.saducs.com/bloodcenteros) | Pune, Maharashtra, India  
 
+
+### 📢 Upcoming Update: PostgreSQL Database Schema (v1)
+
+We are currently finalizing the PostgreSQL version of the BloodCenterOS database.
+The file **`BloodCenterOS_DB_PostgreSQL_v1.sql`** will be uploaded soon.
+
+This new schema is designed to:
+
+* Improve open-source compatibility
+* Support affordable Linux-based hosting
+* Enable better performance and scalability
+* Align with PL/pgSQL stored procedures
+* Maintain our *no direct foreign key* design philosophy
+
+A migration guide and updated documentation will follow.
+
+Thank you for your patience and continued support!
+— *Sadu Consultancy Services*
+
 ---
 
 ## 🧭 Development Roadmap
