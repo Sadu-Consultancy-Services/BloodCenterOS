@@ -1,0 +1,37 @@
+@model List<BloodCenterOS.Web.Models.ViewModels.ComponentTypeItem>
+@{
+  ViewBag.Title = "Component Types";
+  ViewBag.ActiveMenu = "ComponentTypes";
+}
+
+<div class="page-header">
+  <h1 class="page-title">Component Types <small>Blood component reference</small></h1>
+</div>
+
+<div class="card">
+  <div class="card-body p-0">
+    <div class="table-container">
+      <table class="table mb-0">
+        <thead>
+          <tr>
+            <th>Code</th>
+            <th>Name</th>
+            <th>Description</th>
+            <th>Shelf Life</th>
+          </tr>
+        </thead>
+        <tbody>
+          @foreach (var t in Model)
+          {
+            <tr>
+              <td><span class="badge" style="background:#f3e8ff;color:#6b21a8;font-size:12px;padding:3px 10px">@t.Code</span></td>
+              <td style="font-weight:500">@t.Name</td>
+              <td style="font-size:12px">@t.Description</td>
+              <td style="font-size:12px">@t.ShelfLife</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

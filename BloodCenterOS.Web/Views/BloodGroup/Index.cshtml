@@ -1,0 +1,37 @@
+@model List<BloodCenterOS.Web.Models.ViewModels.BloodGroupItem>
+@{
+  ViewBag.Title = "Blood Groups";
+  ViewBag.ActiveMenu = "BloodGroups";
+}
+
+<div class="page-header">
+  <h1 class="page-title">Blood Groups <small>Compatibility reference</small></h1>
+</div>
+
+<div class="card">
+  <div class="card-body p-0">
+    <div class="table-container">
+      <table class="table mb-0">
+        <thead>
+          <tr>
+            <th>Group</th>
+            <th>Description</th>
+            <th>Can Donate To</th>
+            <th>Can Receive From</th>
+          </tr>
+        </thead>
+        <tbody>
+          @foreach (var g in Model)
+          {
+            <tr>
+              <td><span class="badge" style="background:#dbeafe;color:#1e40af;font-size:13px;padding:4px 12px">@g.Code</span></td>
+              <td>@g.Description</td>
+              <td style="font-size:12px">@g.CanDonateTo</td>
+              <td style="font-size:12px">@g.CanReceiveFrom</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

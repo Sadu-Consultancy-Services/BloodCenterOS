@@ -13,6 +13,22 @@ public class ListViewModel<T>
     public int PageSize { get; set; } = 20;
 }
 
+public class ComponentTypeItem
+{
+    public string Code { get; set; } = "";
+    public string Name { get; set; } = "";
+    public string Description { get; set; } = "";
+    public string ShelfLife { get; set; } = "";
+}
+
+public class BloodGroupItem
+{
+    public string Code { get; set; } = "";
+    public string Description { get; set; } = "";
+    public string CanDonateTo { get; set; } = "";
+    public string CanReceiveFrom { get; set; } = "";
+}
+
 public class DonorListItem
 {
     public long Id { get; set; }
