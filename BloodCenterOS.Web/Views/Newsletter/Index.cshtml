@@ -1,0 +1,34 @@
+@model List<NewsletterSubscription>
+@{ ViewBag.Title = "Newsletter Subscriptions"; ViewBag.ActiveMenu = "Newsletter"; }
+<div class="page-header">
+  <div><h1 class="page-title">Newsletter Subscriptions <small>Manage subscribers</small></h1></div>
+  <a href="@Url.Action("Create")" class="btn btn-primary"><i class="bi bi-plus"></i> Add Subscriber</a>
+</div>
+@if (TempData["Success"] is string s) { <div class="alert alert-success py-2 px-3 mb-3">@s</div> }
+@if (TempData["Error"] is string e) { <div class="alert alert-danger py-2 px-3 mb-3">@e</div> }
+<div class="card">
+  <div class="card-body p-0">
+    <table class="table mb-0">
+      <thead><tr><th>Email</th><th>Subscribed At</th><th>Status</th><th></th></tr></thead>
+      <tbody>
+        @if (!Model.Any()) { <tr><td colspan="4" class="text-center text-muted py-3">No subscriptions.</td></tr> }
+        @foreach (var item in Model)
+        {
+          <tr>
+            <td>@item.Email</td>
+            <td>@item.SubscribedAt?.ToString("g")</td>
+            <td><span class="badge @(item.IsActive ? "bg-success" : "bg-secondary")">@(item.IsActive ? "Active" : "Inactive")</span></td>
+            <td class="text-end">
+              <form method="post" action="@Url.Action("ToggleActive", new { id = item.SubscriptionId })" style="display:inline">
+                <button type="submit" class="btn btn-sm btn-outline-warning"><i class="bi bi-@(item.IsActive ? "pause" : "play")"></i></button>
+              </form>
+              <form method="post" action="@Url.Action("Delete", new { id = item.SubscriptionId })" style="display:inline" onsubmit="return confirm('Delete this subscription?')">
+                <button type="submit" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
+              </form>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+</div>

@@ -1,0 +1,20 @@
+@model NewsletterSubscription
+@{ ViewBag.Title = "Add Subscription"; ViewBag.ActiveMenu = "Newsletter"; }
+<div class="page-header">
+  <div><h1 class="page-title">Add Subscription <small>Add a newsletter subscriber</small></h1></div>
+  <a href="@Url.Action("Index")" class="btn btn-outline-secondary"><i class="bi bi-arrow-left"></i> Back</a>
+</div>
+<form method="post">
+  <div class="card mb-3">
+    <div class="card-header"><h6>Subscriber Details</h6></div>
+    <div class="card-body">
+      <div class="row g-2">
+        <div class="col-md-6"><label class="form-label">Email <span class="text-danger">*</span></label><input type="email" name="Email" class="form-control" value="@Model.Email" required /></div>
+      </div>
+    </div>
+  </div>
+  <div class="d-flex gap-2 justify-content-end">
+    <a href="@Url.Action("Index")" class="btn btn-outline-secondary">Cancel</a>
+    <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg"></i> Save</button>
+  </div>
+</form>

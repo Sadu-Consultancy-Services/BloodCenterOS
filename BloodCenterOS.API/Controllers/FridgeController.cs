@@ -1,0 +1,56 @@
+using System.Security.Claims;
+using BloodCenterOS.API.Repositories;
+using BloodCenterOS.Core.Models;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+
+namespace BloodCenterOS.API.Controllers;
+
+[ApiController]
+[Authorize]
+[Route("api/fridges")]
+public class FridgeController : ControllerBase
+{
+    private readonly IFridgeRepository _repo;
+    public FridgeController(IFridgeRepository repo) => _repo = repo;
+
+    private long CenterId => long.TryParse(User.FindFirst("CenterId")?.Value, out var id) ? id : 0;
+
+    [HttpGet]
+    public async Task<IActionResult> GetAll()
+    {
+        var data = await _repo.GetAllByCenterAsync(CenterId);
+        return Ok(ApiResponse<IEnumerable<Fridge>>.Ok(data));
+    }
+
+    [HttpGet("{id}")]
+    public async Task<IActionResult> GetById(long id)
+    {
+        var item = await _repo.GetByIdAsync(id);
+        if (item == null) return NotFound(ApiResponse<Fridge>.Fail("Fridge not found"));
+        return Ok(ApiResponse<Fridge>.Ok(item));
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> Create([FromBody] Fridge fridge)
+    {
+        fridge.CenterId = CenterId;
+        var id = await _repo.CreateAsync(fridge);
+        return Ok(ApiResponse<long>.Ok(id, "Fridge created"));
+    }
+
+    [HttpPut("{id}")]
+    public async Task<IActionResult> Update(long id, [FromBody] Fridge fridge)
+    {
+        fridge.FridgeId = id;
+        await _repo.UpdateAsync(fridge);
+        return Ok(ApiResponse<object>.Ok(new { }, "Fridge updated"));
+    }
+
+    [HttpDelete("{id}")]
+    public async Task<IActionResult> Delete(long id)
+    {
+        await _repo.DeleteAsync(id);
+        return Ok(ApiResponse<object>.Ok(new { }, "Fridge deleted"));
+    }
+}

@@ -1,3 +1,4 @@
+using BloodCenterOS.Core.Models;
 using BloodCenterOS.Web.Models.ViewModels;
 using BloodCenterOS.Web.Services;
 using Microsoft.AspNetCore.Mvc;
@@ -6,28 +7,90 @@ namespace BloodCenterOS.Web.Controllers;
 
 public class ComponentTypeController : Controller
 {
+    private readonly ApiClient _api;
     private readonly IWebAuthService _auth;
+    public ComponentTypeController(ApiClient api, IWebAuthService auth) { _api = api; _auth = auth; }
 
-    public ComponentTypeController(IWebAuthService auth)
-    {
-        _auth = auth;
-    }
-
-    public IActionResult Index()
+    public async Task<IActionResult> Index()
     {
         if (!_auth.IsAuthenticated) return RedirectToAction("Login", "Account");
         ViewBag.Title = "Component Types";
         ViewBag.ActiveMenu = "ComponentTypes";
-
-        var types = new List<ComponentTypeItem>
+        var items = new List<ComponentType>();
+        try { var r = await _api.GetComponentTypesAsync(); if (r?.Success == true && r.Data != null) items = r.Data; } catch { }
+        var viewModel = items.Select(t => new ComponentTypeItem
         {
-            new() { Code = "Whole Blood", Name = "Whole Blood", Description = "Unseparated blood containing all components", ShelfLife = "35 days" },
-            new() { Code = "PRBC", Name = "Packed Red Blood Cells", Description = "Red cells for anemia and blood loss", ShelfLife = "42 days" },
-            new() { Code = "FFP", Name = "Fresh Frozen Plasma", Description = "Plasma for clotting factor deficiencies", ShelfLife = "12 months" },
-            new() { Code = "Platelet", Name = "Platelet Concentrate", Description = "Platelets for thrombocytopenia", ShelfLife = "5 days" },
-            new() { Code = "Cryo", Name = "Cryoprecipitate", Description = "Clotting factors for hemophilia", ShelfLife = "12 months" }
-        };
+            ComponentTypeId = t.ComponentTypeId,
+            Code = t.ComponentTypeCode ?? "",
+            Name = t.ComponentTypeCode ?? "",
+            Description = t.Description ?? ""
+        }).ToList();
+        return View(viewModel);
+    }
 
-        return View(types);
+    public IActionResult Create()
+    {
+        if (!_auth.IsAuthenticated) return RedirectToAction("Login", "Account");
+        ViewBag.Title = "Add Component Type";
+        ViewBag.ActiveMenu = "ComponentTypes";
+        return View(new ComponentType());
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> Create(ComponentType item)
+    {
+        if (!_auth.IsAuthenticated) return RedirectToAction("Login", "Account");
+        ViewBag.Title = "Add Component Type";
+        ViewBag.ActiveMenu = "ComponentTypes";
+        try
+        {
+            var r = await _api.CreateComponentTypeAsync(new
+            {
+                componentTypeCode = item.ComponentTypeCode,
+                description = item.Description
+            });
+            if (r?.Success == true) { TempData["Success"] = "Component type created"; return RedirectToAction("Index"); }
+            ModelState.AddModelError("", r?.Message ?? "Failed");
+        }
+        catch { ModelState.AddModelError("", "API unavailable"); }
+        return View(item);
+    }
+
+    public async Task<IActionResult> Edit(long id)
+    {
+        if (!_auth.IsAuthenticated) return RedirectToAction("Login", "Account");
+        ViewBag.Title = "Edit Component Type";
+        ViewBag.ActiveMenu = "ComponentTypes";
+        try { var r = await _api.GetComponentTypesAsync(); if (r?.Success == true && r.Data != null) { var it = r.Data.FirstOrDefault(x => x.ComponentTypeId == id); if (it != null) return View(it); } } catch { }
+        TempData["Error"] = "Component type not found";
+        return RedirectToAction("Index");
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> Edit(long id, ComponentType item)
+    {
+        if (!_auth.IsAuthenticated) return RedirectToAction("Login", "Account");
+        ViewBag.Title = "Edit Component Type";
+        ViewBag.ActiveMenu = "ComponentTypes";
+        try
+        {
+            var r = await _api.UpdateComponentTypeAsync(id, new
+            {
+                componentTypeCode = item.ComponentTypeCode,
+                description = item.Description
+            });
+            if (r?.Success == true) { TempData["Success"] = "Component type updated"; return RedirectToAction("Index"); }
+            ModelState.AddModelError("", r?.Message ?? "Failed");
+        }
+        catch { ModelState.AddModelError("", "API unavailable"); }
+        return View(item);
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> Delete(long id)
+    {
+        try { await _api.DeleteComponentTypeAsync(id); TempData["Success"] = "Component type deleted"; }
+        catch { TempData["Error"] = "Failed"; }
+        return RedirectToAction("Index");
     }
 }

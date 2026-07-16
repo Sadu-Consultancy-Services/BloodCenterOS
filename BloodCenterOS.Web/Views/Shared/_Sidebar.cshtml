@@ -18,8 +18,17 @@
           <i class="bi bi-chevron-right nav-arrow"></i>
         </a>
         <ul class="nav-sub list-unstyled mb-0" id="mnu-masters">
+          <li class="nav-item"><a class="nav-link @(ViewBag.ActiveMenu == "Branches" ? "active" : "")" href="@Url.Action("Index","Branch")"><span class="nav-text">Branches</span></a></li>
+          <li class="nav-item"><a class="nav-link @(ViewBag.ActiveMenu == "Departments" ? "active" : "")" href="@Url.Action("Index","Department")"><span class="nav-text">Departments</span></a></li>
+          <li class="nav-item"><a class="nav-link @(ViewBag.ActiveMenu == "Devices" ? "active" : "")" href="@Url.Action("Index","Device")"><span class="nav-text">Devices</span></a></li>
+          <li class="nav-item"><a class="nav-link @(ViewBag.ActiveMenu == "Fridges" ? "active" : "")" href="@Url.Action("Index","Fridge")"><span class="nav-text">Fridges</span></a></li>
+          <li class="nav-item"><a class="nav-link @(ViewBag.ActiveMenu == "Designations" ? "active" : "")" href="@Url.Action("Index","Designation")"><span class="nav-text">Designations</span></a></li>
+          <li class="nav-item"><a class="nav-link @(ViewBag.ActiveMenu == "Employees" ? "active" : "")" href="@Url.Action("Index","Employee")"><span class="nav-text">Employees</span></a></li>
           <li class="nav-item"><a class="nav-link @(ViewBag.ActiveMenu == "BloodGroups" ? "active" : "")" href="@Url.Action("Index","BloodGroup")"><span class="nav-text">Blood Groups</span></a></li>
           <li class="nav-item"><a class="nav-link @(ViewBag.ActiveMenu == "ComponentTypes" ? "active" : "")" href="@Url.Action("Index","ComponentType")"><span class="nav-text">Component Types</span></a></li>
+          <li class="nav-item"><a class="nav-link @(ViewBag.ActiveMenu == "SmsTemplates" ? "active" : "")" href="@Url.Action("Index","SmsTemplate")"><span class="nav-text">SMS Templates</span></a></li>
+          <li class="nav-item"><a class="nav-link @(ViewBag.ActiveMenu == "EmailTemplates" ? "active" : "")" href="@Url.Action("Index","EmailTemplate")"><span class="nav-text">Email Templates</span></a></li>
+          <li class="nav-item"><a class="nav-link @(ViewBag.ActiveMenu == "Newsletter" ? "active" : "")" href="@Url.Action("Index","Newsletter")"><span class="nav-text">Newsletter Subs</span></a></li>
         </ul>
       </li>
       <li class="nav-item">
@@ -71,10 +80,16 @@
         </a>
       </li>
       <li class="nav-item">
-        <a class="nav-link @(ViewBag.ActiveMenu == "Camps" ? "active" : "")" href="@Url.Action("Index","Camp")">
+        <a class="nav-link @(ViewBag.ActiveMenu == "Camps" || ViewBag.ActiveMenu == "CampInventory" || ViewBag.ActiveMenu == "CampExpenses" ? "active" : "")" data-bc-toggle="collapse" data-bc-target="mnu-camps" aria-expanded="@(ViewBag.ActiveMenu == "Camps" || ViewBag.ActiveMenu == "CampInventory" || ViewBag.ActiveMenu == "CampExpenses" ? "true" : "false")" role="button">
           <i class="bi bi-truck nav-icon"></i>
           <span class="nav-text">Camp Management</span>
+          <i class="bi bi-chevron-right nav-arrow"></i>
         </a>
+        <ul class="nav-sub list-unstyled mb-0 @(ViewBag.ActiveMenu == "Camps" || ViewBag.ActiveMenu == "CampInventory" || ViewBag.ActiveMenu == "CampExpenses" ? "show" : "")" id="mnu-camps">
+          <li class="nav-item"><a class="nav-link @(ViewBag.ActiveMenu == "Camps" ? "active" : "")" href="@Url.Action("Index","Camp")"><span class="nav-text">Camps</span></a></li>
+          <li class="nav-item"><a class="nav-link @(ViewBag.ActiveMenu == "CampInventory" ? "active" : "")" href="@Url.Action("Index","CampInventory")"><span class="nav-text">Camp Inventory</span></a></li>
+          <li class="nav-item"><a class="nav-link @(ViewBag.ActiveMenu == "CampExpenses" ? "active" : "")" href="@Url.Action("Index","CampExpense")"><span class="nav-text">Camp Expenses</span></a></li>
+        </ul>
       </li>
       <li class="nav-item">
         <a class="nav-link @(ViewBag.ActiveMenu == "Hospitals" ? "active" : "")" href="@Url.Action("Index","Hospital")">

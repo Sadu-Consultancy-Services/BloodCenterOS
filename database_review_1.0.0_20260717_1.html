@@ -1,0 +1,664 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>BloodCenterOS — Database Review v1.0.0</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; background: #f4f5f7; color: #1a1d23; padding: 24px; }
+  .container { max-width: 1400px; margin: 0 auto; }
+  h1 { font-size: 20px; font-weight: 600; margin-bottom: 4px; }
+  .subtitle { color: #5b6778; font-size: 13px; margin-bottom: 20px; }
+  .stats { display: flex; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; }
+  .stat-card { background: #fff; border-radius: 8px; padding: 12px 18px; box-shadow: 0 1px 3px rgba(0,0,0,.08); flex: 1; min-width: 120px; }
+  .stat-card .num { font-size: 22px; font-weight: 700; color: #2563eb; }
+  .stat-card .lbl { font-size: 11px; color: #6b7280; text-transform: uppercase; letter-spacing: .5px; }
+  .section { background: #fff; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,.08); margin-bottom: 16px; overflow: hidden; }
+  .section-header { background: #1e293b; color: #fff; padding: 10px 16px; font-size: 14px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px; }
+  .section-header:hover { background: #334155; }
+  .section-header .count { font-weight: 400; font-size: 11px; color: #94a3b8; margin-left: auto; }
+  .section-body { display: none; }
+  .section-body.open { display: block; }
+  table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+  thead th { background: #f8fafc; color: #475569; font-weight: 600; padding: 8px 12px; text-align: left; border-bottom: 2px solid #e2e8f0; position: sticky; top: 0; }
+  tbody td { padding: 7px 12px; border-bottom: 1px solid #eef2f6; vertical-align: top; }
+  tbody tr:hover { background: #f8fafc; }
+  tbody tr.spacer td { background: #f1f5f9; font-size: 11px; font-weight: 600; color: #475569; padding: 4px 12px; letter-spacing: .3px; }
+  .tname { font-weight: 600; color: #2563eb; font-family: 'SF Mono', 'Cascadia Code', monospace; font-size: 12px; white-space: nowrap; }
+  .sname { font-family: 'SF Mono', 'Cascadia Code', monospace; font-size: 11.5px; color: #8b5cf6; white-space: nowrap; }
+  .desc { color: #374151; line-height: 1.45; }
+  .sp-desc { color: #4b5563; line-height: 1.4; font-size: 11.5px; }
+  .badge { display: inline-block; font-size: 10px; padding: 1px 7px; border-radius: 10px; font-weight: 500; }
+  .bg-green { background: #dcfce7; color: #166534; }
+  .bg-blue { background: #dbeafe; color: #1e40af; }
+  .bg-amber { background: #fef3c7; color: #92400e; }
+  .sp-list { margin: 0; padding: 0; list-style: none; }
+  .sp-list li { padding: 2px 0; display: flex; gap: 6px; align-items: flex-start; }
+  .sp-list li + li { border-top: 1px dotted #e5e7eb; margin-top: 2px; padding-top: 2px; }
+  .empty { color: #9ca3af; font-style: italic; font-size: 11px; }
+  @media (max-width: 900px) { table, thead, tbody, tr, th, td { display: block; } thead { display: none; } td { padding: 6px 10px; } }
+</style>
+</head>
+<body>
+<div class="container">
+
+<h1>BloodCenterOS — Database Review</h1>
+<div class="subtitle">Version 1.0.0 &middot; Generated 2026-07-17 &middot; All 89 Tables with Stored Procedures</div>
+
+<div class="stats" id="stats"></div>
+
+<div id="sections"></div>
+
+</div>
+
+<script>
+const DATA = {
+  modules: [
+    {
+      name: "1. User & Access Management",
+      tables: [
+        { name: "UserMaster", desc: "Stores all system user accounts with credentials, display name, contact info, and lock status. Each user belongs to one or more centers via CenterUserMap." },
+        { name: "RoleMaster", desc: "Defines named roles (e.g., Administrator, Technician, Donor Coordinator). Roles group permissions for access control." },
+        { name: "PermissionMaster", desc: "Lists all granular system permissions (e.g., 'donor.create', 'report.view'). Static reference data seeded at setup." },
+        { name: "RolePermissionMap", desc: "Associates roles with permissions. A role can have many permissions; a permission can belong to many roles." },
+        { name: "UserRoleMap", desc: "Assigns roles to users within a center context. A user can hold multiple roles." },
+        { name: "LoginHistory", desc: "Audit log of user login/logout events. Tracks IP address, user agent, and timestamps for security review." },
+        { name: "AuditLog", desc: "General-purpose audit trail. Records who performed what action on which table/record, with old/new values." },
+        { name: "CenterUserMap", desc: "Links users to centers. A user may be associated with multiple centers with different roles." },
+        { name: "UserSettings", desc: "Per-user key-value preferences (e.g., theme preference, default page size, language)." }
+      ]
+    },
+    {
+      name: "2. Center & Infrastructure",
+      tables: [
+        { name: "BloodCenterMaster", desc: "Single record per blood center. Stores legal name, code, license number, address, contact details, and registration info." },
+        { name: "BranchMaster", desc: "Physical branches or collection centers under a main center. Each branch has its own address and contact." },
+        { name: "DepartmentMaster", desc: "Organisational departments (e.g., Collection, Testing, Inventory, Billing). Used for employee assignment." },
+        { name: "DesignationMaster", desc: "Job titles/designations (e.g., Phlebotomist, Lab Technician, Manager)." },
+        { name: "EmployeeMaster", desc: "Staff records. Links to Department and stores personal info, employment code, designation, and active status." },
+        { name: "DeviceMaster", desc: "Equipment registry. Tracks device name, type, serial number, purchase/warranty dates for QC and maintenance." },
+        { name: "FridgeStorageMaster", desc: "Blood storage fridge/freezer units. Records capacity, location, and temperature monitoring requirements." }
+      ]
+    },
+    {
+      name: "3. Donor Management",
+      tables: [
+        { name: "DonorMaster", desc: "Core donor registry. Stores personal details, blood group, contact info, address, Aadhaar, occupation, and language preference." },
+        { name: "DonorHealthHistory", desc: "Pre-donation health screening records. Weight, temperature, BP, hemoglobin, pulse, and eligibility remarks." },
+        { name: "DonorDonationHistory", desc: "Summary of each donation event per donor. Links to collection records and tracks donation type, volume, and bag number." },
+        { name: "DeferralRecord", desc: "Temporary or permanent donor deferrals. Stores reason, deferral period, and notes for eligibility tracking." },
+        { name: "DonorAppointment", desc: "Scheduled donation appointments. Links donor to a date/time slot for planning and reminders." },
+        { name: "DonorCommunicationLog", desc: "Outbound communication history with donors. Tracks channel (SMS/email), message content, and delivery status." }
+      ]
+    },
+    {
+      name: "4. Blood Camps",
+      tables: [
+        { name: "BloodCampMaster", desc: "Blood donation camp events. Stores camp name, organizer, venue, date, time, and expected donor count." },
+        { name: "CampOrganizer", desc: "Organisation entities that conduct camps (Rotary, Lions Club, Corporate, NGO, etc.). Contact details included." },
+        { name: "CampDonorMap", desc: "Registers donors to specific camp events. Tracks which donors attended which camps." },
+        { name: "CampInventory", desc: "Inventory allocated to a camp. Tracks blood bags, consumables, and equipment sent for camp operations." },
+        { name: "CampExpenseLog", desc: "Expenses incurred during a camp (refreshments, transport, materials). Financial tracking per camp." }
+      ]
+    },
+    {
+      name: "5. Blood Collection",
+      tables: [
+        { name: "CollectionRecord", desc: "Records each blood collection event. Links donor, camp, branch, bag details, collection staff, volume, and timestamps." },
+        { name: "CollectionStaffMap", desc: "Assigns staff members to a collection event with their role (phlebotomist, assistant, nurse)." }
+      ]
+    },
+    {
+      name: "6. Testing & Quality Control",
+      tables: [
+        { name: "BloodTestRecord", desc: "Test record header. Groups all individual test results for a single blood bag/collection. Tracks overall status (Pending/Completed)." },
+        { name: "BloodTestResult", desc: "Individual marker test results (HIV, HBV, HCV, Syphilis, Malaria). Records method, kit lot, result value, and technician." },
+        { name: "TestKitMaster", desc: "Test kit inventory. Tracks kit name, manufacturer, lot number, and expiry date for quality traceability." },
+        { name: "TestTechnicianMap", desc: "Assigns technicians to test records. Records who performed which tests on which samples." },
+        { name: "QualityControlRecord", desc: "Equipment QC check records. Tracks device inspections, calibration checks, and maintenance activities." }
+      ]
+    },
+    {
+      name: "7. Component Processing & Inventory",
+      tables: [
+        { name: "BloodBagMaster", desc: "Blood bag inventory. Tracks each bag by unique number, type (single/double/triple/quad), manufacturer, lot, and expiry date." },
+        { name: "ComponentTypeMaster", desc: "Defines component types (Whole Blood, PRBC, FFP, Platelet, Cryoprecipitate) with descriptions and shelf life." },
+        { name: "ComponentMaster", desc: "Individual blood components derived from a bag. Each component has a type, blood group, volume, expiry, and storage status." },
+        { name: "ComponentPreparation", desc: "Records component preparation events. Tracks which bag was processed into which component types, by whom." },
+        { name: "ComponentPreparationLog", desc: "Detailed log of each preparation step. Timestamp, operator, and process parameters for audit." },
+        { name: "ComponentStorage", desc: "Current storage location of each component. Links to fridge unit, shelf location, and storage notes." },
+        { name: "ComponentTransferLog", desc: "Inter-center component transfers. Records source/destination centers, transport details, and transfer approval." },
+        { name: "DiscardRecord", desc: "Component discard/waste records. Tracks discard reason, quantity, discarded-by user, and disposal method." },
+        { name: "InventoryStock", desc: "Real-time inventory levels by component type and blood group. Tracks available, reserved, and quarantined quantities." },
+        { name: "InventoryTransactionLog", desc: "Detailed inventory movement log. Every stock change (add, remove, adjust) is recorded with reference info." }
+      ]
+    },
+    {
+      name: "8. Hospitals, Requests & Issue",
+      tables: [
+        { name: "HospitalMaster", desc: "Registered hospitals that receive blood/components. Stores hospital name, code, address, and contact person details." },
+        { name: "PatientRequest", desc: "Blood/component requests from hospitals. Includes patient info, blood group, component type, units, urgency level, and request status." },
+        { name: "CrossMatchRecord", desc: "Cross-matching test results. Records compatibility testing between donor components and recipient samples." },
+        { name: "IssueRecord", desc: "Blood/component issue transactions. Records what was issued, to which hospital/patient, by whom, and issue type." },
+        { name: "ReturnRecord", desc: "Records returned or unused components from hospitals. Tracks return reason, condition, and disposition." },
+        { name: "ReplacementDonor", desc: "Tracks replacement donors arranged by patients/families to replenish blood used. Links donor to specific request." },
+        { name: "RequestStatusLog", desc: "Status change history for patient requests. Tracks every transition (Pending → Approved → Fulfilled → Cancelled)." }
+      ]
+    },
+    {
+      name: "9. Billing & Finance",
+      tables: [
+        { name: "ServiceChargeMaster", desc: "Service charge/fee schedule. Defines charges by service name, code, and amount for billing." },
+        { name: "BillingTransaction", desc: "Invoice header for billing transactions. Stores invoice number, patient details, amounts, and payment status." },
+        { name: "InvoiceDetail", desc: "Line items on an invoice. Each row links a component or service to a charge amount." },
+        { name: "PaymentRecord", desc: "Payment transactions against invoices. Records payment mode (Cash/Card/UPI), amount, and reference number." },
+        { name: "ExpenseMaster", desc: "General expense records. Tracks operational expenses by category, amount, and notes for financial accounting." }
+      ]
+    },
+    {
+      name: "10. Emergency Management",
+      tables: [
+        { name: "EmergencyRequest", desc: "Emergency blood/component requests. Contains patient info, blood group, units needed, hospital, and response status." },
+        { name: "EmergencyDonorResponse", desc: "Tracks donor responses to emergency requests. Records which donors volunteered and their contact info." }
+      ]
+    },
+    {
+      name: "11. Communication & Outreach",
+      tables: [
+        { name: "NotificationMaster", desc: "System notifications (alerts, announcements, reminders). Supports multiple types and audience targeting." },
+        { name: "SmsTemplateMaster", desc: "SMS message templates with template code and text body. Used for automated donor communication." },
+        { name: "EmailTemplateMaster", desc: "Email message templates with subject and HTML body. Used for automated email communication." },
+        { name: "OutboxLog", desc: "Outbound message log. Records all sent SMS/email messages with recipient, channel, content, and delivery status." },
+        { name: "FeedbackMaster", desc: "User/visitor feedback submissions. Stores source, subject, message body, and submission timestamp." },
+        { name: "NewsletterSubscription", desc: "Email newsletter subscriber list. Tracks active/inactive subscriptions and subscription date." }
+      ]
+    },
+    {
+      name: "12. System Configuration",
+      tables: [
+        { name: "SystemConfig", desc: "Global system-wide configuration key-value pairs. Controls application behaviour (timeouts, thresholds, feature flags)." },
+        { name: "CenterConfig", desc: "Center-specific configuration overrides. Per-center settings stored as key-value pairs." },
+        { name: "SequenceCounters", desc: "Auto-increment sequence generators for custom codes (donor IDs, invoice numbers, camp codes). Configurable prefix/suffix." },
+        { name: "BackupLog", desc: "Database backup history. Logs backup type, file path, and status for operational monitoring." },
+        { name: "ErrorLog", desc: "Application error logs. Captures error messages and stack traces for debugging and monitoring." },
+        { name: "SchedulerJobLog", desc: "Background job execution log. Tracks scheduled tasks, run time, status, and output." }
+      ]
+    },
+    {
+      name: "13. Reference & Master Data",
+      tables: [
+        { name: "StateMaster", desc: "Indian states/UTs reference list. Used for address dropdowns and state-level reporting." },
+        { name: "DistrictMaster", desc: "Districts within states. Hierarchical location data for address entry and analytics." },
+        { name: "CityMaster", desc: "Cities/towns reference. Used for address auto-complete and geographic segmentation." },
+        { name: "PincodeMaster", desc: "Postal code reference. Maps pincodes to cities/districts for address validation." },
+        { name: "BloodGroupMaster", desc: "Blood group reference (A+, A-, B+, B-, AB+, AB-, O+, O-). Includes Rh factor and compatibility info." },
+        { name: "LookupType", desc: "Lookup category/type definitions. Groups related lookup values (e.g., 'Occupation', 'DonorStatus')." },
+        { name: "LookupValue", desc: "Individual lookup values within a type. Stores code, text, sort order, and active status." },
+        { name: "ReasonMaster", desc: "Standardised reason codes for deferrals, discards, returns, and cancellations." },
+        { name: "HolidayMaster", desc: "Public holidays and centre closure dates. Used for scheduling and business day calculation." }
+      ]
+    },
+    {
+      name: "14. Reporting & Analytics",
+      tables: [
+        { name: "MonthlyReportLog", desc: "Pre-generated monthly report records. Stores report metadata and generation timestamps." },
+        { name: "ExportFileLog", desc: "Export job history. Tracks exported file generation (PDF/Excel), type, date range, and user." },
+        { name: "DataUploadHistory", desc: "Data import/upload records. Tracks uploaded files, record counts, and import status." },
+        { name: "ReportTemplate", desc: "Report layout templates. Stores configuration for custom report formatting and content." },
+        { name: "AnalyticsDashboardData", desc: "Pre-computed dashboard metrics. Cached aggregates for performance (donor counts, collection stats, etc.)." },
+        { name: "ChangeLog", desc: "Entity change history. Tracks create/update/delete events with serialised change data for audit." }
+      ]
+    },
+    {
+      name: "15. API Integration & Attachments",
+      tables: [
+        { name: "ApiIntegrationMaster", desc: "External API integration configurations. Stores endpoint URLs, API keys, and auth credentials for third-party systems." },
+        { name: "ApiResponseLog", desc: "API call response log. Records request/response payloads and status codes for debugging and audit." },
+        { name: "PortalUploadQueue", desc: "Portal data upload queue. Manages batch upload jobs to external portals/registries." },
+        { name: "AttachmentStore", desc: "File attachment storage. Stores uploaded documents (reports, donor photos, certificates) as binary or with file path." }
+      ]
+    }
+  ]
+};
+
+const SP_MAP = {
+  UserMaster: [
+    { name: "fn_user_create", args: "centerId, username, displayName, email, phone, passwordHash, passwordSalt, createdBy", desc: "Creates a new user account with hashed password." },
+    { name: "fn_user_update", args: "userId, displayName, email, phone, updatedBy", desc: "Updates user profile fields (name, email, phone)." },
+    { name: "fn_user_get_by_id", args: "userId", desc: "Returns a single user by ID." },
+    { name: "fn_user_get_by_username", args: "username", desc: "Looks up a user by username (for login)." },
+    { name: "fn_user_search", args: "centerId, keyword, page, size", desc: "Paginated search across users with keyword filter." },
+    { name: "fn_user_toggle_lock", args: "userId, lock", desc: "Locks or unlocks a user account." },
+    { name: "fn_user_update_login", args: "userId", desc: "Updates last login timestamp." },
+    { name: "fn_user_update_password", args: "userId, hash, salt", desc: "Updates user password hash and salt." },
+    { name: "fn_user_role_assign", args: "userId, roleId, centerId, assignedBy", desc: "Assigns a role to a user within a center." },
+    { name: "fn_user_role_remove", args: "userId, roleId", desc: "Removes a role from a user." },
+    { name: "fn_user_role_get_by_user", args: "userId", desc: "Returns all roles assigned to a user." }
+  ],
+  RoleMaster: [
+    { name: "fn_role_create", args: "centerId, name, desc, createdBy", desc: "Creates a new role with optional description." },
+    { name: "fn_role_get_all", args: "centerId", desc: "Returns all roles for a center." }
+  ],
+  PermissionMaster: [
+    { name: "fn_permission_get_all", args: "", desc: "Returns all available system permissions." }
+  ],
+  RolePermissionMap: [
+    { name: "fn_role_permission_assign", args: "roleId, permissionId, centerId, assignedBy", desc: "Grants a permission to a role." },
+    { name: "fn_role_permission_remove", args: "roleId, permissionId, centerId", desc: "Revokes a permission from a role." },
+    { name: "fn_role_permission_get_by_role", args: "roleId, centerId", desc: "Returns all permissions assigned to a role." }
+  ],
+  UserRoleMap: [
+    { name: "fn_user_role_assign", args: "userId, roleId, centerId, assignedBy", desc: "Assigns role to user." },
+    { name: "fn_user_role_remove", args: "userId, roleId", desc: "Removes user-role assignment." },
+    { name: "fn_user_role_get_by_user", args: "userId", desc: "Gets roles for a user." }
+  ],
+  LoginHistory: [
+    { name: "fn_login_history_create", args: "userId, centerId, ip, agent", desc: "Records a login event." },
+    { name: "fn_login_history_logout", args: "loginId", desc: "Records logout time for a login session." }
+  ],
+  AuditLog: [
+    { name: "fn_audit_log", args: "propertyOwnerId, userId, action, tableName, recordId, details, oldVal, newVal, ip, agent", desc: "Inserts an audit log entry." }
+  ],
+  CenterUserMap: [
+    { name: "fn_center_user_map", args: "centerId, userId, roleId", desc: "Maps a user to a center with a role." },
+    { name: "fn_center_user_get_users", args: "centerId", desc: "Returns all users mapped to a center." }
+  ],
+  UserSettings: [
+    { name: "fn_user_setting_get", args: "userId, key", desc: "Gets a user preference value." },
+    { name: "fn_user_setting_set", args: "userId, key, value", desc: "Sets a user preference value." }
+  ],
+  BloodCenterMaster: [
+    { name: "fn_center_config_get_all", args: "centerId", desc: "Returns all configuration for a center (maps center info)." },
+    { name: "fn_center_config_set", args: "centerId, key, value", desc: "Sets a center configuration value." }
+  ],
+  BranchMaster: [
+    { name: "fn_branch_create", args: "centerId, code, name, addressLine1/2, city, state, pincode, phone, email, createdBy", desc: "Creates a new branch." },
+    { name: "fn_branch_update", args: "branchId, code, name, addressLine1/2, city, state, pincode, phone, email", desc: "Updates branch details." },
+    { name: "fn_branch_get_by_id", args: "branchId", desc: "Returns a branch by ID." },
+    { name: "fn_branch_get_by_center", args: "centerId", desc: "Returns all branches for a center." },
+    { name: "fn_branch_delete", args: "branchId", desc: "Deletes a branch." }
+  ],
+  DepartmentMaster: [
+    { name: "fn_department_create", args: "centerId, code, name, description", desc: "Creates a new department." },
+    { name: "fn_department_update", args: "departmentId, code, name, description", desc: "Updates department details." },
+    { name: "fn_department_get_by_id", args: "departmentId", desc: "Returns a department by ID." },
+    { name: "fn_department_get_by_center", args: "centerId", desc: "Returns all departments for a center." },
+    { name: "fn_department_delete", args: "departmentId", desc: "Deletes a department." }
+  ],
+  DesignationMaster: [
+    { name: "fn_designation_create", args: "centerId, name", desc: "Creates a new designation." },
+    { name: "fn_designation_update", args: "designationId, name", desc: "Updates a designation name." },
+    { name: "fn_designation_get_by_id", args: "designationId", desc: "Returns a designation by ID." },
+    { name: "fn_designation_get_by_center", args: "centerId", desc: "Returns all designations for a center." },
+    { name: "fn_designation_delete", args: "designationId", desc: "Deletes a designation." }
+  ],
+  EmployeeMaster: [
+    { name: "fn_employee_create", args: "centerId, code, firstName, lastName, email, phone, designation, departmentId, joinDate, createdBy", desc: "Creates a new employee record." },
+    { name: "fn_employee_update", args: "employeeId, code, firstName, lastName, email, phone, designation, departmentId, joinDate", desc: "Updates employee details." },
+    { name: "fn_employee_get_by_id", args: "employeeId", desc: "Returns an employee by ID." },
+    { name: "fn_employee_get_by_center", args: "centerId", desc: "Returns all employees for a center." },
+    { name: "fn_employee_toggle_active", args: "employeeId", desc: "Toggles employee active/inactive status." },
+    { name: "fn_employee_delete", args: "employeeId", desc: "Deletes an employee record." }
+  ],
+  DeviceMaster: [],
+  FridgeStorageMaster: [],
+  DonorMaster: [
+    { name: "fn_donor_create", args: "centerId, code, firstName, lastName, gender, dob, bloodGroup, phone, email, aadhaar, addr1, addr2, city, pincode, occupation, language, createdBy", desc: "Registers a new donor." },
+    { name: "fn_donor_update", args: "donorId, firstName, lastName, gender, dob, bloodGroup, phone, email, aadhaar, addr1, addr2, city, pincode, occupation, language, updatedBy", desc: "Updates donor details." },
+    { name: "fn_donor_get_by_id", args: "donorId", desc: "Returns a donor by ID." },
+    { name: "fn_donor_get_by_phone", args: "centerId, phone", desc: "Searches donors by phone number." },
+    { name: "fn_donor_search", args: "centerId, keyword, bloodGroup, gender, page, size", desc: "Paginated donor search with filters." },
+    { name: "fn_donor_update_donation_stats", args: "donorId", desc: "Updates aggregate donation stats for a donor." }
+  ],
+  DonorHealthHistory: [
+    { name: "fn_donor_health_create", args: "centerId, donorId, weight, temp, bp, hemoglobin, pulse, remarks, recordedBy", desc: "Records a pre-donation health screening." },
+    { name: "fn_donor_health_get_by_donor", args: "donorId", desc: "Returns health history for a donor." }
+  ],
+  DonorDonationHistory: [
+    { name: "fn_donor_donation_create", args: "centerId, donorId, collectionId, donationType, volume, bagNo, remarks, createdBy", desc: "Records a donation event for a donor." },
+    { name: "fn_donor_donation_get_by_donor", args: "donorId", desc: "Returns donation history for a donor." }
+  ],
+  DeferralRecord: [
+    { name: "fn_deferral_create", args: "centerId, donorId, reason, until, notes, createdBy", desc: "Creates a donor deferral record." },
+    { name: "fn_deferral_get_active", args: "donorId", desc: "Returns active (current) deferrals for a donor." }
+  ],
+  DonorAppointment: [
+    { name: "fn_appointment_create", args: "centerId, donorId, date, slot, createdBy", desc: "Schedules a donor appointment." },
+    { name: "fn_appointment_update_status", args: "id, status", desc: "Updates appointment status (Scheduled/Completed/Cancelled)." }
+  ],
+  DonorCommunicationLog: [
+    { name: "fn_donor_comm_log", args: "centerId, donorId, channel, message, sentBy, status", desc: "Logs a donor communication event." }
+  ],
+  BloodCampMaster: [
+    { name: "fn_camp_create", args: "centerId, code, name, organizerId, venue, city, date, start, end, expected, createdBy", desc: "Creates a new blood donation camp." },
+    { name: "fn_camp_get_by_id", args: "campId", desc: "Returns a camp by ID." },
+    { name: "fn_camp_get_upcoming", args: "centerId", desc: "Returns upcoming camps for a center." }
+  ],
+  CampOrganizer: [
+    { name: "fn_camp_organizer_create", args: "centerId, name, contact, phone, email, address", desc: "Creates a new camp organiser entry." }
+  ],
+  CampDonorMap: [
+    { name: "fn_camp_register_donor", args: "campId, donorId, centerId", desc: "Registers a donor for a camp event." }
+  ],
+  CampInventory: [ { name: "fn_camp_inventory_create", args: "campId, itemName, quantity, unit", desc: "Adds an inventory item to a camp." } ],
+  CampExpenseLog: [ { name: "fn_camp_expense_create", args: "campId, category, amount, notes", desc: "Records a camp expense." } ],
+  CollectionRecord: [
+    { name: "fn_collection_create", args: "centerId, branchId, campId, donorId, bagNo, barcode, lotNo, volume, collectorId, locationType, start, end, notes, createdBy", desc: "Records a blood collection event." },
+    { name: "fn_collection_get_by_center", args: "centerId", desc: "Returns all collections for a center." }
+  ],
+  CollectionStaffMap: [
+    { name: "fn_collection_assign_staff", args: "collectionId, employeeId, role", desc: "Assigns staff to a collection event." }
+  ],
+  BloodTestRecord: [
+    { name: "fn_test_record_create", args: "centerId, collectionId, bagNo, performedBy", desc: "Creates a new test record for a blood bag." },
+    { name: "fn_test_record_update_status", args: "id, status", desc: "Updates test record status (Pending/Completed)." }
+  ],
+  BloodTestResult: [
+    { name: "fn_test_result_add", args: "centerId, testRecordId, bagId, testCode, result, method, kitLot, performedBy, remarks", desc: "Adds an individual test result (HIV, HBV, etc.)." },
+    { name: "fn_test_result_get_by_record", args: "testRecordId", desc: "Returns all test results for a record." }
+  ],
+  TestKitMaster: [
+    { name: "fn_test_kit_create", args: "centerId, name, manufacturer, lotNo, expiry", desc: "Adds a new test kit to inventory." },
+    { name: "fn_test_kit_get_available", args: "centerId", desc: "Returns available test kits for a center." }
+  ],
+  TestTechnicianMap: [],
+  QualityControlRecord: [
+    { name: "fn_qc_create", args: "centerId, deviceId, detail, performedBy", desc: "Records a quality control check for a device." }
+  ],
+  BloodBagMaster: [
+    { name: "fn_bag_get_by_number", args: "bagNo", desc: "Looks up a blood bag by its unique number." },
+    { name: "fn_bag_update_status", args: "bagId, status", desc: "Updates bag status (Available/Used/Expired/Discarded)." }
+  ],
+  ComponentTypeMaster: [ { name: "fn_component_type_create", args: "code, desc", desc: "Creates a blood component type definition." } ],
+  ComponentMaster: [
+    { name: "fn_component_get_available", args: "centerId, bloodGroup", desc: "Returns available components filtered by blood group." },
+    { name: "fn_component_update_status", args: "componentId, status", desc: "Updates component status (Available/Issued/Discarded/Transferred)." }
+  ],
+  ComponentPreparation: [
+    { name: "fn_component_prepare", args: "centerId, bagId, componentType, volume, preparedBy", desc: "Prepares a component from a blood bag." }
+  ],
+  ComponentPreparationLog: [],
+  ComponentStorage: [
+    { name: "fn_component_store", args: "centerId, componentId, fridgeId, location, notes", desc: "Stores a component in a fridge location." }
+  ],
+  ComponentTransferLog: [
+    { name: "fn_component_transfer", args: "centerId, componentId, toCenterId, transportDetails, createdBy", desc: "Transfers a component to another center." }
+  ],
+  DiscardRecord: [
+    { name: "fn_component_discard", args: "centerId, bagId, componentId, reason, discardedBy, notes", desc: "Records component disposal/discard." }
+  ],
+  InventoryStock: [
+    { name: "fn_inventory_upsert", args: "centerId, componentType, bloodGroup, available, reserved, quarantined, updatedBy", desc: "Updates or inserts inventory stock levels." },
+    { name: "fn_inventory_get_stock", args: "centerId", desc: "Returns current stock levels for a center." },
+    { name: "fn_inventory_get_summary", args: "centerId", desc: "Returns aggregated inventory summary." }
+  ],
+  InventoryTransactionLog: [
+    { name: "fn_inventory_transaction_log", args: "centerId, txType, refType, refId, componentId, bagId, qty, from, to, notes, createdBy", desc: "Logs an inventory transaction." }
+  ],
+  HospitalMaster: [
+    { name: "fn_hospital_create", args: "centerId, code, name, address, contact, phone, email", desc: "Registers a new hospital." },
+    { name: "fn_hospital_get_by_center", args: "centerId", desc: "Returns all hospitals for a center." }
+  ],
+  PatientRequest: [
+    { name: "fn_patient_request_create", args: "centerId, hospitalId, patientName, age, gender, bloodGroup, componentType, units, urgency, requestedBy", desc: "Creates a patient blood/component request." },
+    { name: "fn_patient_request_get_pending", args: "centerId", desc: "Returns pending patient requests." }
+  ],
+  CrossMatchRecord: [
+    { name: "fn_crossmatch_create", args: "centerId, requestId, componentId, result, method, performedBy", desc: "Records a cross-match test result." }
+  ],
+  IssueRecord: [
+    { name: "fn_issue_create", args: "centerId, componentId, bagId, patientName, hospitalId, issuedBy, issueType, slipNo, notes", desc: "Creates a blood/component issue record." },
+    { name: "fn_issue_get_by_center", args: "centerId", desc: "Returns all issue records for a center." }
+  ],
+  ReturnRecord: [
+    { name: "fn_return_create", args: "centerId, issueId, componentId, reason, createdBy", desc: "Records a returned component from a hospital." }
+  ],
+  ReplacementDonor: [
+    { name: "fn_replacement_donor_register", args: "centerId, requestId, donorId", desc: "Registers a replacement donor for a request." }
+  ],
+  RequestStatusLog: [
+    { name: "fn_request_status_log", args: "requestId, oldStatus, newStatus, changedBy, notes", desc: "Records a request status change event." }
+  ],
+  ServiceChargeMaster: [
+    { name: "fn_service_charge_create", args: "centerId, code, name, amount, active", desc: "Creates a service charge entry." }
+  ],
+  BillingTransaction: [
+    { name: "fn_billing_create", args: "centerId, invoiceNo, patientId, total, tax, discount, paymentStatus, paymentMode, createdBy", desc: "Creates a billing invoice." },
+    { name: "fn_billing_get_by_center", args: "centerId", desc: "Returns all billing transactions for a center." }
+  ],
+  InvoiceDetail: [
+    { name: "fn_invoice_detail_add", args: "billingId, componentId, serviceChargeId, serviceName, qty, unitPrice", desc: "Adds a line item to an invoice." }
+  ],
+  PaymentRecord: [
+    { name: "fn_payment_create", args: "billingId, centerId, amount, mode, reference, createdBy", desc: "Records a payment against an invoice." }
+  ],
+  ExpenseMaster: [
+    { name: "fn_expense_create", args: "centerId, category, amount, notes, createdBy", desc: "Records an operational expense." }
+  ],
+  EmergencyRequest: [
+    { name: "fn_emergency_request_create", args: "centerId, hospitalId, patientName, bloodGroup, componentType, units, requestedBy, notes", desc: "Creates an emergency blood request." },
+    { name: "fn_emergency_request_get_pending", args: "centerId", desc: "Returns pending emergency requests." }
+  ],
+  EmergencyDonorResponse: [
+    { name: "fn_emergency_donor_response", args: "emergencyId, donorId, contact", desc: "Records a donor response to an emergency request." }
+  ],
+  NotificationMaster: [
+    { name: "fn_notification_create", args: "centerId, type, title, body, audience", desc: "Creates a system notification." }
+  ],
+  SmsTemplateMaster: [
+    { name: "fn_sms_template_create", args: "centerId, code, text", desc: "Creates an SMS template." },
+    { name: "fn_sms_template_update", args: "templateId, code, text", desc: "Updates an SMS template." },
+    { name: "fn_sms_template_get_by_id", args: "templateId", desc: "Returns an SMS template by ID." },
+    { name: "fn_sms_template_get_by_center", args: "centerId", desc: "Returns all SMS templates for a center." },
+    { name: "fn_sms_template_delete", args: "templateId", desc: "Deletes an SMS template." }
+  ],
+  EmailTemplateMaster: [
+    { name: "fn_email_template_create", args: "centerId, code, subject, body", desc: "Creates an email template." },
+    { name: "fn_email_template_update", args: "templateId, code, subject, body", desc: "Updates an email template." },
+    { name: "fn_email_template_get_by_id", args: "templateId", desc: "Returns an email template by ID." },
+    { name: "fn_email_template_get_by_center", args: "centerId", desc: "Returns all email templates for a center." },
+    { name: "fn_email_template_delete", args: "templateId", desc: "Deletes an email template." }
+  ],
+  OutboxLog: [
+    { name: "fn_outbox_send", args: "centerId, channel, recipient, message", desc: "Sends a message and logs it in the outbox." }
+  ],
+  NewsletterSubscription: [
+    { name: "fn_newsletter_create", args: "centerId, email", desc: "Adds a newsletter subscriber." },
+    { name: "fn_newsletter_update", args: "subscriptionId, email, isActive", desc: "Updates subscriber details." },
+    { name: "fn_newsletter_get_by_id", args: "subscriptionId", desc: "Returns a subscription by ID." },
+    { name: "fn_newsletter_get_by_center", args: "centerId", desc: "Returns all subscriptions for a center." },
+    { name: "fn_newsletter_toggle_active", args: "subscriptionId", desc: "Toggles subscriber active status." },
+    { name: "fn_newsletter_delete", args: "subscriptionId", desc: "Deletes a subscription." }
+  ],
+  SystemConfig: [
+    { name: "fn_system_config_get_all", args: "centerId", desc: "Returns all system-wide configuration values." },
+    { name: "fn_config_get", args: "centerId, key", desc: "Gets a single config value by key." },
+    { name: "fn_config_set", args: "centerId, key, value, desc", desc: "Sets a system configuration value." }
+  ],
+  CenterConfig: [
+    { name: "fn_center_config_get_all", args: "centerId", desc: "Returns all center-specific configurations." },
+    { name: "fn_center_config_set", args: "centerId, key, value", desc: "Sets a center-specific configuration value." }
+  ],
+  SequenceCounters: [
+    { name: "fn_sequence_next", args: "centerId, seqName", desc: "Generates the next value in a sequence (auto-numbering)." }
+  ],
+  BackupLog: [
+    { name: "fn_backup_log", args: "centerId, type, path, status", desc: "Logs a database backup event." }
+  ],
+  ErrorLog: [
+    { name: "fn_error_log", args: "centerId, message, stack", desc: "Logs an application error." }
+  ],
+  ChangeLog: [
+    { name: "fn_change_log", args: "centerId, entity, entityId, changeType, changeData, changedBy", desc: "Records a data change event for audit." }
+  ],
+  MonthlyReportLog: [
+    { name: "fn_report_monthly_generate", args: "centerId, year, month", desc: "Generates and logs a monthly report." }
+  ],
+  // Shared reporting SPs
+  _shared_reports: [
+    { name: "fn_report_donor_summary", args: "centerId, fromDate, toDate", desc: "Aggregated donor summary report (registrations, donations)." },
+    { name: "fn_report_inventory_summary", args: "centerId", desc: "Current inventory levels by component type and blood group." },
+    { name: "fn_report_camp_summary", args: "centerId, fromDate, toDate", desc: "Camp activity summary (camps held, donors, collections)." }
+  ],
+  LookupType: [
+    { name: "fn_lookup_type_create", args: "code, name, desc", desc: "Creates a new lookup type category." },
+    { name: "fn_lookup_type_get_all", args: "", desc: "Returns all lookup types." },
+    { name: "fn_lookup_get_by_type", args: "typeCode", desc: "Returns lookup values by type code." }
+  ],
+  LookupValue: [
+    { name: "fn_lookup_value_create", args: "typeId, centerId, code, text, sort, active", desc: "Creates a new lookup value." },
+    { name: "fn_lookup_value_get_all", args: "typeId, centerId", desc: "Returns all values for a lookup type." }
+  ],
+  ApiIntegrationMaster: [
+    { name: "fn_api_integration_create", args: "centerId, name, url, apiKey, username, password", desc: "Creates an API integration configuration." }
+  ],
+  ApiResponseLog: [
+    { name: "fn_api_response_log", args: "centerId, integrationId, request, response, statusCode", desc: "Logs an API call and response." }
+  ],
+  InventoryTransactionLog: [
+    // already covered
+  ],
+  // Empty sets for tables without SPs
+  FeedbackMaster: [],
+  DataUploadHistory: [],
+  ExportFileLog: [],
+  ReportTemplate: [],
+  AnalyticsDashboardData: [],
+  PortalUploadQueue: [],
+  AttachmentStore: [],
+  HolidayMaster: [],
+  ReasonMaster: [],
+  BloodGroupMaster: [],
+  CityMaster: [],
+  DistrictMaster: [],
+  StateMaster: [],
+  PincodeMaster: [],
+  SchedulerJobLog: [],
+  ComponentPreparationLog: [],
+  CampInventory: [
+    { name: "fn_camp_inventory_create", args: "campId, itemName, quantity, unit", desc: "Adds an inventory item to a camp." },
+    { name: "fn_camp_inventory_update", args: "inventoryId, itemName, quantity, unit", desc: "Updates a camp inventory item." },
+    { name: "fn_camp_inventory_get_by_camp", args: "campId", desc: "Lists inventory items for a camp." },
+    { name: "fn_camp_inventory_get_by_center", args: "centerId", desc: "Lists inventory items across camps of a center (joins BloodCampMaster)." },
+    { name: "fn_camp_inventory_delete", args: "inventoryId", desc: "Deletes a camp inventory item." }
+  ],
+  CampExpenseLog: [
+    { name: "fn_camp_expense_create", args: "campId, category, amount, notes", desc: "Records a camp expense." },
+    { name: "fn_camp_expense_update", args: "expenseId, category, amount, notes", desc: "Updates a camp expense." },
+    { name: "fn_camp_expense_get_by_camp", args: "campId", desc: "Lists expenses for a camp." },
+    { name: "fn_camp_expense_get_by_center", args: "centerId", desc: "Lists expenses across camps of a center (joins BloodCampMaster)." },
+    { name: "fn_camp_expense_delete", args: "expenseId", desc: "Deletes a camp expense." }
+  ],
+  TestTechnicianMap: [],
+  ComponentTypeMaster: [
+    { name: "fn_component_type_create", args: "code, desc", desc: "Creates a blood component type definition." },
+    { name: "fn_component_type_update", args: "id, code, desc", desc: "Updates a component type." },
+    { name: "fn_component_type_get_all", args: "", desc: "Returns all component types." },
+    { name: "fn_component_type_get_by_id", args: "id", desc: "Returns a single component type by ID." },
+    { name: "fn_component_type_delete", args: "id", desc: "Deletes a component type." }
+  ],
+  DeviceMaster: [
+    { name: "fn_device_create", args: "centerId, name, type, serial, purchaseDate, warrantyEnd", desc: "Creates a new device/equipment record." },
+    { name: "fn_device_update", args: "deviceId, name, type, serial, purchaseDate, warrantyEnd", desc: "Updates device details." },
+    { name: "fn_device_get_by_id", args: "deviceId", desc: "Returns a device by ID." },
+    { name: "fn_device_get_by_center", args: "centerId", desc: "Returns all devices for a center." },
+    { name: "fn_device_delete", args: "deviceId", desc: "Deletes a device record." }
+  ],
+  FridgeStorageMaster: [
+    { name: "fn_fridge_create", args: "centerId, code, name, capacity, location, tempLog", desc: "Creates a new cold storage unit." },
+    { name: "fn_fridge_update", args: "fridgeId, code, name, capacity, location, tempLog", desc: "Updates fridge storage details." },
+    { name: "fn_fridge_get_by_id", args: "fridgeId", desc: "Returns a fridge by ID." },
+    { name: "fn_fridge_get_by_center", args: "centerId", desc: "Returns all fridges for a center." },
+    { name: "fn_fridge_delete", args: "fridgeId", desc: "Deletes a fridge record." }
+  ]
+};
+
+function build() {
+  let totalTables = 0;
+  const sectionsEl = document.getElementById('sections');
+
+  // Count SPs by scanning all map entries
+  function countAllSps() {
+    let n = 0;
+    for (const k in SP_MAP) {
+      if (k !== '_shared_reports' && Array.isArray(SP_MAP[k])) n += SP_MAP[k].length;
+    }
+    n += (SP_MAP._shared_reports || []).length;
+    return n;
+  }
+
+  DATA.modules.forEach(mod => {
+    const sec = document.createElement('div');
+    sec.className = 'section';
+    totalTables += mod.tables.length;
+
+    const header = document.createElement('div');
+    header.className = 'section-header';
+    header.innerHTML = `<span>${mod.name}</span><span class="count">${mod.tables.length} tables</span>`;
+    header.addEventListener('click', () => { body.classList.toggle('open'); });
+
+    const body = document.createElement('div');
+    body.className = 'section-body';
+
+    const table = document.createElement('table');
+    const thead = document.createElement('thead');
+    thead.innerHTML = '<tr><th style="width:18%">Table</th><th style="width:28%">Description</th><th style="width:54%">Stored Procedures</th></tr>';
+    table.appendChild(thead);
+    const tbody = document.createElement('tbody');
+
+    mod.tables.forEach(t => {
+      const sps = SP_MAP[t.name] || [];
+      const row = document.createElement('tr');
+      let spHtml = '';
+
+      // Base SPs for this table
+      let displaySps = [...sps];
+
+      // Add shared report SPs to relevant tables
+      if (t.name === 'DonorMaster') {
+        const r = (SP_MAP._shared_reports || []).filter(s => s.name.includes('donor'));
+        displaySps = displaySps.concat(r);
+      } else if (t.name === 'InventoryStock') {
+        const r = (SP_MAP._shared_reports || []).filter(s => s.name.includes('inventory'));
+        displaySps = displaySps.concat(r);
+      } else if (t.name === 'BloodCampMaster') {
+        const r = (SP_MAP._shared_reports || []).filter(s => s.name.includes('camp'));
+        displaySps = displaySps.concat(r);
+      }
+
+      if (displaySps.length > 0) {
+        spHtml = '<ul class="sp-list">';
+        displaySps.forEach(sp => {
+          spHtml += `<li><code class="sname">${sp.name}</code> <span class="sp-desc">${sp.desc}</span></li>`;
+        });
+        spHtml += '</ul>';
+      } else {
+        spHtml = '<span class="empty">No stored procedures (read-only reference or log table)</span>';
+      }
+
+      row.innerHTML = `
+        <td><span class="tname">${t.name}</span></td>
+        <td class="desc">${t.desc}</td>
+        <td>${spHtml}</td>
+      `;
+      tbody.appendChild(row);
+    });
+
+    table.appendChild(tbody);
+    body.appendChild(table);
+    sec.appendChild(header);
+    sec.appendChild(body);
+    sectionsEl.appendChild(sec);
+  });
+
+  document.getElementById('stats').innerHTML = `
+    <div class="stat-card"><div class="num">${totalTables}</div><div class="lbl">Tables</div></div>
+    <div class="stat-card"><div class="num">${countAllSps()}</div><div class="lbl">Stored Procedures</div></div>
+    <div class="stat-card"><div class="num">${DATA.modules.length}</div><div class="lbl">Modules</div></div>
+  `;
+}
+
+document.addEventListener('DOMContentLoaded', build);
+</script>
+</body>
+</html>

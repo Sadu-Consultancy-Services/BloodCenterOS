@@ -1,0 +1,36 @@
+@model Employee
+@{ ViewBag.Title = "Add Employee"; ViewBag.ActiveMenu = "Employees"; }
+<div class="page-header">
+  <div><h1 class="page-title">Add Employee <small>Register a new employee</small></h1></div>
+  <a href="@Url.Action("Index")" class="btn btn-outline-secondary"><i class="bi bi-arrow-left"></i> Back</a>
+</div>
+<form method="post">
+  <div class="card mb-3">
+    <div class="card-header"><h6>Employee Details</h6></div>
+    <div class="card-body">
+      <div class="row g-2">
+        <div class="col-md-4"><label class="form-label">Employee Code</label><input type="text" name="EmployeeCode" class="form-control" value="@Model.EmployeeCode" /></div>
+        <div class="col-md-4"><label class="form-label">First Name <span class="text-danger">*</span></label><input type="text" name="FirstName" class="form-control" value="@Model.FirstName" required /></div>
+        <div class="col-md-4"><label class="form-label">Last Name</label><input type="text" name="LastName" class="form-control" value="@Model.LastName" /></div>
+        <div class="col-md-4"><label class="form-label">Email</label><input type="email" name="Email" class="form-control" value="@Model.Email" /></div>
+        <div class="col-md-4"><label class="form-label">Phone</label><input type="tel" name="Phone" class="form-control" value="@Model.Phone" /></div>
+        <div class="col-md-4">
+          <label class="form-label">Department</label>
+          <select name="DepartmentId" class="form-select">
+            <option value="">Select</option>
+            @foreach (var dept in (ViewBag.Departments as List<Department>) ?? new())
+            {
+              <option value="@dept.DepartmentId" selected="@(Model.DepartmentId == dept.DepartmentId)">@dept.DepartmentName</option>
+            }
+          </select>
+        </div>
+        <div class="col-md-4"><label class="form-label">Designation</label><input type="text" name="Designation" class="form-control" value="@Model.Designation" /></div>
+        <div class="col-md-4"><label class="form-label">Join Date</label><input type="date" name="JoinDate" class="form-control" value="@Model.JoinDate?.ToString("yyyy-MM-dd")" /></div>
+      </div>
+    </div>
+  </div>
+  <div class="d-flex gap-2 justify-content-end">
+    <a href="@Url.Action("Index")" class="btn btn-outline-secondary">Cancel</a>
+    <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg"></i> Save</button>
+  </div>
+</form>

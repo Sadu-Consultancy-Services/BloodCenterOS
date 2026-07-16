@@ -1,0 +1,23 @@
+@model CampInventory
+@{ ViewBag.Title = "Add Inventory Item"; ViewBag.ActiveMenu = "CampInventory"; }
+<div class="page-header">
+  <div><h1 class="page-title">Add Inventory Item <small>Record an item for a camp</small></h1></div>
+  <a href="@Url.Action("Index", new { campId = ViewBag.CampId })" class="btn btn-outline-secondary"><i class="bi bi-arrow-left"></i> Back</a>
+</div>
+<form method="post">
+  <div class="card mb-3">
+    <div class="card-header"><h6>Item Details</h6></div>
+    <div class="card-body">
+      <div class="row g-2">
+        <div class="col-md-6"><label class="form-label">Camp ID <span class="text-danger">*</span></label><input type="number" name="CampId" class="form-control" value="@Model.CampId" required /></div>
+        <div class="col-md-6"><label class="form-label">Item Name <span class="text-danger">*</span></label><input type="text" name="ItemName" class="form-control" value="@Model.ItemName" required /></div>
+        <div class="col-md-6"><label class="form-label">Quantity</label><input type="number" name="Quantity" class="form-control" value="@Model.Quantity" /></div>
+        <div class="col-md-6"><label class="form-label">Unit</label><input type="text" name="Unit" class="form-control" value="@Model.Unit" placeholder="e.g. Box, Ltr" /></div>
+      </div>
+    </div>
+  </div>
+  <div class="d-flex gap-2 justify-content-end">
+    <a href="@Url.Action("Index", new { campId = ViewBag.CampId })" class="btn btn-outline-secondary">Cancel</a>
+    <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg"></i> Save</button>
+  </div>
+</form>

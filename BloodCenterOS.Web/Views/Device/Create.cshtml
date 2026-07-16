@@ -1,0 +1,24 @@
+@model Device
+@{ ViewBag.Title = "Add Device"; ViewBag.ActiveMenu = "Devices"; }
+<div class="page-header">
+  <div><h1 class="page-title">Add Device <small>Register a new device</small></h1></div>
+  <a href="@Url.Action("Index")" class="btn btn-outline-secondary"><i class="bi bi-arrow-left"></i> Back</a>
+</div>
+<form method="post">
+  <div class="card mb-3">
+    <div class="card-header"><h6>Device Details</h6></div>
+    <div class="card-body">
+      <div class="row g-2">
+        <div class="col-md-6"><label class="form-label">Device Name <span class="text-danger">*</span></label><input type="text" name="DeviceName" class="form-control" value="@Model.DeviceName" required /></div>
+        <div class="col-md-3"><label class="form-label">Device Type</label><input type="text" name="DeviceType" class="form-control" value="@Model.DeviceType" placeholder="e.g., Centrifuge" /></div>
+        <div class="col-md-3"><label class="form-label">Serial Number</label><input type="text" name="SerialNumber" class="form-control" value="@Model.SerialNumber" /></div>
+        <div class="col-md-4"><label class="form-label">Purchase Date</label><input type="date" name="PurchaseDate" class="form-control" value="@Model.PurchaseDate?.ToString("yyyy-MM-dd")" /></div>
+        <div class="col-md-4"><label class="form-label">Warranty End Date</label><input type="date" name="WarrantyEndDate" class="form-control" value="@Model.WarrantyEndDate?.ToString("yyyy-MM-dd")" /></div>
+      </div>
+    </div>
+  </div>
+  <div class="d-flex gap-2 justify-content-end">
+    <a href="@Url.Action("Index")" class="btn btn-outline-secondary">Cancel</a>
+    <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg"></i> Save</button>
+  </div>
+</form>

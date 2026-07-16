@@ -27,7 +27,7 @@
   @* ── General (Center Config) ── *@
   <div class="tab-pane fade show active" id="tab-general">
     <div class="card mb-3">
-      <div class="card-header d-flex justify-content-between"><h6>Blood Center Settings</h6><button class="btn btn-sm btn-primary" onclick="saveCenterConfig()"><i class="bi bi-check-lg"></i> Save All</button></div>
+      <div class="card-header d-flex justify-content-between"><h6>Blood Center Information</h6><button class="btn btn-sm btn-primary" onclick="saveCenterConfig()"><i class="bi bi-check-lg"></i> Save All</button></div>
       <div class="card-body" id="centerConfigContainer">
         <div class="text-center text-muted py-3"><i class="bi bi-arrow-clockwise"></i> Loading...</div>
       </div>
@@ -78,16 +78,30 @@
 @section Scripts {
 <script>
 // ── Center Config ──
+var centerConfigFields = [
+  { key: 'center_name', label: 'Center Name', col: '6' },
+  { key: 'center_code', label: 'Center Code', col: '3' },
+  { key: 'license_number', label: 'License Number', col: '3' },
+  { key: 'address_line1', label: 'Address Line 1', col: '6' },
+  { key: 'address_line2', label: 'Address Line 2', col: '6' },
+  { key: 'city', label: 'City', col: '4' },
+  { key: 'state', label: 'State', col: '4' },
+  { key: 'pincode', label: 'Pincode', col: '4' },
+  { key: 'phone', label: 'Phone', col: '4' },
+  { key: 'email', label: 'Email', col: '4' },
+  { key: 'registration_number', label: 'Registration Number', col: '4' }
+];
+
 function loadCenterConfig() {
   fetch('/Home/SettingsCenterConfig')
     .then(r=>r.json()).then(d=>{
       var c = document.getElementById('centerConfigContainer');
-      if(!d||!d.data||!d.data.length){ c.innerHTML='<div class="text-muted text-center py-3">No settings configured.</div>'; return; }
+      var map = {};
+      if(d&&d.data) d.data.forEach(function(item){ map[item.configKey] = item.configValue; });
       var html = '<div class="row g-2">';
-      d.data.forEach(function(item) {
-        var label = item.configKey.replace(/_/g,' ').replace(/\b\w/g,l=>l.toUpperCase());
-        html += '<div class="col-md-4"><label class="form-label" style="font-size:11px">'+label+'</label>';
-        html += '<input type="text" class="form-control form-control-sm config-val" data-key="'+item.configKey+'" value="'+(item.configValue||'')+'" /></div>';
+      centerConfigFields.forEach(function(f) {
+        html += '<div class="col-md-'+f.col+'"><label class="form-label" style="font-size:11px">'+f.label+'</label>';
+        html += '<input type="text" class="form-control form-control-sm config-val" data-key="'+f.key+'" value="'+(map[f.key]||'')+'" /></div>';
       });
       html += '</div>';
       c.innerHTML = html;
@@ -103,7 +117,7 @@ function saveCenterConfig() {
     method: 'PUT',
     headers: {'Content-Type':'application/json'},
     body: JSON.stringify(vals)
-  }).then(r=>r.json()).then(d=>{ if(d.success) alert('Settings saved.'); }).catch(()=>alert('Failed.'));
+  }).then(r=>r.json()).then(d=>{ if(d.success) alert('Center information saved.'); }).catch(()=>alert('Failed.'));
 }
 
 // ── System Config ──

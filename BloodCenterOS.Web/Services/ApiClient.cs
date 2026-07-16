@@ -278,10 +278,199 @@ public class ApiClient
     public Task<ApiResponse<long>?> CreateLookupValueAsync(object body) =>
         PostAsync<long>("/api/settings/lookup-values", body);
 
+    // ── Branches ──
+    public Task<ApiResponse<List<Branch>>?> GetBranchesAsync() =>
+        GetAsync<List<Branch>>("/api/branches");
+
+    public Task<ApiResponse<Branch>?> GetBranchAsync(long id) =>
+        GetAsync<Branch>($"/api/branches/{id}");
+
+    public Task<ApiResponse<long>?> CreateBranchAsync(object body) =>
+        PostAsync<long>("/api/branches", body);
+
+    public Task<ApiResponse<object>?> UpdateBranchAsync(long id, object body) =>
+        PutAsync<object>($"/api/branches/{id}", body);
+
+    public Task<ApiResponse<object>?> DeleteBranchAsync(long id) =>
+        DeleteAsync<object>($"/api/branches/{id}");
+
+    // ── Departments ──
+    public Task<ApiResponse<List<Department>>?> GetDepartmentsAsync() =>
+        GetAsync<List<Department>>("/api/departments");
+
+    public Task<ApiResponse<Department>?> GetDepartmentAsync(long id) =>
+        GetAsync<Department>($"/api/departments/{id}");
+
+    public Task<ApiResponse<long>?> CreateDepartmentAsync(object body) =>
+        PostAsync<long>("/api/departments", body);
+
+    public Task<ApiResponse<object>?> UpdateDepartmentAsync(long id, object body) =>
+        PutAsync<object>($"/api/departments/{id}", body);
+
+    public Task<ApiResponse<object>?> DeleteDepartmentAsync(long id) =>
+        DeleteAsync<object>($"/api/departments/{id}");
+
+    // ── Designations ──
+    public Task<ApiResponse<List<Designation>>?> GetDesignationsAsync() =>
+        GetAsync<List<Designation>>("/api/designations");
+
+    public Task<ApiResponse<Designation>?> GetDesignationAsync(long id) =>
+        GetAsync<Designation>($"/api/designations/{id}");
+
+    public Task<ApiResponse<long>?> CreateDesignationAsync(object body) =>
+        PostAsync<long>("/api/designations", body);
+
+    public Task<ApiResponse<object>?> UpdateDesignationAsync(long id, object body) =>
+        PutAsync<object>($"/api/designations/{id}", body);
+
+    public Task<ApiResponse<object>?> DeleteDesignationAsync(long id) =>
+        DeleteAsync<object>($"/api/designations/{id}");
+
+    // ── Employees ──
+    public Task<ApiResponse<List<Employee>>?> GetEmployeesAsync() =>
+        GetAsync<List<Employee>>("/api/employees");
+
+    public Task<ApiResponse<Employee>?> GetEmployeeAsync(long id) =>
+        GetAsync<Employee>($"/api/employees/{id}");
+
+    public Task<ApiResponse<long>?> CreateEmployeeAsync(object body) =>
+        PostAsync<long>("/api/employees", body);
+
+    public Task<ApiResponse<object>?> UpdateEmployeeAsync(long id, object body) =>
+        PutAsync<object>($"/api/employees/{id}", body);
+
+    public Task<ApiResponse<object>?> ToggleEmployeeActiveAsync(long id) =>
+        PutAsync<object>($"/api/employees/{id}/toggle-active");
+
+    public Task<ApiResponse<object>?> DeleteEmployeeAsync(long id) =>
+        DeleteAsync<object>($"/api/employees/{id}");
+
+    // ── Devices ──
+    public Task<ApiResponse<List<Device>>?> GetDevicesAsync() =>
+        GetAsync<List<Device>>("/api/devices");
+
+    public Task<ApiResponse<Device>?> GetDeviceAsync(long id) =>
+        GetAsync<Device>($"/api/devices/{id}");
+
+    public Task<ApiResponse<long>?> CreateDeviceAsync(object body) =>
+        PostAsync<long>("/api/devices", body);
+
+    public Task<ApiResponse<object>?> UpdateDeviceAsync(long id, object body) =>
+        PutAsync<object>($"/api/devices/{id}", body);
+
+    public Task<ApiResponse<object>?> DeleteDeviceAsync(long id) =>
+        DeleteAsync<object>($"/api/devices/{id}");
+
+    // ── Fridges ──
+    public Task<ApiResponse<List<Fridge>>?> GetFridgesAsync() =>
+        GetAsync<List<Fridge>>("/api/fridges");
+
+    public Task<ApiResponse<Fridge>?> GetFridgeAsync(long id) =>
+        GetAsync<Fridge>($"/api/fridges/{id}");
+
+    public Task<ApiResponse<long>?> CreateFridgeAsync(object body) =>
+        PostAsync<long>("/api/fridges", body);
+
+    public Task<ApiResponse<object>?> UpdateFridgeAsync(long id, object body) =>
+        PutAsync<object>($"/api/fridges/{id}", body);
+
+    public Task<ApiResponse<object>?> DeleteFridgeAsync(long id) =>
+        DeleteAsync<object>($"/api/fridges/{id}");
+
+    // ── Newsletter Subscriptions ──
+    public Task<ApiResponse<List<NewsletterSubscription>>?> GetNewsletterSubscriptionsAsync() =>
+        GetAsync<List<NewsletterSubscription>>("/api/newsletter");
+
+    public Task<ApiResponse<NewsletterSubscription>?> GetNewsletterSubscriptionAsync(long id) =>
+        GetAsync<NewsletterSubscription>($"/api/newsletter/{id}");
+
+    public Task<ApiResponse<long>?> CreateNewsletterSubscriptionAsync(object body) =>
+        PostAsync<long>("/api/newsletter", body);
+
+    public Task<ApiResponse<object>?> UpdateNewsletterSubscriptionAsync(long id, object body) =>
+        PutAsync<object>($"/api/newsletter/{id}", body);
+
+    public Task<ApiResponse<object>?> ToggleNewsletterActiveAsync(long id) =>
+        PutAsync<object>($"/api/newsletter/{id}/toggle-active");
+
+    public Task<ApiResponse<object>?> DeleteNewsletterSubscriptionAsync(long id) =>
+        DeleteAsync<object>($"/api/newsletter/{id}");
+
+    // ── SMS Templates ──
+    public Task<ApiResponse<List<SmsTemplate>>?> GetSmsTemplatesAsync() =>
+        GetAsync<List<SmsTemplate>>("/api/sms-templates");
+
+    public Task<ApiResponse<SmsTemplate>?> GetSmsTemplateAsync(long id) =>
+        GetAsync<SmsTemplate>($"/api/sms-templates/{id}");
+
+    public Task<ApiResponse<long>?> CreateSmsTemplateAsync(object body) =>
+        PostAsync<long>("/api/sms-templates", body);
+
+    public Task<ApiResponse<object>?> UpdateSmsTemplateAsync(long id, object body) =>
+        PutAsync<object>($"/api/sms-templates/{id}", body);
+
+    public Task<ApiResponse<object>?> DeleteSmsTemplateAsync(long id) =>
+        DeleteAsync<object>($"/api/sms-templates/{id}");
+
+    // ── Email Templates ──
+    public Task<ApiResponse<List<EmailTemplate>>?> GetEmailTemplatesAsync() =>
+        GetAsync<List<EmailTemplate>>("/api/email-templates");
+
+    public Task<ApiResponse<EmailTemplate>?> GetEmailTemplateAsync(long id) =>
+        GetAsync<EmailTemplate>($"/api/email-templates/{id}");
+
+    public Task<ApiResponse<long>?> CreateEmailTemplateAsync(object body) =>
+        PostAsync<long>("/api/email-templates", body);
+
+    public Task<ApiResponse<object>?> UpdateEmailTemplateAsync(long id, object body) =>
+        PutAsync<object>($"/api/email-templates/{id}", body);
+
+    public Task<ApiResponse<object>?> DeleteEmailTemplateAsync(long id) =>
+        DeleteAsync<object>($"/api/email-templates/{id}");
+
     // ── Emergency ──
     public Task<ApiResponse<List<EmergencyRequest>>?> GetPendingEmergencyRequestsAsync() =>
         GetAsync<List<EmergencyRequest>>("/api/emergency/requests/pending");
 
     public Task<ApiResponse<EmergencyRequest>?> CreateEmergencyRequestAsync(EmergencyRequest request) =>
         PostAsync<EmergencyRequest>("/api/emergency/requests", request);
+
+    // ── Camp Inventory ──
+    public Task<ApiResponse<List<CampInventory>>?> GetCampInventoryAsync(long? campId = null) =>
+        GetAsync<List<CampInventory>>($"/api/camp-inventory{(campId.HasValue ? $"?campId={campId}" : "")}");
+
+    public Task<ApiResponse<long>?> CreateCampInventoryAsync(object body) =>
+        PostAsync<long>("/api/camp-inventory", body);
+
+    public Task<ApiResponse<object>?> UpdateCampInventoryAsync(long id, object body) =>
+        PutAsync<object>($"/api/camp-inventory/{id}", body);
+
+    public Task<ApiResponse<object>?> DeleteCampInventoryAsync(long id) =>
+        DeleteAsync<object>($"/api/camp-inventory/{id}");
+
+    // ── Camp Expenses ──
+    public Task<ApiResponse<List<CampExpense>>?> GetCampExpensesAsync(long? campId = null) =>
+        GetAsync<List<CampExpense>>($"/api/camp-expenses{(campId.HasValue ? $"?campId={campId}" : "")}");
+
+    public Task<ApiResponse<long>?> CreateCampExpenseAsync(object body) =>
+        PostAsync<long>("/api/camp-expenses", body);
+
+    public Task<ApiResponse<object>?> UpdateCampExpenseAsync(long id, object body) =>
+        PutAsync<object>($"/api/camp-expenses/{id}", body);
+
+    public Task<ApiResponse<object>?> DeleteCampExpenseAsync(long id) =>
+        DeleteAsync<object>($"/api/camp-expenses/{id}");
+
+    // ── Component Types ──
+    public Task<ApiResponse<List<ComponentType>>?> GetComponentTypesAsync() =>
+        GetAsync<List<ComponentType>>("/api/component-types");
+
+    public Task<ApiResponse<long>?> CreateComponentTypeAsync(object body) =>
+        PostAsync<long>("/api/component-types", body);
+
+    public Task<ApiResponse<object>?> UpdateComponentTypeAsync(long id, object body) =>
+        PutAsync<object>($"/api/component-types/{id}", body);
+
+    public Task<ApiResponse<object>?> DeleteComponentTypeAsync(long id) =>
+        DeleteAsync<object>($"/api/component-types/{id}");
 }

@@ -1,0 +1,31 @@
+@model List<CampInventory>
+@{ ViewBag.Title = "Camp Inventory"; ViewBag.ActiveMenu = "CampInventory"; }
+<div class="page-header">
+  <div><h1 class="page-title">Camp Inventory <small>Items used in blood donation camps</small></h1></div>
+  <a href="@Url.Action("Create", new { campId = ViewBag.CampId })" class="btn btn-primary"><i class="bi bi-plus"></i> Add Item</a>
+</div>
+@if (TempData["Success"] is string s) { <div class="alert alert-success py-2 px-3 mb-3">@s</div> }
+@if (TempData["Error"] is string e) { <div class="alert alert-danger py-2 px-3 mb-3">@e</div> }
+<div class="card">
+  <div class="card-body p-0">
+    <table class="table mb-0">
+      <thead><tr><th>Camp</th><th>Item</th><th>Quantity</th><th>Unit</th><th></th></tr></thead>
+      <tbody>
+        @if (!Model.Any()) { <tr><td colspan="5" class="text-center text-muted py-3">No inventory items found.</td></tr> }
+        @foreach (var item in Model)
+        {
+          <tr>
+            <td>@item.CampName</td><td>@item.ItemName</td>
+            <td>@(item.Quantity?.ToString() ?? "-")</td><td>@(item.Unit ?? "-")</td>
+            <td class="text-end">
+              <a href="@Url.Action("Edit", new { id = item.CampInventoryId })" class="btn btn-sm btn-outline-primary"><i class="bi bi-pencil"></i></a>
+              <form method="post" action="@Url.Action("Delete", new { id = item.CampInventoryId, campId = ViewBag.CampId })" style="display:inline" onsubmit="return confirm('Delete this item?')">
+                <button type="submit" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
+              </form>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+</div>

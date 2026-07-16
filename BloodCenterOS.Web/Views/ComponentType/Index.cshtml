@@ -1,37 +1,33 @@
 @model List<BloodCenterOS.Web.Models.ViewModels.ComponentTypeItem>
-@{
-  ViewBag.Title = "Component Types";
-  ViewBag.ActiveMenu = "ComponentTypes";
-}
-
+@using BloodCenterOS.Core.Models
+@{ ViewBag.Title = "Component Types"; ViewBag.ActiveMenu = "ComponentTypes"; }
 <div class="page-header">
-  <h1 class="page-title">Component Types <small>Blood component reference</small></h1>
+  <div><h1 class="page-title">Component Types <small>Blood component reference</small></h1></div>
+  <a href="@Url.Action("Create")" class="btn btn-primary"><i class="bi bi-plus"></i> Add Component Type</a>
 </div>
-
+@if (TempData["Success"] is string s) { <div class="alert alert-success py-2 px-3 mb-3">@s</div> }
+@if (TempData["Error"] is string e) { <div class="alert alert-danger py-2 px-3 mb-3">@e</div> }
 <div class="card">
   <div class="card-body p-0">
-    <div class="table-container">
-      <table class="table mb-0">
-        <thead>
+    <table class="table mb-0">
+      <thead><tr><th>Code</th><th>Name</th><th>Description</th><th></th></tr></thead>
+      <tbody>
+        @if (!Model.Any()) { <tr><td colspan="4" class="text-center text-muted py-3">No component types found.</td></tr> }
+        @foreach (var t in Model)
+        {
           <tr>
-            <th>Code</th>
-            <th>Name</th>
-            <th>Description</th>
-            <th>Shelf Life</th>
+            <td><span class="badge" style="background:#f3e8ff;color:#6b21a8;font-size:12px;padding:3px 10px">@t.Code</span></td>
+            <td style="font-weight:500">@t.Name</td>
+            <td style="font-size:12px">@t.Description</td>
+            <td class="text-end">
+              <a href="@Url.Action("Edit", new { id = t.ComponentTypeId })" class="btn btn-sm btn-outline-primary"><i class="bi bi-pencil"></i></a>
+              <form method="post" action="@Url.Action("Delete", new { id = t.ComponentTypeId })" style="display:inline" onsubmit="return confirm('Delete this component type?')">
+                <button type="submit" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
+              </form>
+            </td>
           </tr>
-        </thead>
-        <tbody>
-          @foreach (var t in Model)
-          {
-            <tr>
-              <td><span class="badge" style="background:#f3e8ff;color:#6b21a8;font-size:12px;padding:3px 10px">@t.Code</span></td>
-              <td style="font-weight:500">@t.Name</td>
-              <td style="font-size:12px">@t.Description</td>
-              <td style="font-size:12px">@t.ShelfLife</td>
-            </tr>
-          }
-        </tbody>
-      </table>
-    </div>
+        }
+      </tbody>
+    </table>
   </div>
 </div>

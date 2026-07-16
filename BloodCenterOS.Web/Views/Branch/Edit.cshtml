@@ -1,0 +1,28 @@
+@model Branch
+@{ ViewBag.Title = "Edit Branch"; ViewBag.ActiveMenu = "Branches"; }
+<div class="page-header">
+  <div><h1 class="page-title">Edit Branch <small>Update branch information</small></h1></div>
+  <a href="@Url.Action("Index")" class="btn btn-outline-secondary"><i class="bi bi-arrow-left"></i> Back</a>
+</div>
+<form method="post" action="@Url.Action("Edit", new { id = Model.BranchId })">
+  <div class="card mb-3">
+    <div class="card-header"><h6>Branch Details</h6></div>
+    <div class="card-body">
+      <div class="row g-2">
+        <div class="col-md-4"><label class="form-label">Branch Code</label><input type="text" name="BranchCode" class="form-control" value="@Model.BranchCode" /></div>
+        <div class="col-md-8"><label class="form-label">Branch Name <span class="text-danger">*</span></label><input type="text" name="BranchName" class="form-control" value="@Model.BranchName" required /></div>
+        <div class="col-md-6"><label class="form-label">Address Line 1</label><input type="text" name="AddressLine1" class="form-control" value="@Model.AddressLine1" /></div>
+        <div class="col-md-6"><label class="form-label">Address Line 2</label><input type="text" name="AddressLine2" class="form-control" value="@Model.AddressLine2" /></div>
+        <div class="col-md-4"><label class="form-label">City</label><input type="text" name="City" class="form-control" value="@Model.City" /></div>
+        <div class="col-md-4"><label class="form-label">State</label><input type="text" name="State" class="form-control" value="@Model.State" /></div>
+        <div class="col-md-4"><label class="form-label">Pincode</label><input type="text" name="Pincode" class="form-control" value="@Model.Pincode" /></div>
+        <div class="col-md-4"><label class="form-label">Phone</label><input type="tel" name="Phone" class="form-control" value="@Model.Phone" /></div>
+        <div class="col-md-4"><label class="form-label">Email</label><input type="email" name="Email" class="form-control" value="@Model.Email" /></div>
+      </div>
+    </div>
+  </div>
+  <div class="d-flex gap-2 justify-content-end">
+    <a href="@Url.Action("Index")" class="btn btn-outline-secondary">Cancel</a>
+    <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg"></i> Update</button>
+  </div>
+</form>

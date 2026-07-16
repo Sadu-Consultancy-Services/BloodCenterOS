@@ -1,0 +1,31 @@
+@model List<Fridge>
+@{ ViewBag.Title = "Fridges"; ViewBag.ActiveMenu = "Fridges"; }
+<div class="page-header">
+  <div><h1 class="page-title">Fridges <small>Manage cold storage units</small></h1></div>
+  <a href="@Url.Action("Create")" class="btn btn-primary"><i class="bi bi-plus"></i> Add Fridge</a>
+</div>
+@if (TempData["Success"] is string s) { <div class="alert alert-success py-2 px-3 mb-3">@s</div> }
+@if (TempData["Error"] is string e) { <div class="alert alert-danger py-2 px-3 mb-3">@e</div> }
+<div class="card">
+  <div class="card-body p-0">
+    <table class="table mb-0">
+      <thead><tr><th>Code</th><th>Name</th><th>Capacity</th><th>Location</th><th>Temp Log</th><th></th></tr></thead>
+      <tbody>
+        @if (!Model.Any()) { <tr><td colspan="6" class="text-center text-muted py-3">No fridges found.</td></tr> }
+        @foreach (var item in Model)
+        {
+          <tr>
+            <td>@item.FridgeCode</td><td>@item.FridgeName</td><td>@item.Capacity</td><td>@item.Location</td>
+            <td><span class="badge @(item.TemperatureLogRequired ? "bg-success" : "bg-secondary")">@(item.TemperatureLogRequired ? "Yes" : "No")</span></td>
+            <td class="text-end">
+              <a href="@Url.Action("Edit", new { id = item.FridgeId })" class="btn btn-sm btn-outline-primary"><i class="bi bi-pencil"></i></a>
+              <form method="post" action="@Url.Action("Delete", new { id = item.FridgeId })" style="display:inline" onsubmit="return confirm('Delete this fridge?')">
+                <button type="submit" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
+              </form>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+</div>

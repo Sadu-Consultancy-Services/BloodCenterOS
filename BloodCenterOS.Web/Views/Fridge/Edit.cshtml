@@ -1,0 +1,24 @@
+@model Fridge
+@{ ViewBag.Title = "Edit Fridge"; ViewBag.ActiveMenu = "Fridges"; }
+<div class="page-header">
+  <div><h1 class="page-title">Edit Fridge <small>Update cold storage unit</small></h1></div>
+  <a href="@Url.Action("Index")" class="btn btn-outline-secondary"><i class="bi bi-arrow-left"></i> Back</a>
+</div>
+<form method="post" action="@Url.Action("Edit", new { id = Model.FridgeId })">
+  <div class="card mb-3">
+    <div class="card-header"><h6>Fridge Details</h6></div>
+    <div class="card-body">
+      <div class="row g-2">
+        <div class="col-md-4"><label class="form-label">Fridge Code <span class="text-danger">*</span></label><input type="text" name="FridgeCode" class="form-control" value="@Model.FridgeCode" required /></div>
+        <div class="col-md-4"><label class="form-label">Fridge Name <span class="text-danger">*</span></label><input type="text" name="FridgeName" class="form-control" value="@Model.FridgeName" required /></div>
+        <div class="col-md-4"><label class="form-label">Capacity</label><input type="number" name="Capacity" class="form-control" value="@Model.Capacity" /></div>
+        <div class="col-md-6"><label class="form-label">Location</label><input type="text" name="Location" class="form-control" value="@Model.Location" /></div>
+        <div class="col-md-6"><label class="form-label">Temperature Log Required</label><select name="TemperatureLogRequired" class="form-select"><option value="true" selected="@Model.TemperatureLogRequired">Yes</option><option value="false" selected="@(!Model.TemperatureLogRequired)">No</option></select></div>
+      </div>
+    </div>
+  </div>
+  <div class="d-flex gap-2 justify-content-end">
+    <a href="@Url.Action("Index")" class="btn btn-outline-secondary">Cancel</a>
+    <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg"></i> Update</button>
+  </div>
+</form>
