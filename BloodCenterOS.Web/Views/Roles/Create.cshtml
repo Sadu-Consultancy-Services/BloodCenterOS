@@ -1,0 +1,44 @@
+@{
+  ViewBag.Title = "Add Role";
+  ViewBag.ActiveMenu = "Roles";
+}
+
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Add Role <small>Create a new user role</small></h1>
+  </div>
+  <a href="@Url.Action("Index")" class="btn btn-outline-secondary"><i class="bi bi-arrow-left"></i> Back to List</a>
+</div>
+
+@if (!ViewData.ModelState.IsValid)
+{
+  <div class="alert alert-danger d-flex flex-column gap-1 mb-3 py-2 px-3">
+    @foreach (var err in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+    {
+      <div class="d-flex align-items-center gap-2"><i class="bi bi-exclamation-circle"></i> <span>@err.ErrorMessage</span></div>
+    }
+  </div>
+}
+
+<form method="post" action="@Url.Action("Create")">
+  <div class="card mb-3">
+    <div class="card-header"><h6>Role Details</h6></div>
+    <div class="card-body">
+      <div class="row g-2">
+        <div class="col-md-6">
+          <label class="form-label">Role Name <span class="text-danger">*</span></label>
+          <input type="text" name="roleName" class="form-control" required />
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Description</label>
+          <input type="text" name="description" class="form-control" />
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="d-flex gap-2 justify-content-end">
+    <a href="@Url.Action("Index")" class="btn btn-outline-secondary">Cancel</a>
+    <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg"></i> Save Role</button>
+  </div>
+</form>

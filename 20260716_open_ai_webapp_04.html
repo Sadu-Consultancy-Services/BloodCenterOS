@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BloodCenterOS · Web App Phase 4 — Issue, Billing &amp; Emergency</title>
+<style>
+  body { font-family: system-ui, sans-serif; max-width: 1000px; margin: 2em auto; padding: 0 1em; line-height: 1.6; background: #f8fafc; color: #1e293b; }
+  h1 { border-bottom: 3px solid #22c55e; padding-bottom: .3em; }
+  h2 { color: #16a34a; margin-top: 2em; }
+  h3 { color: #1e293b; margin-top: 1.5em; }
+  pre { background: #1e293b; color: #e2e8f0; padding: 1em; border-radius: 8px; overflow-x: auto; font-size: .85em; }
+  code { background: #e2e8f0; padding: .15em .4em; border-radius: 4px; font-size: .9em; }
+  pre code { background: transparent; padding: 0; }
+  table { border-collapse: collapse; width: 100%; margin: 1em 0; font-size: .9em; }
+  th, td { text-align: left; padding: .4em .6em; border-bottom: 1px solid #cbd5e1; }
+  th { background: #e2e8f0; font-weight: 600; }
+  .badge { display: inline-block; padding: .15em .6em; border-radius: 999px; font-size: .8em; font-weight: 600; }
+  .badge-pass { background: #dcfce7; color: #166534; }
+  .badge-new { background: #fef9c3; color: #854d0e; }
+  .summary-card { background: white; border-radius: 12px; padding: 1.5em; box-shadow: 0 1px 3px rgba(0,0,0,.1); margin: 1em 0; }
+  .success { background: #dcfce7; border-left: 4px solid #22c55e; padding: .75em 1em; border-radius: 6px; }
+  .file-grid { display: grid; grid-template-columns: 220px 1fr; gap: 2px; font-size: .85em; }
+  .file-grid .fg-label { font-weight: 600; background: #f1f5f9; padding: 3px 8px; }
+  .file-grid .fg-value { background: #f8fafc; padding: 3px 8px; font-family: monospace; font-size: .95em; }
+  .endpoint { font-family: monospace; background: #f1f5f9; padding: 2px 6px; border-radius: 4px; font-size: .85em; }
+  .col { background: #f0fdf4; padding: 1em; border-radius: 8px; flex: 1; min-width: 200px; }
+  .col h4 { margin: 0 0 .3em 0; font-size: 14px; }
+  .urgent { background: #fef2f2; border-left: 4px solid #dc2626; }
+</style>
+</head>
+<body>
+
+<h1>✅ BloodCenterOS · Web App Phase 4</h1>
+<p><strong>Date:</strong> 2026-07-16 | <strong>Subject:</strong> Issue, Billing &amp; Emergency</p>
+
+<div class="summary-card">
+<h2>Deliverables</h2>
+<p>
+  <span class="badge badge-pass">✓ Blood Issue (pending requests + issue history + create)</span>
+  <span class="badge badge-pass">✓ Billing (invoice list + create + payment entry)</span>
+  <span class="badge badge-pass">✓ Emergency Requests (dashboard cards + create)</span>
+  <span class="badge badge-pass">✓ 3 new SPs, 3 new API endpoints</span>
+  <span class="badge badge-pass">✓ Build: 0 warnings, 0 errors</span>
+</p>
+</div>
+
+<h2>Files Created / Modified</h2>
+
+<h3>API Layer (new + modified)</h3>
+<table>
+  <tr><th>File</th><th>Change</th></tr>
+  <tr><td><code>DB/fn_issue_get_by_center.sql</code></td><td><span class="badge badge-new">New SP</span> — list issues by center</td></tr>
+  <tr><td><code>DB/fn_billing_get_by_center.sql</code></td><td><span class="badge badge-new">New SP</span> — list billing by center</td></tr>
+  <tr><td><code>DB/fn_emergency_request_get_pending.sql</code></td><td><span class="badge badge-new">New SP</span> — list pending emergency requests</td></tr>
+  <tr><td><code>Repositories/{I,}IssueRepository.cs</code></td><td>+<code>GetByCenterAsync</code></td></tr>
+  <tr><td><code>Repositories/{I,}BillingRepository.cs</code></td><td>+<code>GetByCenterAsync</code></td></tr>
+  <tr><td><code>Repositories/{I,}EmergencyRepository.cs</code></td><td>+<code>GetPendingAsync</code></td></tr>
+  <tr><td><code>Controllers/IssueController.cs</code></td><td>+<code>GET /api/issues</code></td></tr>
+  <tr><td><code>Controllers/BillingController.cs</code></td><td>+<code>GET /api/billing</code></td></tr>
+  <tr><td><code>Controllers/EmergencyController.cs</code></td><td>+<code>GET /api/emergency/requests/pending</code></td></tr>
+</table>
+
+<h3>Web Layer (12 files)</h3>
+<div class="file-grid">
+  <div class="fg-label"><span class="badge badge-new">Models</span></div>
+  <div class="fg-value">Models/{IssueRecord,Billing,EmergencyRequest}.cs</div>
+  <div class="fg-label"><span class="badge badge-new">Controllers</span></div>
+  <div class="fg-value">Controllers/{Issue,Billing,Emergency}Controller.cs</div>
+  <div class="fg-label"><span class="badge badge-new">Views</span></div>
+  <div class="fg-value">Views/{Issue,Billing,Emergency}/ — 7 .cshtml files</div>
+  <div class="fg-label">Modified</div>
+  <div class="fg-value">Services/ApiClient.cs (+7 methods)</div>
+  <div class="fg-label">Modified</div>
+  <div class="fg-value">Views/Shared/_Sidebar.cshtml (Issue, Billing, Emergency nav)</div>
+</div>
+
+<h2>Module Details</h2>
+
+<div style="display:flex;gap:12px;flex-wrap:wrap">
+  <div class="col">
+    <h4>🩸 Blood Issue</h4>
+    <table style="font-size:12px;margin:0">
+      <tr><th>Page</th><th>Route</th></tr>
+      <tr><td>Dashboard</td><td>GET /Issue</td></tr>
+      <tr><td>Create</td><td>GET/POST /Issue/Create</td></tr>
+    </table>
+    <ul style="margin:6px 0 0;font-size:12px;padding-left:16px">
+      <li>Pending requests table with urgency badges (Critical/High/Normal)</li>
+      <li>Issue history with slip numbers</li>
+      <li>Create form: patient, type (Cross-match/Emergency/Regular), component/bag/hospital IDs</li>
+      <li>API: <span class="endpoint">GET /api/issues/pending-requests</span></li>
+      <li>API: <span class="endpoint">POST /api/issues</span></li>
+    </ul>
+  </div>
+  <div class="col">
+    <h4>💰 Billing</h4>
+    <table style="font-size:12px;margin:0">
+      <tr><th>Page</th><th>Route</th></tr>
+      <tr><td>List</td><td>GET /Billing</td></tr>
+      <tr><td>Create</td><td>GET/POST /Billing/Create</td></tr>
+      <tr><td>Payment</td><td>GET/POST /Billing/Payment/{id}</td></tr>
+    </table>
+    <ul style="margin:6px 0 0;font-size:12px;padding-left:16px">
+      <li>3 stat cards: Total Invoiced, Collected, Outstanding</li>
+      <li>Invoice table with net amount calculation</li>
+      <li>Payment entry form with amount, mode (Cash/Card/UPI/Cheque/Insurance), reference</li>
+      <li>API: <span class="endpoint">GET /api/billing</span></li>
+      <li>API: <span class="endpoint">POST /api/billing/{id}/payment</span></li>
+    </ul>
+  </div>
+  <div class="col urgent">
+    <h4>🚨 Emergency</h4>
+    <table style="font-size:12px;margin:0">
+      <tr><th>Page</th><th>Route</th></tr>
+      <tr><td>Dashboard</td><td>GET /Emergency</td></tr>
+      <tr><td>Create</td><td>GET/POST /Emergency/Create</td></tr>
+    </table>
+    <ul style="margin:6px 0 0;font-size:12px;padding-left:16px">
+      <li>Card-style layout with critical status highlighted (red border)</li>
+      <li>Each card shows patient, blood group, component, units, time, hospital</li>
+      <li>Create form with blood group selection, component type, urgency level</li>
+      <li>API: <span class="endpoint">GET /api/emergency/requests/pending</span></li>
+      <li>API: <span class="endpoint">POST /api/emergency/requests</span></li>
+    </ul>
+  </div>
+</div>
+
+<h2>New API Endpoints</h2>
+<table>
+  <tr><th>Endpoint</th><th>SP Used</th><th>Purpose</th></tr>
+  <tr><td><span class="endpoint">GET /api/issues</span></td><td>fn_issue_get_by_center</td><td>Issue history list</td></tr>
+  <tr><td><span class="endpoint">GET /api/billing</span></td><td>fn_billing_get_by_center</td><td>Billing list</td></tr>
+  <tr><td><span class="endpoint">GET /api/emergency/requests/pending</span></td><td>fn_emergency_request_get_pending</td><td>Pending emergency requests</td></tr>
+</table>
+
+<h2>New ApiClient Methods (7)</h2>
+<table>
+  <tr><th>Method</th><th>Endpoint</th></tr>
+  <tr><td><code>GetIssueHistoryAsync()</code></td><td>GET /api/issues</td></tr>
+  <tr><td><code>CreateIssueAsync(issue)</code></td><td>POST /api/issues</td></tr>
+  <tr><td><code>GetBillingsAsync()</code></td><td>GET /api/billing</td></tr>
+  <tr><td><code>CreateBillingAsync(billing)</code></td><td>POST /api/billing</td></tr>
+  <tr><td><code>AddPaymentAsync(id, amount, mode, ref)</code></td><td>POST /api/billing/{id}/payment</td></tr>
+  <tr><td><code>GetPendingEmergencyRequestsAsync()</code></td><td>GET /api/emergency/requests/pending</td></tr>
+  <tr><td><code>CreateEmergencyRequestAsync(request)</code></td><td>POST /api/emergency/requests</td></tr>
+</table>
+
+<h2>Build Status</h2>
+<p>
+  <span class="badge badge-pass">API: 0 errors, 0 warnings</span><br>
+  <span class="badge badge-pass">Web: 0 errors, 0 warnings</span>
+</p>
+
+<div class="success">
+<strong>How to run</strong><br>
+1. <code>dotnet run --project BloodCenterOS.API</code> (port 5000)<br>
+2. <code>dotnet run --project BloodCenterOS.Web</code> (port 5055)<br>
+3. Login: <code>admin</code> / <code>admin@123</code><br>
+4. Sidebar: Issue → Billing → Emergency
+</div>
+
+<h2>Sidebar Menu (current state)</h2>
+<pre>
+Dashboard · Donors · Collection · Testing · Components · Inventory
+Issue · Billing · Emergency · Camp Management · Hospitals
+Administration (Users · Roles · Audit Logs · Settings)
+</pre>
+
+<h2>Next Steps</h2>
+<ol>
+  <li><strong>User &amp; Role Management</strong> — admin panel</li>
+  <li><strong>Reports</strong> — Excel/PDF export</li>
+  <li><strong>Dashboard Enhancements</strong> — live data widgets for all modules</li>
+</ol>
+
+</body>
+</html>

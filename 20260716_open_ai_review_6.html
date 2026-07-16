@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BloodCenterOS · Step 6 Review — SP Runtime Bugs &amp; 19/19 Test Pass</title>
+<style>
+  body { font-family: system-ui, sans-serif; max-width: 1000px; margin: 2em auto; padding: 0 1em; line-height: 1.6; background: #f8fafc; color: #1e293b; }
+  h1 { border-bottom: 3px solid #22c55e; padding-bottom: .3em; }
+  h2 { color: #16a34a; margin-top: 2em; }
+  pre { background: #1e293b; color: #e2e8f0; padding: 1em; border-radius: 8px; overflow-x: auto; }
+  code { background: #e2e8f0; padding: .15em .4em; border-radius: 4px; font-size: .9em; }
+  pre code { background: transparent; padding: 0; }
+  table { border-collapse: collapse; width: 100%; margin: 1em 0; }
+  th, td { text-align: left; padding: .5em .75em; border-bottom: 1px solid #cbd5e1; }
+  th { background: #e2e8f0; font-weight: 600; }
+  .badge { display: inline-block; padding: .15em .6em; border-radius: 999px; font-size: .8em; font-weight: 600; }
+  .badge-pass { background: #dcfce7; color: #166534; }
+  .badge-fail { background: #fee2e2; color: #991b1b; }
+  .badge-warn { background: #fef9c3; color: #854d0e; }
+  .badge-info { background: #dbeafe; color: #1e40af; }
+  .summary-card { background: white; border-radius: 12px; padding: 1.5em; box-shadow: 0 1px 3px rgba(0,0,0,.1); margin: 1em 0; }
+  .warn { background: #fef9c3; border-left: 4px solid #eab308; padding: .75em 1em; border-radius: 6px; }
+  .success { background: #dcfce7; border-left: 4px solid #22c55e; padding: .75em 1em; border-radius: 6px; }
+  .error-box { background: #fee2e2; border-left: 4px solid #ef4444; padding: .75em 1em; border-radius: 6px; }
+  .diff-add { background: #dcfce7; color: #166534; }
+  .diff-rem { background: #fee2e2; color: #991b1b; }
+  .step { display: flex; align-items: flex-start; gap: 1em; margin: 1em 0; }
+  .step-num { background: #3b82f6; color: white; width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: .9em; flex-shrink: 0; }
+  .step-num.done { background: #22c55e; }
+</style>
+</head>
+<body>
+
+<h1>✅ BloodCenterOS · Step 6 Review</h1>
+<p><strong>Date:</strong> 2026-07-16 | <strong>Subject:</strong> SP Runtime Bug Fixes &amp; Full Test Suite Green</p>
+
+<div class="summary-card">
+<h2>Test Result</h2>
+<p>
+  <span class="badge badge-pass">✓ 19/19 endpoints passing</span>
+  <span class="badge badge-pass">✓ Build: Succeeded</span>
+  <span class="badge badge-pass">✓ 10 Controllers tested</span>
+  <span class="badge badge-pass">✓ 95 SPs deployed</span>
+</p>
+</div>
+
+<h2>Endpoints Tested</h2>
+<table>
+  <tr><th>#</th><th>Endpoint</th><th>Status</th></tr>
+  <tr><td>1</td><td><code>POST /api/auth/login</code></td><td><span class="badge badge-pass">PASS</span></td></tr>
+  <tr><td>2</td><td><code>POST /api/donors</code></td><td><span class="badge badge-pass">PASS</span></td></tr>
+  <tr><td>3</td><td><code>GET /api/donors/{id}</code></td><td><span class="badge badge-pass">PASS</span></td></tr>
+  <tr><td>4</td><td><code>PUT /api/donors/{id}</code></td><td><span class="badge badge-pass">PASS</span></td></tr>
+  <tr><td>5</td><td><code>GET /api/donors/search</code></td><td><span class="badge badge-pass">PASS</span></td></tr>
+  <tr><td>6</td><td><code>GET /api/donors/by-phone</code></td><td><span class="badge badge-pass">PASS</span></td></tr>
+  <tr><td>7</td><td><code>POST /api/camps</code></td><td><span class="badge badge-pass">PASS</span></td></tr>
+  <tr><td>8</td><td><code>GET /api/camps/{id}</code></td><td><span class="badge badge-pass">PASS</span> ← Fixed</td></tr>
+  <tr><td>9</td><td><code>GET /api/camps/upcoming</code></td><td><span class="badge badge-pass">PASS</span> ← Fixed</td></tr>
+  <tr><td>10</td><td><code>POST /api/hospitals</code></td><td><span class="badge badge-pass">PASS</span></td></tr>
+  <tr><td>11</td><td><code>POST /api/collections</code></td><td><span class="badge badge-pass">PASS</span></td></tr>
+  <tr><td>12</td><td><code>GET /api/collections/{id}</code></td><td><span class="badge badge-pass">PASS</span></td></tr>
+  <tr><td>13</td><td><code>POST /api/inventory/adjust</code></td><td><span class="badge badge-pass">PASS</span></td></tr>
+  <tr><td>14</td><td><code>GET /api/inventory/stock</code></td><td><span class="badge badge-pass">PASS</span></td></tr>
+  <tr><td>15</td><td><code>GET /api/inventory/summary</code></td><td><span class="badge badge-pass">PASS</span></td></tr>
+  <tr><td>16</td><td><code>POST /api/emergency/requests</code></td><td><span class="badge badge-pass">PASS</span></td></tr>
+  <tr><td>17</td><td><code>GET /api/issues/pending-requests</code></td><td><span class="badge badge-pass">PASS</span></td></tr>
+  <tr><td>18</td><td><code>POST /api/billing</code></td><td><span class="badge badge-pass">PASS</span></td></tr>
+  <tr><td>19</td><td><code>POST /api/billing/{id}/payment</code></td><td><span class="badge badge-pass">PASS</span></td></tr>
+</table>
+
+<h2>Bugs Fixed</h2>
+
+<h3>Bug 1: <code>GET /api/camps/{id}</code> — 500 Internal Server Error</h3>
+
+<div class="error-box">
+<strong>Error:</strong> <code>42702: column reference "campid" is ambiguous — It could refer to either a PL/pgSQL variable or a table column.</code>
+</div>
+
+<p><strong>Root Cause:</strong> The function <code>fn_camp_get_by_id</code> uses <code>RETURNS TABLE(campid BIGINT, ...)</code>, which creates PL/pgSQL output parameters named <code>campid</code>, <code>centerid</code>, etc. The function body contained:</p>
+
+<pre><code class="diff-rem">RETURN QUERY SELECT * FROM BloodCampMaster WHERE CampId = p_camp_id;
+--                                                                  ^^^^^^ ambiguous: output parameter "campid" vs table column "CampId"</code></pre>
+
+<p>PostgreSQL could not determine whether <code>CampId</code> in the WHERE clause referred to the output parameter or the table column — both match case-insensitively.</p>
+
+<p><strong>Additional Issue:</strong> Even after fixing the ambiguity, <code>SELECT *</code> returned table columns in physical order (14 columns including <code>StartTime</code>, <code>EndTime</code>, <code>CreatedBy</code>), but <code>RETURNS TABLE</code> defined only 11 columns excluding those. Position 9 in the output was <code>starttime</code> (TIMESTAMPTZ) but the function expected <code>totaldonorsexpected</code> (INTEGER), causing <em>"Returned type timestamp with time zone does not match expected type integer"</em>.</p>
+
+<p><strong>Fix — explicit column list + table-qualified WHERE:</strong></p>
+
+<pre><code class="diff-add">RETURN QUERY SELECT c.CampId, c.CenterId, c.CampCode, c.CampName, c.OrganizerId,
+                    c.Venue, c.City, c.CampDate, c.TotalDonorsExpected,
+                    c.TotalDonorsCollected, c.CreatedAt
+             FROM BloodCampMaster c WHERE c.CampId = p_camp_id;</code></pre>
+
+<p><strong>File:</strong> <code>DB/fix_camp_get_by_id.sql</code> | <strong>Fix type:</strong> PL/pgSQL function body rewrite</p>
+
+<h3>Bug 2: <code>GET /api/camps/upcoming</code> — 500 Internal Server Error</h3>
+
+<div class="error-box">
+<strong>Error:</strong> <code>Cannot convert null to 'System.DateTime' because it is a non-nullable value type</code>
+</div>
+
+<p><strong>Root Cause:</strong> The SP <code>fn_camp_get_upcoming</code> returns only 6 columns (<code>campid</code>, <code>campname</code>, <code>venue</code>, <code>city</code>, <code>campdate</code>, <code>totaldonorsexpected</code>), but the C# repository's <code>GetUpcomingAsync</code> method attempted to map 14 properties including <code>createdat</code> (non-nullable <code>DateTime</code>), which the SP does not return:</p>
+
+<pre><code class="diff-rem">return rows.Select(r => new Camp {
+    CampId = (long)r.campid,
+    CenterId = (long?)r.centerid,        // not in SP → null, OK (nullable)
+    CampCode = (string?)r.campcode,      // not in SP → null, OK (nullable)
+    ...
+    CreatedAt = (DateTime)r.createdat,   // not in SP → null → CRASH!
+    ...
+});</code></pre>
+
+<p><strong>Fix — only map columns the SP returns:</strong></p>
+
+<pre><code class="diff-add">return rows.Select(r => new Camp {
+    CampId = (long)r.campid,
+    CampName = (string?)r.campname,
+    Venue = (string?)r.venue,
+    City = (string?)r.city,
+    CampDate = (DateTime?)r.campdate,
+    TotalDonorsExpected = (int?)r.totaldonorsexpected
+});</code></pre>
+
+<p><strong>File:</strong> <code>BloodCenterOS.API/Repositories/CampRepository.cs</code> line 69</p>
+
+<h2>Pattern Insight</h2>
+
+<div class="warn">
+<strong>⚠ PL/pgSQL RETURNS TABLE × Dapper dynamic mapping — recurring hazard</strong>
+<p>These bugs are the same class as the earlier <code>fn_donor_get_by_id</code> fix. When using <code>RETURNS TABLE(colname TYPE, ...)</code> in PostgreSQL:</p>
+<ol>
+  <li><strong>Ambiguous column references</strong> — output parameter names shadow table columns; always qualify with table name/alias</li>
+  <li><strong>Column order mismatch</strong> — <code>SELECT *</code> returns physical table order; <code>RETURNS TABLE</code> may define a different subset/order; always list columns explicitly</li>
+  <li><strong>Dapper dynamic + missing columns</strong> — C# repository code must only reference columns the SP actually returns; accessing a missing dynamic property yields <code>null</code>, which crashes on non-nullable casts like <code>(DateTime)null</code></li>
+</ol>
+</div>
+
+<h2>Files Modified</h2>
+<table>
+  <tr><th>File</th><th>Change</th></tr>
+  <tr><td><code>DB/fix_camp_get_by_id.sql</code></td><td>New — fixes <code>fn_camp_get_by_id</code> with explicit column list + qualified WHERE</td></tr>
+  <tr><td><code>BloodCenterOS.API/Repositories/CampRepository.cs</code></td><td>Edited — <code>GetUpcomingAsync</code> maps only 6 columns returned by the upcoming SP</td></tr>
+  <tr><td><code>test_api.ps1</code></td><td>Enhanced — prints response data for debugging</td></tr>
+</table>
+
+<h2>Next Steps</h2>
+<ol>
+  <li><strong>Integration tests</strong> — automated <code>WebApplicationFactory</code> tests for each controller</li>
+  <li><strong>Seed reference data</strong> — blood groups, component types, test kits, lookup values</li>
+  <li><strong>JWT secret hardening</strong> — move from <code>appsettings.json</code> to <code>User Secrets</code> or environment variable</li>
+  <li><strong>Frontend</strong> — connect <code>BloodCenterOS.Web</code> (MVC or SPA) to consume the API</li>
+  <li><strong>Audit remaining SPs</strong> — check other <code>RETURNS TABLE</code> functions for the same ambiguity pattern</li>
+</ol>
+
+<div class="warn">
+<strong>⚠ Reminder</strong><br>
+• Admin credentials: <code>admin</code> / <code>admin@123</code> at <code>localhost:5000</code><br>
+• All controllers class-level <code>[Authorize]</code> except <code>POST /api/auth/login</code><br>
+• 19/19 automated test endpoints passing — run via <code>.\test_api.ps1</code>
+</div>
+
+</body>
+</html>

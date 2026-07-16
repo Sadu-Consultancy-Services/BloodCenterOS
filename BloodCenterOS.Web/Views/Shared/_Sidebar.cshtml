@@ -1,0 +1,107 @@
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-brand">
+    <div class="brand-icon"><img src="~/assets/images/logo.png" alt="" style="width:28px;height:28px" /></div>
+    <div class="brand-text">BloodCenterOS</div>
+  </div>
+  <nav class="sidebar-nav" aria-label="Main navigation">
+    <ul class="list-unstyled mb-0">
+      <li class="nav-item">
+        <a class="nav-link @(ViewBag.ActiveMenu == "Dashboard" ? "active" : "")" href="@Url.Action("Index","Home")">
+          <i class="bi bi-grid-1x2-fill nav-icon"></i>
+          <span class="nav-text">Dashboard</span>
+        </a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" data-bc-toggle="collapse" data-bc-target="mnu-masters" aria-expanded="false" role="button">
+          <i class="bi bi-database nav-icon"></i>
+          <span class="nav-text">Masters</span>
+          <i class="bi bi-chevron-right nav-arrow"></i>
+        </a>
+        <ul class="nav-sub list-unstyled mb-0" id="mnu-masters">
+          <li class="nav-item"><a class="nav-link" href="#"><span class="nav-text">Blood Groups</span></a></li>
+          <li class="nav-item"><a class="nav-link" href="#"><span class="nav-text">Component Types</span></a></li>
+          <li class="nav-item"><a class="nav-link" href="#"><span class="nav-text">Lookup Values</span></a></li>
+        </ul>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link @(ViewBag.ActiveMenu == "Donors" ? "active" : "")" href="@Url.Action("Index","Donor")">
+          <i class="bi bi-people-fill nav-icon"></i>
+          <span class="nav-text">Donors</span>
+        </a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link @(ViewBag.ActiveMenu == "Collection" ? "active" : "")" href="@Url.Action("Index","Collection")">
+          <i class="bi bi-droplet-half nav-icon"></i>
+          <span class="nav-text">Blood Collection</span>
+        </a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link @(ViewBag.ActiveMenu == "Testing" ? "active" : "")" href="@Url.Action("Index","Test")">
+          <i class="bi bi-flask nav-icon"></i>
+          <span class="nav-text">Blood Testing</span>
+        </a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link @(ViewBag.ActiveMenu == "Components" ? "active" : "")" href="@Url.Action("Index","Component")">
+          <i class="bi bi-boxes nav-icon"></i>
+          <span class="nav-text">Components</span>
+        </a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link @(ViewBag.ActiveMenu == "Inventory" ? "active" : "")" href="@Url.Action("Index","Inventory")">
+          <i class="bi bi-archive-fill nav-icon"></i>
+          <span class="nav-text">Inventory</span>
+        </a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link @(ViewBag.ActiveMenu == "Issue" ? "active" : "")" href="@Url.Action("Index","Issue")">
+          <i class="bi bi-send-fill nav-icon"></i>
+          <span class="nav-text">Blood Issue</span>
+        </a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link @(ViewBag.ActiveMenu == "Billing" ? "active" : "")" href="@Url.Action("Index","Billing")">
+          <i class="bi bi-receipt nav-icon"></i>
+          <span class="nav-text">Billing</span>
+        </a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link @(ViewBag.ActiveMenu == "Emergency" ? "active" : "")" href="@Url.Action("Index","Emergency")">
+          <i class="bi bi-exclamation-triangle-fill nav-icon"></i>
+          <span class="nav-text">Emergency</span>
+        </a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link @(ViewBag.ActiveMenu == "Camps" ? "active" : "")" href="@Url.Action("Index","Camp")">
+          <i class="bi bi-truck nav-icon"></i>
+          <span class="nav-text">Camp Management</span>
+        </a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link @(ViewBag.ActiveMenu == "Hospitals" ? "active" : "")" href="@Url.Action("Index","Hospital")">
+          <i class="bi bi-building nav-icon"></i>
+          <span class="nav-text">Hospitals</span>
+        </a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link @(ViewBag.ActiveMenu == "Reports" ? "active" : "")" href="@Url.Action("Index","Reports")">
+          <i class="bi bi-graph-up nav-icon"></i>
+          <span class="nav-text">Reports</span>
+        </a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" data-bc-toggle="collapse" data-bc-target="mnu-admin" aria-expanded="@(ViewBag.ActiveMenu == "Users" || ViewBag.ActiveMenu == "Roles" ? "true" : "false")" role="button">
+          <i class="bi bi-shield-lock-fill nav-icon"></i>
+          <span class="nav-text">Administration</span>
+          <i class="bi bi-chevron-right nav-arrow"></i>
+        </a>
+        <ul class="nav-sub list-unstyled mb-0 @(ViewBag.ActiveMenu == "Users" || ViewBag.ActiveMenu == "Roles" ? "show" : "")" id="mnu-admin">
+          <li class="nav-item"><a class="nav-link @(ViewBag.ActiveMenu == "Users" ? "active" : "")" href="@Url.Action("Index","Users")"><span class="nav-text">Users</span></a></li>
+          <li class="nav-item"><a class="nav-link @(ViewBag.ActiveMenu == "Roles" ? "active" : "")" href="@Url.Action("Index","Roles")"><span class="nav-text">Roles</span></a></li>
+          <li class="nav-item"><a class="nav-link" href="#"><span class="nav-text">Audit Logs</span></a></li>
+          <li class="nav-item"><a class="nav-link" href="@Url.Action("Settings","Home")"><span class="nav-text">Settings</span></a></li>
+        </ul>
+      </li>
+    </ul>
+  </nav>
+</aside>

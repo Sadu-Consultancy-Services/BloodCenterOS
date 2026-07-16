@@ -1,0 +1,65 @@
+@model ComponentListViewModel
+@{
+  ViewBag.Title = "Components";
+  ViewBag.ActiveMenu = "Components";
+}
+
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Components <small>Available blood components</small></h1>
+  </div>
+  <div class="d-flex gap-2">
+    <a href="@Url.Action("Prepare")" class="btn btn-primary"><i class="bi bi-boxes"></i> Prepare Component</a>
+  </div>
+</div>
+
+@if (TempData["Success"] is string s) { <div class="alert alert-success d-flex align-items-center gap-2 mb-3 py-2 px-3"><i class="bi bi-check-circle-fill"></i><span>@s</span><button type="button" class="btn-close ms-auto" style="font-size:10px" onclick="this.parentElement.remove()"></button></div> }
+
+<form method="get" action="@Url.Action("Index")">
+  <div class="card mb-3">
+    <div class="filter-bar">
+      <i class="bi bi-funnel text-muted" style="font-size:14px"></i>
+      <select name="bloodGroup" class="form-select" style="min-width:140px">
+        <option value="">All Blood Groups</option>
+        @foreach (var bg in new[] { "A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-" })
+        { <option value="@bg" selected="@(Model.BloodGroupFilter == bg)">@bg</option> }
+      </select>
+      <button type="submit" class="btn btn-primary"><i class="bi bi-search"></i> Filter</button>
+      <a href="@Url.Action("Index")" class="btn btn-outline-secondary"><i class="bi bi-x-circle"></i> Clear</a>
+    </div>
+  </div>
+</form>
+
+<div class="card">
+  <div class="card-header"><h6>@Model.AvailableComponents.Count components available</h6></div>
+  <div class="card-body p-0">
+    <div class="table-container">
+      <table class="table mb-0">
+        <thead>
+          <tr>
+            <th>Code</th>
+            <th>Type</th>
+            <th>Volume</th>
+            <th>Expiry</th>
+            <th>Storage</th>
+            <th style="width:60px">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          @foreach (var c in Model.AvailableComponents)
+          {
+            <tr>
+              <td><span class="badge badge-secondary">@c.ComponentCode</span></td>
+              <td><span class="badge" style="background:#dbeafe;color:#1e40af">@c.ComponentType</span></td>
+              <td>@(c.VolumeMl?.ToString("F0") ?? "—") ml</td>
+              <td style="font-size:11px">@c.ExpiryDate?.ToString("dd MMM yyyy")</td>
+              <td style="font-size:11px">@(c.StorageLocation ?? "—")</td>
+              <td><button class="btn btn-sm btn-outline-secondary" title="View"><i class="bi bi-eye"></i></button></td>
+            </tr>
+          }
+          @if (!Model.AvailableComponents.Any()) { <tr><td colspan="6"><div class="empty-state"><div class="empty-icon"><i class="bi bi-boxes"></i></div><div class="empty-title">No components available</div><div class="empty-text">Prepare components from collected blood bags.</div></div></td></tr> }
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

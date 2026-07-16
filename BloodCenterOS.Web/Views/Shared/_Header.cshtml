@@ -1,0 +1,37 @@
+<header class="header">
+  <button class="sidebar-toggle" data-bc-sidebar-toggle aria-label="Toggle sidebar">
+    <i class="bi bi-list"></i>
+  </button>
+  <div class="header-search">
+    <i class="bi bi-search search-icon"></i>
+    <input type="text" id="header-search" placeholder="Search donors, camps, inventory..." aria-label="Global search" />
+  </div>
+  <div class="header-actions">
+    <button class="btn-icon" data-bc-notifications aria-label="Notifications">
+      <i class="bi bi-bell"></i>
+      <span class="badge-dot"></span>
+    </button>
+    <button class="btn-icon" data-bc-theme-toggle aria-label="Toggle theme">
+      <i class="bi bi-moon-fill" data-bc-theme-icon></i>
+    </button>
+    <button class="btn-icon" aria-label="Full screen" onclick="document.documentElement.requestFullscreen?.()">
+      <i class="bi bi-arrows-fullscreen"></i>
+    </button>
+    <div class="dropdown" style="position:relative">
+      <button class="user-profile" data-bc-dropdown-toggle data-bc-target="user-menu" aria-expanded="false">
+        <span class="user-avatar">A</span>
+        <div>
+          <div class="user-name">Administrator</div>
+          <div class="user-role">Admin</div>
+        </div>
+      </button>
+      <div class="dropdown-menu" id="user-menu" style="position:absolute;right:0;top:100%;min-width:200px;z-index:1050">
+        <a class="dropdown-item" href="@Url.Action("Profile","Home")"><i class="bi bi-person"></i> Profile</a>
+        <a class="dropdown-item" href="@Url.Action("Settings","Home")"><i class="bi bi-gear"></i> Settings</a>
+        <a class="dropdown-item" href="@Url.Action("About","Home")"><i class="bi bi-info-circle"></i> About</a>
+        <div class="dropdown-divider"></div>
+        <a class="dropdown-item text-danger" href="@Url.Action("Logout","Account")"><i class="bi bi-box-arrow-right"></i> Logout</a>
+      </div>
+    </div>
+  </div>
+</header>

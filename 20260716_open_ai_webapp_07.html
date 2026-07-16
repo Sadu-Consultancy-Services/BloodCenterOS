@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BloodCenterOS · Phase 5 Cleanup — Shared Core Library &amp; Model Dedup</title>
+<style>
+  body { font-family: system-ui, sans-serif; max-width: 1000px; margin: 2em auto; padding: 0 1em; line-height: 1.6; background: #f8fafc; color: #1e293b; }
+  h1 { border-bottom: 3px solid #a855f7; padding-bottom: .3em; }
+  h2 { color: #9333ea; margin-top: 2em; }
+  h3 { color: #1e293b; margin-top: 1.5em; }
+  pre { background: #1e293b; color: #e2e8f0; padding: 1em; border-radius: 8px; overflow-x: auto; font-size: .85em; }
+  code { background: #e2e8f0; padding: .15em .4em; border-radius: 4px; font-size: .9em; }
+  pre code { background: transparent; padding: 0; }
+  table { border-collapse: collapse; width: 100%; margin: 1em 0; font-size: .9em; }
+  th, td { text-align: left; padding: .4em .6em; border-bottom: 1px solid #cbd5e1; }
+  th { background: #e2e8f0; font-weight: 600; }
+  .badge { display: inline-block; padding: .15em .6em; border-radius: 999px; font-size: .8em; font-weight: 600; }
+  .badge-pass { background: #dcfce7; color: #166534; }
+  .badge-new { background: #fef9c3; color: #854d0e; }
+  .badge-purple { background: #f3e8ff; color: #6b21a8; }
+  .summary-card { background: white; border-radius: 12px; padding: 1.5em; box-shadow: 0 1px 3px rgba(0,0,0,.1); margin: 1em 0; }
+  .success { background: #dcfce7; border-left: 4px solid #22c55e; padding: .75em 1em; border-radius: 6px; }
+  .warn { background: #fef9c3; border-left: 4px solid #eab308; padding: .75em 1em; border-radius: 6px; }
+  .col-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+  .col { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: .8em; }
+  .col h4 { margin: 0 0 .3em 0; font-size: 14px; }
+  .file-count { font-size: 2em; font-weight: 700; color: #9333ea; }
+</style>
+</head>
+<body>
+
+<h1>🧹 BloodCenterOS · Phase 5 Cleanup</h1>
+<p><strong>Date:</strong> 2026-07-16 | <strong>Subject:</strong> BloodCenterOS.Core Shared Library — Model Deduplication</p>
+
+<div class="summary-card">
+<h2>Deliverables</h2>
+<p>
+  <span class="badge badge-purple">✓ BloodCenterOS.Core class library created (net9.0)</span>
+  <span class="badge badge-purple">✓ 22 shared POCOs moved from API + Web into Core</span>
+  <span class="badge badge-purple">✓ ~63 files updated with new using directives</span>
+  <span class="badge badge-purple">✓ 6 duplicate DTOs removed from Web project</span>
+  <span class="badge badge-purple">✓ StatusBadge computed property restored</span>
+  <span class="badge badge-purple">✓ Full solution builds: 0 errors</span>
+</p>
+</div>
+
+<h2>Motivation</h2>
+<p>During Phase 5 (Steps 12–14), both the API and Web projects maintained <strong>duplicate copies</strong> of the same domain models. This caused:</p>
+<ul>
+  <li><strong>Ambiguous reference errors</strong> when the same class (e.g. <code>DonorSummaryRow</code>) existed in both projects</li>
+  <li><strong>Drift risk</strong> — adding a property to one copy but forgetting the other</li>
+  <li><strong>Unnecessary maintenance</strong> — every new model required two files</li>
+</ul>
+<p>The fix: extract all shared POCOs into a <code>BloodCenterOS.Core</code> class library referenced by both API and Web.</p>
+
+<h2>Architecture Change</h2>
+
+<pre>Before (duplicate models):
+  BloodCenterOS.API/Models/*.cs   (14 models)
+  BloodCenterOS.Web/Models/*.cs   (17 models)
+  └── same classes, two copies, ambiguous references
+
+After (shared library):
+  BloodCenterOS.Core/Models/*.cs   (22 models)  ◄── single source of truth
+  BloodCenterOS.API   ──┐
+  BloodCenterOS.Web   ──┤── project reference → BloodCenterOS.Core</pre>
+
+<h2>BloodCenterOS.Core Models (22 POCOs)</h2>
+
+<div class="col-grid">
+  <div class="col">
+    <h4>🔐 Auth &amp; Users (5)</h4>
+    <code>ApiResponse.cs</code><br>
+    <code>LoginRequest.cs</code><br>
+    <code>User.cs</code><br>
+    <code>UserWithRoles.cs</code><br>
+    <code>Role.cs</code>
+  </div>
+  <div class="col">
+    <h4>🩸 Donation (3)</h4>
+    <code>Donor.cs</code><br>
+    <code>Donation.cs</code><br>
+    <code>Camp.cs</code>
+  </div>
+  <div class="col">
+    <h4>🧪 Processing (7)</h4>
+    <code>Collection.cs</code><br>
+    <code>BloodBag.cs</code><br>
+    <code>Component.cs</code><br>
+    <code>InventoryStock.cs</code><br>
+    <code>BloodTestRecord.cs</code><br>
+    <code>BloodTestResult.cs</code><br>
+    <code>PatientRequest.cs</code>
+  </div>
+  <div class="col">
+    <h4>🏥 Operations (4)</h4>
+    <code>Hospital.cs</code><br>
+    <code>IssueRecord.cs</code><br>
+    <code>Billing.cs</code><br>
+    <code>EmergencyRequest.cs</code>
+  </div>
+  <div class="col">
+    <h4>🔑 Security (2)</h4>
+    <code>Permission.cs</code><br>
+    <code>RolePermission.cs</code>
+  </div>
+  <div class="col">
+    <h4>📊 Reports &amp; Settings (3)</h4>
+    <code>ReportModels.cs</code><br>
+    <code>SettingModels.cs</code><br>
+    <code>BloodTestRecord.cs</code> (+ <code>StatusBadge</code> computed)
+  </div>
+</div>
+
+<h2>Files Removed (Duplicates No Longer Needed)</h2>
+
+<table>
+  <tr><th>Project</th><th>Removed Files</th><th>Models Count</th></tr>
+  <tr>
+    <td><strong>BloodCenterOS.API/Models/</strong></td>
+    <td>Entire directory (14 .cs files)</td>
+    <td><span class="file-count">14</span></td>
+  </tr>
+  <tr>
+    <td><strong>BloodCenterOS.Web/Models/</strong></td>
+    <td>Donor.cs, Camp.cs, Hospital.cs, Collection.cs, Component.cs, InventoryStock.cs, PatientRequest.cs, ApiResponse.cs, LoginRequest.cs, BloodBag.cs, BloodTestRecord.cs, BloodTestResult.cs, IssueRecord.cs, Billing.cs, EmergencyRequest.cs, Donation.cs, User.cs, UserWithRoles.cs, Role.cs, Permission.cs, RolePermission.cs, ReportModels.cs, SettingModels.cs</td>
+    <td><span class="file-count">23</span></td>
+  </tr>
+  <tr>
+    <td><strong>Deduplicated DTOs</strong></td>
+    <td>CenterConfigItem, SystemConfigItem, LookupTypeItem, LookupValueItem, DonorSummaryRow, InventorySummaryRow, CampSummaryRow (from AdminDtos.cs)</td>
+    <td><span class="file-count">7</span></td>
+  </tr>
+</table>
+
+<h2>Files Updated</h2>
+
+<table>
+  <tr><th>Project</th><th>File</th><th>Change</th></tr>
+  <tr><td>API</td><td><code>BloodCenterOS.API.csproj</code></td><td>+ ProjectReference to Core</td></tr>
+  <tr><td>API</td><td><code>Program.cs</code></td><td>+ <code>using BloodCenterOS.Core.Models</code></td></tr>
+  <tr><td>API</td><td>14 Repository &amp; Controller files</td><td>Updated using directives</td></tr>
+  <tr><td>Web</td><td><code>BloodCenterOS.Web.csproj</code></td><td>+ ProjectReference to Core</td></tr>
+  <tr><td>Web</td><td><code>Views/_ViewImports.cshtml</code></td><td>+ <code>@using BloodCenterOS.Core.Models</code></td></tr>
+  <tr><td>Web</td><td>6 ViewModel files</td><td>+ <code>using BloodCenterOS.Core.Models</code></td></tr>
+  <tr><td>Web</td><td><code>AdminDtos.cs</code></td><td>Removed 7 duplicate DTO classes</td></tr>
+  <tr><td>Web</td><td><code>Services/ApiClient.cs</code></td><td>~30 method signatures now resolve to Core types</td></tr>
+  <tr><td>Web</td><td>All Web Controllers</td><td>Updated using directives</td></tr>
+  <tr><td><strong>Core</strong></td><td><code>BloodTestRecord.cs</code></td><td>Added <code>StatusBadge</code> computed property (lost during migration)</td></tr>
+</table>
+
+<h2>Build Verdict</h2>
+
+<table>
+  <tr><th>Project</th><th>Errors</th><th>Warnings</th></tr>
+  <tr><td>BloodCenterOS.Core</td><td>0</td><td>0</td></tr>
+  <tr><td>BloodCenterOS.API</td><td>0</td><td>0</td></tr>
+  <tr><td>BloodCenterOS.Web</td><td>0</td><td>0</td></tr>
+  <tr><td>BloodCenterOS.API.IntegrationTests</td><td>0</td><td>7 (pre-existing nullable)</td></tr>
+</table>
+
+<div class="success">
+<strong>✅ Full solution builds clean</strong><br>
+<code>dotnet build</code> → 0 errors, 7 pre-existing nullable warnings (integration tests only)
+</div>
+
+<h2>What Was Fixed</h2>
+<ol>
+  <li><strong>Created BloodCenterOS.Core</strong> — net9.0 class library, <code>BloodCenterOS.Core.Models</code> namespace, nullable enabled</li>
+  <li><strong>Moved 22 POCOs</strong> — all shared domain models from both API and Web into Core</li>
+  <li><strong>Added project references</strong> — both API and Web reference <code>BloodCenterOS.Core</code></li>
+  <li><strong>Updated imports</strong> — ~63 .cs files across both projects changed <code>using BloodCenterOS.*.Models</code> → <code>using BloodCenterOS.Core.Models</code></li>
+  <li><strong>Fixed ambiguous references</strong> — removed 7 duplicate DTOs from <code>AdminDtos.cs</code> (CenterConfigItem, SystemConfigItem, LookupTypeItem, LookupValueItem, DonorSummaryRow, InventorySummaryRow, CampSummaryRow)</li>
+  <li><strong>Restored StatusBadge</strong> — <code>BloodTestRecord.StatusBadge</code> computed property was lost during migration; added back as switch expression mapping OverallStatus → Bootstrap badge CSS class</li>
+  <li><strong>Updated _ViewImports</strong> — <code>@using BloodCenterOS.Core.Models</code> added so all Razor views resolve Core types globally</li>
+  <li><strong>Updated ViewModels</strong> — added <code>using BloodCenterOS.Core.Models</code> to CampViewModel, CollectionViewModel, ComponentViewModel, DonorViewModel, InventoryViewModel, TestViewModel</li>
+</ol>
+
+<div class="warn">
+<strong>⚠ Cleanup check</strong><br>
+Before this cleanup, <code>dotnet build</code> failed with <strong>dozens of ambiguous-reference and missing-type errors</strong> across both API and Web projects. After the Core extraction, all projects compile clean. No runtime behavior changed — this was purely a structural refactor.
+</div>
+
+<h2>Current Project Structure</h2>
+
+<pre>BloodCenterOS.sln
+├── BloodCenterOS.Core/               ◄── NEW shared library
+│   └── Models/                       (22 POCOs, single source of truth)
+├── BloodCenterOS.API/
+│   ├── Controllers/                  (14 controllers)
+│   ├── Repositories/                 (14 interfaces + implementations)
+│   ├── Services/                     (4 services)
+│   └── Program.cs                    (DI, JWT, CORS)
+├── BloodCenterOS.Web/
+│   ├── Controllers/                  (15 controllers)
+│   ├── Models/
+│   │   ├── AdminDtos.cs              (Web-specific DTOs only)
+│   │   ├── ErrorViewModel.cs
+│   │   └── ViewModels/               (10 ViewModel classes)
+│   ├── Services/
+│   │   ├── ApiClient.cs
+│   │   ├── AuthService.cs
+│   │   ├── TokenStore.cs
+│   │   └── JwtCookieMiddleware.cs
+│   └── Views/                        (30+ Razor views)
+└── BloodCenterOS.API.IntegrationTests/ (23 tests)</pre>
+
+<h2>Sidebar Menu (all 14 modules)</h2>
+<pre>
+Dashboard · Donors · Collection · Testing · Components · Inventory
+Issue · Billing · Emergency · Camp Management · Hospitals
+Reports
+Administration (Users · Roles · Settings)
+</pre>
+
+<h2>Next Steps</h2>
+<ol>
+  <li><strong>Audit Logs</strong> — login history + data change audit trail viewer</li>
+  <li><strong>Dashboard Enhancements</strong> — live data widgets with real-time API data</li>
+  <li><strong>Integration Tests</strong> — add tests for Phase 5 controllers (Users, Roles, Reports, Settings)</li>
+  <li><strong>BloodCenterOS.Core expansion</strong> — move shared SP-calling logic (e.g. DbConnectionFactory) if API + CLI ever needed</li>
+</ol>
+
+</body>
+</html>

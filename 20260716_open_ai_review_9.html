@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BloodCenterOS · Step 7 — Reference Data Seeded (171 Rows Across 7 Tables)</title>
+<style>
+  body { font-family: system-ui, sans-serif; max-width: 1000px; margin: 2em auto; padding: 0 1em; line-height: 1.6; background: #f8fafc; color: #1e293b; }
+  h1 { border-bottom: 3px solid #22c55e; padding-bottom: .3em; }
+  h2 { color: #16a34a; margin-top: 2em; }
+  pre { background: #1e293b; color: #e2e8f0; padding: 1em; border-radius: 8px; overflow-x: auto; }
+  code { background: #e2e8f0; padding: .15em .4em; border-radius: 4px; font-size: .9em; }
+  pre code { background: transparent; padding: 0; }
+  table { border-collapse: collapse; width: 100%; margin: 1em 0; }
+  th, td { text-align: left; padding: .4em .6em; border-bottom: 1px solid #cbd5e1; }
+  th { background: #e2e8f0; font-weight: 600; }
+  .badge { display: inline-block; padding: .15em .6em; border-radius: 999px; font-size: .8em; font-weight: 600; }
+  .badge-pass { background: #dcfce7; color: #166534; }
+  .badge-fail { background: #fee2e2; color: #991b1b; }
+  .badge-warn { background: #fef9c3; color: #854d0e; }
+  .badge-info { background: #dbeafe; color: #1e40af; }
+  .summary-card { background: white; border-radius: 12px; padding: 1.5em; box-shadow: 0 1px 3px rgba(0,0,0,.1); margin: 1em 0; }
+  .warn { background: #fef9c3; border-left: 4px solid #eab308; padding: .75em 1em; border-radius: 6px; }
+  .success { background: #dcfce7; border-left: 4px solid #22c55e; padding: .75em 1em; border-radius: 6px; }
+  .error-box { background: #fee2e2; border-left: 4px solid #ef4444; padding: .75em 1em; border-radius: 6px; }
+</style>
+</head>
+<body>
+
+<h1>✅ BloodCenterOS · Step 7 — Reference Data Seed</h1>
+<p><strong>Date:</strong> 2026-07-16 | <strong>Subject:</strong> Populated 171 rows across 7 reference/lookup tables for both dev and test databases</p>
+
+<div class="summary-card">
+<h2>Summary</h2>
+<p>
+  <span class="badge badge-pass">✓ 171 total rows seeded</span>
+  <span class="badge badge-pass">✓ 7 reference tables populated</span>
+  <span class="badge badge-pass">✓ 2 databases seeded (bloodcenter + bloodcenter_test)</span>
+  <span class="badge badge-pass">✓ 23/23 integration tests still green</span>
+  <span class="badge badge-pass">✓ Idempotent (ON CONFLICT) — safe to re-run</span>
+</p>
+</div>
+
+<h2>Seeded Tables</h2>
+
+<table>
+  <tr><th>Table</th><th>Rows</th><th>Purpose</th><th>Key Data</th></tr>
+  <tr>
+    <td><code>ComponentTypeMaster</code></td><td style="text-align:center">9</td>
+    <td>Blood component types (NBTC standard)</td>
+    <td>WB, PRBC, FFP, PC (Platelet Concentrate), CRYO, CPP, SDP, WRBC, IRBC</td>
+  </tr>
+  <tr>
+    <td><code>LookupType</code></td><td style="text-align:center">10</td>
+    <td>Generic lookup type catalog</td>
+    <td>DEFERRAL_REASON, DISCARD_REASON, DONATION_TYPE, ISSUE_TYPE, BAG_TYPE, GENDER, OCCUPATION, URGENCY, TEST_RESULT, TEST_METHOD</td>
+  </tr>
+  <tr>
+    <td><code>LookupValue</code></td><td style="text-align:center">59</td>
+    <td>Values for each lookup type</td>
+    <td>14 deferral reasons, 7 discard reasons, 4 donation types, 3 issue types, 7 bag types, 3 genders, 10 occupations, 3 urgency levels, 3 test results, 5 test methods</td>
+  </tr>
+  <tr>
+    <td><code>ReasonMaster</code></td><td style="text-align:center">17</td>
+    <td>Categorized deferral/discard reasons</td>
+    <td>12 deferral (LOW_HEMOGLOBIN through VACCINATION) + 5 discard (EXPIRED through SHORT_BLEED)</td>
+  </tr>
+  <tr>
+    <td><code>PermissionMaster</code></td><td style="text-align:center">30</td>
+    <td>CRUD permissions per module</td>
+    <td>DONOR_CREATE through ADMIN_PANEL — covers Donor, Collection, Component, Test, Inventory, Issue, Camp, User, Report, Billing, Emergency, Hospital modules</td>
+  </tr>
+  <tr>
+    <td><code>ServiceChargeMaster</code></td><td style="text-align:center">10</td>
+    <td>Billing charges for Center 1</td>
+    <td>WB ₹1450, PRBC ₹1800, FFP ₹1200, PC ₹2500, CRYO ₹2000, SDP ₹5000, Crossmatch ₹350, Screening ₹1200, Storage ₹50/day, Transport ₹500</td>
+  </tr>
+  <tr>
+    <td><code>StateMaster</code></td><td style="text-align:center">36</td>
+    <td>Indian states + UTs</td>
+    <td>28 states + 8 union territories (Andhra Pradesh through Puducherry)</td>
+  </tr>
+</table>
+
+<h2>Seed File</h2>
+<p><strong>File:</strong> <code>DB/seed_reference_data.sql</code> (150 lines)</p>
+
+<p>Design decisions:</p>
+<ul>
+  <li><strong>Direct INSERTs</strong> instead of SP calls — simpler, faster, no dependency on SP logic for seed data</li>
+  <li><strong>Explicit IDs</strong> with <code>ON CONFLICT (PK) DO NOTHING</code> — idempotent, multi-run safe</li>
+  <li><strong>Sequence advancement</strong> via <code>setval()</code> after seeding — prevents PK conflicts when the app inserts new rows</li>
+  <li><strong>CenterId = NULL</strong> for lookup values — system-wide defaults, not center-specific</li>
+  <li><strong>Service charges at Center 1</strong> — matches the single seed center from <code>seed_test.sql</code></li>
+</ul>
+
+<h2>Lookup System Architecture</h2>
+
+<table>
+  <tr><th>Layer</th><th>Table</th><th>Example</th></tr>
+  <tr><td>1 — Type</td><td><code>LookupType</code></td><td><code>TypeCode = 'DEFERRAL_REASON'</code></td></tr>
+  <tr><td>2 — Value</td><td><code>LookupValue</code></td><td><code>ValueCode = 'LOW_HEMOGLOBIN'</code>, <code>ValueText = 'Low Hemoglobin'</code></td></tr>
+  <tr><td>3 — API</td><td><code>fn_lookup_get_by_type('DEFERRAL_REASON')</code></td><td>Returns <code>TABLE(ValueCode, ValueText, SortOrder)</code></td></tr>
+</table>
+
+<p>This powers any future <code>GET /api/lookup/{typeCode}</code> endpoint — adding a new dropdown requires only a row in <code>LookupValue</code>, no code change.</p>
+
+<h2>Test Verification</h2>
+
+<p>Verified <code>fn_lookup_get_by_type</code> returns correct data:</p>
+
+<pre>$ SELECT * FROM fn_lookup_get_by_type('DEFERRAL_REASON');
+   valuecode    |       valuetext        | sortorder
+----------------+------------------------+-----------
+ LOW_HEMOGLOBIN | Low Hemoglobin         |         1
+ LOW_WEIGHT     | Low Weight (&lt;45kg)     |         2
+ ILLNESS        | Illness / Fever        |         3
+ ...            ...                      ...
+ OTHER_PERM     | Other (Permanent)      |        14
+(14 rows)</pre>
+
+<p>All <strong>23 integration tests</strong> pass after seeding — the new data does not interfere with existing test scenarios.</p>
+
+<h2>Files Created / Modified</h2>
+<table>
+  <tr><th>File</th><th>Type</th><th>Change</th></tr>
+  <tr><td><code>DB/seed_reference_data.sql</code></td><td>New</td><td>Comprehensive seed for 7 reference tables (171 rows)</td></tr>
+</table>
+
+<h2>Next Steps</h2>
+<ol>
+  <li><strong>Create a LookupController</strong> — expose <code>GET /api/lookup/{typeCode}</code> using <code>fn_lookup_get_by_type</code> so the frontend can populate dropdowns</li>
+  <li><strong>JWT secret hardening</strong> — move from <code>appsettings.json</code> to User Secrets</li>
+  <li><strong>Frontend</strong> — connect <code>BloodCenterOS.Web</code> (MVC or SPA) to consume the API</li>
+</ol>
+
+<div class="warn">
+<strong>⚠ Reminder</strong><br>
+• Admin credentials: <code>admin</code> / <code>admin@123</code> at <code>localhost:5000</code><br>
+• 23/23 integration tests · 19/19 PowerShell endpoint tests<br>
+• Run seed: <code>psql -U postgres -d bloodcenter -f DB/seed_reference_data.sql</code>
+</div>
+
+</body>
+</html>

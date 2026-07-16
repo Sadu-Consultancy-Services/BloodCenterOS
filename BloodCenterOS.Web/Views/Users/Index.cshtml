@@ -1,0 +1,119 @@
+@model UserSearchViewModel
+@{
+  ViewBag.Title = "Users";
+  ViewBag.ActiveMenu = "Users";
+}
+
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Users <small>Manage system users</small></h1>
+  </div>
+  <div class="d-flex gap-2">
+    <a href="@Url.Action("Create")" class="btn btn-primary"><i class="bi bi-plus-lg"></i> Add User</a>
+  </div>
+</div>
+
+@if (TempData["Success"] is string success)
+{
+  <div class="alert alert-success d-flex align-items-center gap-2 mb-3 py-2 px-3">
+    <i class="bi bi-check-circle-fill"></i> <span>@success</span>
+    <button type="button" class="btn-close ms-auto" style="font-size:10px" onclick="this.parentElement.remove()"></button>
+  </div>
+}
+@if (TempData["Error"] is string error)
+{
+  <div class="alert alert-danger d-flex align-items-center gap-2 mb-3 py-2 px-3">
+    <i class="bi bi-exclamation-triangle-fill"></i> <span>@error</span>
+    <button type="button" class="btn-close ms-auto" style="font-size:10px" onclick="this.parentElement.remove()"></button>
+  </div>
+}
+
+<form method="get" action="@Url.Action("Index")">
+  <div class="card mb-3">
+    <div class="filter-bar">
+      <i class="bi bi-funnel text-muted" style="font-size:14px"></i>
+      <input type="text" name="keyword" class="form-control" placeholder="Search username, name, email..." style="min-width:220px" value="@Model.Keyword" />
+      <button type="submit" class="btn btn-primary"><i class="bi bi-search"></i> Search</button>
+      <a href="@Url.Action("Index")" class="btn btn-outline-secondary"><i class="bi bi-x-circle"></i> Clear</a>
+    </div>
+  </div>
+</form>
+
+<div class="card">
+  <div class="card-header">
+    <h6>@Model.TotalCount records found</h6>
+  </div>
+  <div class="card-body p-0">
+    <div class="table-container">
+      <table class="table mb-0">
+        <thead>
+          <tr>
+            <th>Username</th>
+            <th>Display Name</th>
+            <th>Email</th>
+            <th>Phone</th>
+            <th>Last Login</th>
+            <th>Status</th>
+            <th style="width:100px">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          @foreach (var u in Model.Items)
+          {
+            <tr>
+              <td><span style="font-weight:500">@u.UserName</span></td>
+              <td>@u.DisplayName</td>
+              <td style="font-size:11px">@u.Email</td>
+              <td>@u.Phone</td>
+              <td style="font-size:11px">@(u.LastLoginAt?.ToString("dd MMM yyyy HH:mm") ?? "—")</td>
+              <td>
+                <span class="badge @(u.IsLocked ? "badge-warning" : "badge-success")">@(u.IsLocked ? "Locked" : "Active")</span>
+              </td>
+              <td>
+                <div class="d-flex gap-1">
+                  <a href="@Url.Action("Edit", new { id = u.UserId })" class="btn btn-sm btn-outline-secondary" title="Edit"><i class="bi bi-pencil"></i></a>
+                  <form method="post" action="@Url.Action("ToggleLock", new { id = u.UserId, locked = !u.IsLocked })" style="display:inline">
+                    <button type="submit" class="btn btn-sm btn-outline-secondary @(u.IsLocked ? "text-success" : "text-warning")" title="@(u.IsLocked ? "Unlock" : "Lock")">
+                      <i class="bi @(u.IsLocked ? "bi-unlock" : "bi-lock")"></i>
+                    </button>
+                  </form>
+                </div>
+              </td>
+            </tr>
+          }
+          @if (!Model.Items.Any())
+          {
+            <tr>
+              <td colspan="7">
+                <div class="empty-state">
+                  <div class="empty-icon"><i class="bi bi-people"></i></div>
+                  <div class="empty-title">No users found</div>
+                  <div class="empty-text">Try adjusting your search or add a new user.</div>
+                </div>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <div class="card-footer d-flex align-items-center justify-content-between">
+    <span style="font-size:11px;color:var(--bc-text-muted)">Showing 1-@Model.Items.Count of @Model.TotalCount</span>
+    <nav>
+      <ul class="pagination pagination-sm mb-0">
+        <li class="page-item @(Model.Page <= 1 ? "disabled" : "")">
+          <a class="page-link" href="@Url.Action("Index", new { keyword = Model.Keyword, page = Model.Page - 1 })"><i class="bi bi-chevron-left"></i></a>
+        </li>
+        @for (var p = Math.Max(1, Model.Page - 2); p <= Math.Min(Model.TotalPages, Model.Page + 2); p++)
+        {
+          <li class="page-item @(p == Model.Page ? "active" : "")">
+            <a class="page-link" href="@Url.Action("Index", new { keyword = Model.Keyword, page = p })">@p</a>
+          </li>
+        }
+        <li class="page-item @(Model.Page >= Model.TotalPages ? "disabled" : "")">
+          <a class="page-link" href="@Url.Action("Index", new { keyword = Model.Keyword, page = Model.Page + 1 })"><i class="bi bi-chevron-right"></i></a>
+        </li>
+      </ul>
+    </nav>
+  </div>
+</div>

@@ -1,0 +1,75 @@
+@model Collection
+@{
+  ViewBag.Title = "Collection Details";
+  ViewBag.ActiveMenu = "Collection";
+}
+
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Collection @Model.BloodBagNumber <small>#@Model.CollectionId</small></h1>
+  </div>
+  <a href="@Url.Action("Index")" class="btn btn-outline-secondary"><i class="bi bi-arrow-left"></i> Back to List</a>
+</div>
+
+<div class="row g-2 mb-3">
+  <div class="col-md-7">
+    <div class="card">
+      <div class="card-header"><h6>Collection Information</h6></div>
+      <div class="card-body">
+        <div class="row g-2">
+          <div class="col-md-6">
+            <div style="font-size:11px;color:var(--bc-text-muted)">Bag Number</div>
+            <div style="font-size:13px;font-weight:500">@Model.BloodBagNumber</div>
+          </div>
+          <div class="col-md-6">
+            <div style="font-size:11px;color:var(--bc-text-muted)">Barcode</div>
+            <div style="font-size:13px">@(Model.BagBarcode ?? "—")</div>
+          </div>
+          <div class="col-md-4">
+            <div style="font-size:11px;color:var(--bc-text-muted)">Donor ID</div>
+            <div style="font-size:13px">@(Model.DonorId?.ToString() ?? "—")</div>
+          </div>
+          <div class="col-md-4">
+            <div style="font-size:11px;color:var(--bc-text-muted)">Volume</div>
+            <div style="font-size:13px">@(Model.BagVolumeMl?.ToString("F0") ?? "—") ml</div>
+          </div>
+          <div class="col-md-4">
+            <div style="font-size:11px;color:var(--bc-text-muted)">Location</div>
+            <div style="font-size:13px"><span class="badge badge-info">@(Model.CollectionLocationType ?? "—")</span></div>
+          </div>
+          <div class="col-md-4">
+            <div style="font-size:11px;color:var(--bc-text-muted)">Start Time</div>
+            <div style="font-size:13px">@Model.CollectionStartTime?.ToString("dd MMM yyyy HH:mm")</div>
+          </div>
+          <div class="col-md-4">
+            <div style="font-size:11px;color:var(--bc-text-muted)">End Time</div>
+            <div style="font-size:13px">@Model.CollectionEndTime?.ToString("dd MMM yyyy HH:mm")</div>
+          </div>
+          <div class="col-md-4">
+            <div style="font-size:11px;color:var(--bc-text-muted)">Camp</div>
+            <div style="font-size:13px">@(Model.CampId.HasValue ? $"Camp #{Model.CampId}" : "—")</div>
+          </div>
+          @if (!string.IsNullOrEmpty(Model.Notes))
+          {
+            <div class="col-12">
+              <div style="font-size:11px;color:var(--bc-text-muted)">Notes</div>
+              <div style="font-size:13px">@Model.Notes</div>
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-5">
+    <div class="card">
+      <div class="card-header"><h6>Quick Actions</h6></div>
+      <div class="card-body">
+        <div class="d-flex flex-column gap-2">
+          <a href="@Url.Action("Create","Test")?bagNumber=@Model.BloodBagNumber" class="btn btn-outline-secondary w-100 justify-content-start"><i class="bi bi-flask"></i> Send for Testing</a>
+          <a href="@Url.Action("Prepare","Component")?bagId=@Model.CollectionId" class="btn btn-outline-secondary w-100 justify-content-start"><i class="bi bi-boxes"></i> Prepare Component</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

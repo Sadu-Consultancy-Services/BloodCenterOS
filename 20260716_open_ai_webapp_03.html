@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BloodCenterOS · Web App Phase 3 — Blood Workflow</title>
+<style>
+  body { font-family: system-ui, sans-serif; max-width: 1000px; margin: 2em auto; padding: 0 1em; line-height: 1.6; background: #f8fafc; color: #1e293b; }
+  h1 { border-bottom: 3px solid #22c55e; padding-bottom: .3em; }
+  h2 { color: #16a34a; margin-top: 2em; }
+  h3 { color: #1e293b; margin-top: 1.5em; }
+  pre { background: #1e293b; color: #e2e8f0; padding: 1em; border-radius: 8px; overflow-x: auto; font-size: .85em; }
+  code { background: #e2e8f0; padding: .15em .4em; border-radius: 4px; font-size: .9em; }
+  pre code { background: transparent; padding: 0; }
+  table { border-collapse: collapse; width: 100%; margin: 1em 0; font-size: .9em; }
+  th, td { text-align: left; padding: .4em .6em; border-bottom: 1px solid #cbd5e1; }
+  th { background: #e2e8f0; font-weight: 600; }
+  .badge { display: inline-block; padding: .15em .6em; border-radius: 999px; font-size: .8em; font-weight: 600; }
+  .badge-pass { background: #dcfce7; color: #166534; }
+  .badge-info { background: #dbeafe; color: #1e40af; }
+  .badge-new { background: #fef9c3; color: #854d0e; }
+  .summary-card { background: white; border-radius: 12px; padding: 1.5em; box-shadow: 0 1px 3px rgba(0,0,0,.1); margin: 1em 0; }
+  .warn { background: #fef9c3; border-left: 4px solid #eab308; padding: .75em 1em; border-radius: 6px; }
+  .success { background: #dcfce7; border-left: 4px solid #22c55e; padding: .75em 1em; border-radius: 6px; }
+  .file-grid { display: grid; grid-template-columns: 220px 1fr; gap: 2px; font-size: .85em; }
+  .file-grid .fg-label { font-weight: 600; background: #f1f5f9; padding: 3px 8px; }
+  .file-grid .fg-value { background: #f8fafc; padding: 3px 8px; font-family: monospace; font-size: .95em; }
+  .endpoint { font-family: monospace; background: #f1f5f9; padding: 2px 6px; border-radius: 4px; font-size: .85em; }
+  .col { background: #f0fdf4; padding: 1em; border-radius: 8px; }
+  .col h4 { margin: 0 0 .3em 0; font-size: 14px; }
+</style>
+</head>
+<body>
+
+<h1>✅ BloodCenterOS · Web App Phase 3</h1>
+<p><strong>Date:</strong> 2026-07-16 | <strong>Subject:</strong> Blood Workflow — Collection, Components, Inventory, Testing</p>
+
+<div class="summary-card">
+<h2>Deliverables</h2>
+<p>
+  <span class="badge badge-pass">✓ Blood Collection (list + create + details + camp variant)</span>
+  <span class="badge badge-pass">✓ Component Management (list + prepare + blood-group filter)</span>
+  <span class="badge badge-pass">✓ Inventory Dashboard (stock table + summary stats)</span>
+  <span class="badge badge-pass">✓ Testing Module (pending list + TTHI result entry + complete workflow)</span>
+  <span class="badge badge-pass">✓ Full Testing API (models + repo + 6 controller endpoints)</span>
+  <span class="badge badge-pass">✓ Build: 0 warnings, 0 errors</span>
+</p>
+</div>
+
+<h2>Files Created / Modified</h2>
+
+<h3>API Layer (7 new files)</h3>
+<div class="file-grid">
+  <div class="fg-label"><span class="badge badge-new">New SP</span></div>
+  <div class="fg-value">DB/fn_collection_get_by_center.sql</div>
+  <div class="fg-label"><span class="badge badge-new">New Model</span></div>
+  <div class="fg-value">Models/BloodTestRecord.cs</div>
+  <div class="fg-label"><span class="badge badge-new">New Model</span></div>
+  <div class="fg-value">Models/BloodTestResult.cs</div>
+  <div class="fg-label"><span class="badge badge-new">New Repo</span></div>
+  <div class="fg-value">Repositories/{ITestRepository,TestRepository}.cs</div>
+  <div class="fg-label"><span class="badge badge-new">New Controller</span></div>
+  <div class="fg-value">Controllers/TestController.cs</div>
+  <div class="fg-label">Modified</div>
+  <div class="fg-value">Repositories/{ICollectionRepository,CollectionRepository}.cs (+GetByCenterAsync)</div>
+  <div class="fg-label">Modified</div>
+  <div class="fg-value">Controllers/CollectionController.cs (+GET /api/collections)</div>
+  <div class="fg-label">Modified</div>
+  <div class="fg-value">Program.cs (+ITestRepository registration)</div>
+</div>
+
+<h3>Web Layer (20 files)</h3>
+<div class="file-grid">
+  <div class="fg-label"><span class="badge badge-new">Controller</span></div>
+  <div class="fg-value">Controllers/{Collection,Component,Inventory,Test}Controller.cs</div>
+  <div class="fg-label"><span class="badge badge-new">Views</span></div>
+  <div class="fg-value">Views/{Collection,Component,Inventory,Test}/ — 11 .cshtml files</div>
+  <div class="fg-label"><span class="badge badge-new">Models</span></div>
+  <div class="fg-value">Models/{BloodTestRecord,BloodTestResult}.cs</div>
+  <div class="fg-label"><span class="badge badge-new">ViewModels</span></div>
+  <div class="fg-value">Models/ViewModels/{CollectionViewModel,ComponentViewModel,InventoryViewModel,TestViewModel}.cs</div>
+  <div class="fg-label">Modified</div>
+  <div class="fg-value">Models/Collection.cs (+BagLotNumber, +CollectorEmployeeId)</div>
+  <div class="fg-label">Modified</div>
+  <div class="fg-value">Services/ApiClient.cs (+9 methods)</div>
+  <div class="fg-label">Modified</div>
+  <div class="fg-value">Views/Shared/_Sidebar.cshtml (all 4 modules linked)</div>
+</div>
+
+<h2>Module Details</h2>
+
+<div class="row g-2" style="display:flex;gap:12px;flex-wrap:wrap">
+  <div class="col" style="flex:1;min-width:200px">
+    <h4>🩸 Blood Collection</h4>
+    <table style="font-size:12px;margin:0">
+      <tr><th>Page</th><th>Route</th></tr>
+      <tr><td>List</td><td>GET /Collection</td></tr>
+      <tr><td>Create</td><td>GET/POST /Collection/Create</td></tr>
+      <tr><td>Camp Create</td><td>GET /Collection/Create?campId=1</td></tr>
+      <tr><td>Details</td><td>GET /Collection/Details/{id}</td></tr>
+    </table>
+    <ul style="margin:6px 0 0;font-size:12px;padding-left:16px">
+      <li>New SP: <code>fn_collection_get_by_center</code></li>
+      <li>Create form: bag #, barcode, lot, donor, volume, location type</li>
+      <li>Quick actions → Testing / Component prep</li>
+      <li>Mock: 3 sample collections</li>
+    </ul>
+  </div>
+  <div class="col" style="flex:1;min-width:200px">
+    <h4>📦 Components</h4>
+    <table style="font-size:12px;margin:0">
+      <tr><th>Page</th><th>Route</th></tr>
+      <tr><td>Available List</td><td>GET /Component</td></tr>
+      <tr><td>Prepare</td><td>GET/POST /Component/Prepare</td></tr>
+    </table>
+    <ul style="margin:6px 0 0;font-size:12px;padding-left:16px">
+      <li>Blood group filter dropdown</li>
+      <li>Prepare: bag ID, component type (PRBC/FFP/Platelet/Cryo), volume</li>
+      <li>API: <span class="endpoint">POST /api/components/prepare</span></li>
+      <li>Mock: 5 components across 4 types</li>
+    </ul>
+  </div>
+  <div class="col" style="flex:1;min-width:200px">
+    <h4>📊 Inventory</h4>
+    <table style="font-size:12px;margin:0">
+      <tr><th>Page</th><th>Route</th></tr>
+      <tr><td>Dashboard</td><td>GET /Inventory</td></tr>
+    </table>
+    <ul style="margin:6px 0 0;font-size:12px;padding-left:16px">
+      <li>4 stat cards: Available, Reserved, Quarantined, Total</li>
+      <li>Stock table: all 8 blood groups × component type</li>
+      <li>Utilization progress bar per row</li>
+      <li>API: <span class="endpoint">GET /api/inventory/stock</span></li>
+    </ul>
+  </div>
+  <div class="col" style="flex:1;min-width:200px">
+    <h4>🧪 Testing (TTHI)</h4>
+    <table style="font-size:12px;margin:0">
+      <tr><th>Page</th><th>Route</th></tr>
+      <tr><td>List</td><td>GET /Test</td></tr>
+      <tr><td>New Record</td><td>GET/POST /Test/Create</td></tr>
+      <tr><td>Result Entry</td><td>GET /Test/ResultEntry/{id}</td></tr>
+    </table>
+    <ul style="margin:6px 0 0;font-size:12px;padding-left:16px">
+      <li>5 TTHI markers: HIV, HBV, HCV, Syphilis, Malaria</li>
+      <li>Per-marker result: Non-reactive / Reactive / Inconclusive</li>
+      <li>Complete button → marks record as Completed</li>
+      <li><span class="badge badge-new">New API</span> 6 endpoints</li>
+    </ul>
+  </div>
+</div>
+
+<h2>Testing Module API (brand new)</h2>
+<p>The Testing module was previously <strong>entirely unexposed</strong> at the API layer — only DB tables + orphaned SPs existed. Now fully wired:</p>
+
+<table>
+  <tr><th>Endpoint</th><th>SP Used</th><th>Purpose</th></tr>
+  <tr><td><span class="endpoint">POST /api/tests</span></td><td>fn_test_record_create</td><td>Create test record (status Pending)</td></tr>
+  <tr><td><span class="endpoint">GET /api/tests/pending</span></td><td>— (direct query)</td><td>List pending tests by center</td></tr>
+  <tr><td><span class="endpoint">GET /api/tests/{id}</span></td><td>— (direct query)</td><td>Get single record</td></tr>
+  <tr><td><span class="endpoint">GET /api/tests/{id}/results</span></td><td>fn_test_result_get_by_record</td><td>Get all results for a record</td></tr>
+  <tr><td><span class="endpoint">POST /api/tests/{id}/results</span></td><td>fn_test_result_add</td><td>Add individual TTHI marker result</td></tr>
+  <tr><td><span class="endpoint">POST /api/tests/{id}/complete</span></td><td>fn_test_record_update_status</td><td>Mark record Completed</td></tr>
+</table>
+
+<h2>Data Flow</h2>
+
+<pre>Collection → Testing → Component → Inventory
+    │            │          │           │
+    │     fn_test_record  fn_component  fn_inventory
+    │     _create         _prepare     _upsert
+    │            │          │           │
+    └─ fn_donor  └─ fn_test └─ fn_comp  └─ Stock table
+       _donation   _result    _master     by blood group
+       _create     _add       created     + component type
+</pre>
+
+<h2>New ApiClient Methods (9)</h2>
+<table>
+  <tr><th>Method</th><th>Endpoint</th></tr>
+  <tr><td><code>GetCollectionsAsync()</code></td><td>GET /api/collections</td></tr>
+  <tr><td><code>PrepareComponentAsync(bagId, type, vol)</code></td><td>POST /api/components/prepare</td></tr>
+  <tr><td><code>CreateTestRecordAsync(record)</code></td><td>POST /api/tests</td></tr>
+  <tr><td><code>GetPendingTestsAsync()</code></td><td>GET /api/tests/pending</td></tr>
+  <tr><td><code>GetTestRecordAsync(id)</code></td><td>GET /api/tests/{id}</td></tr>
+  <tr><td><code>GetTestResultsAsync(id)</code></td><td>GET /api/tests/{id}/results</td></tr>
+  <tr><td><code>AddTestResultAsync(id, result)</code></td><td>POST /api/tests/{id}/results</td></tr>
+  <tr><td><code>CompleteTestRecordAsync(id)</code></td><td>POST /api/tests/{id}/complete</td></tr>
+</table>
+
+<h2>Build Status</h2>
+<p>
+  <span class="badge badge-pass">API: 0 errors, 0 warnings</span><br>
+  <span class="badge badge-pass">Web: 0 errors, 0 warnings</span><br>
+  <span class="badge badge-pass">Integration Tests: 0 errors (7 pre-existing CS8602 nullable warnings only)</span>
+</p>
+
+<div class="success">
+<strong>How to run</strong><br>
+1. Start API: <code>dotnet run --project BloodCenterOS.API</code> (port 5000)<br>
+2. Start Web: <code>dotnet run --project BloodCenterOS.Web</code> (port 5055)<br>
+3. Login with <code>admin</code> / <code>admin@123</code><br>
+4. Navigate: Collections → Testing → Components → Inventory
+</div>
+
+<h2>Next Steps</h2>
+<ol>
+  <li><strong>Blood Requests &amp; Issue</strong> — pending requests, issue blood to hospitals</li>
+  <li><strong>Billing</strong> — billing workflow</li>
+  <li><strong>Emergency</strong> — emergency request handling</li>
+  <li><strong>User &amp; Role Management</strong> — admin panel</li>
+  <li><strong>Reports</strong> — Excel/PDF export</li>
+</ol>
+
+</body>
+</html>

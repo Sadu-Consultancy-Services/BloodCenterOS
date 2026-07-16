@@ -1,0 +1,116 @@
+@model UserDetailViewModel
+@{
+  ViewBag.Title = "Edit User";
+  ViewBag.ActiveMenu = "Users";
+}
+
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Edit User <small>@Model.UserName</small></h1>
+  </div>
+  <a href="@Url.Action("Index")" class="btn btn-outline-secondary"><i class="bi bi-arrow-left"></i> Back to List</a>
+</div>
+
+@if (TempData["Success"] is string success)
+{
+  <div class="alert alert-success d-flex align-items-center gap-2 mb-3 py-2 px-3">
+    <i class="bi bi-check-circle-fill"></i> <span>@success</span>
+    <button type="button" class="btn-close ms-auto" style="font-size:10px" onclick="this.parentElement.remove()"></button>
+  </div>
+}
+@if (TempData["Error"] is string error)
+{
+  <div class="alert alert-danger d-flex align-items-center gap-2 mb-3 py-2 px-3">
+    <i class="bi bi-exclamation-triangle-fill"></i> <span>@error</span>
+    <button type="button" class="btn-close ms-auto" style="font-size:10px" onclick="this.parentElement.remove()"></button>
+  </div>
+}
+
+<form method="post" action="@Url.Action("Edit", new { id = Model.UserId })">
+  <div class="card mb-3">
+    <div class="card-header"><h6>Account Details</h6></div>
+    <div class="card-body">
+      <div class="row g-2">
+        <div class="col-md-4">
+          <label class="form-label">Username</label>
+          <input type="text" class="form-control" value="@Model.UserName" readonly disabled />
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">Display Name</label>
+          <input type="text" name="displayName" class="form-control" value="@Model.DisplayName" />
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">Email</label>
+          <input type="email" name="email" class="form-control" value="@Model.Email" />
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">Phone</label>
+          <input type="tel" name="phone" class="form-control" value="@Model.Phone" />
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">Status</label>
+          <span class="badge @(Model.IsLocked ? "badge-warning" : "badge-success")" style="display:inline-block;margin-top:6px">@(Model.IsLocked ? "Locked" : "Active")</span>
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">Last Login</label>
+          <div style="padding-top:6px;font-size:12px">@(Model.LastLoginAt?.ToString("dd MMM yyyy HH:mm") ?? "—")</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="d-flex gap-2 justify-content-end">
+    <a href="@Url.Action("Index")" class="btn btn-outline-secondary">Cancel</a>
+    <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg"></i> Update User</button>
+  </div>
+</form>
+
+<div class="card mb-3">
+  <div class="card-header d-flex justify-content-between align-items-center">
+    <h6 style="margin:0">Role Assignments</h6>
+  </div>
+  <div class="card-body p-0">
+    <div class="table-container">
+      <table class="table mb-0">
+        <thead>
+          <tr><th>Role</th><th style="width:100px">Action</th></tr>
+        </thead>
+        <tbody>
+          @foreach (var r in Model.Roles)
+          {
+            <tr>
+              <td>@r.RoleName</td>
+              <td>
+                <form method="post" action="@Url.Action("RemoveRole", new { userId = Model.UserId, roleId = r.RoleId })" style="display:inline">
+                  <button type="submit" class="btn btn-sm btn-outline-danger"><i class="bi bi-x"></i> Remove</button>
+                </form>
+              </td>
+            </tr>
+          }
+          @if (!Model.Roles.Any())
+          {
+            <tr><td colspan="2"><div class="empty-state"><div class="empty-icon"><i class="bi bi-shield"></i></div><div class="empty-title">No roles assigned</div></div></td></tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+  @{
+    var allRoles = ViewBag.AllRoles as List<RoleItemResult> ?? new();
+  }
+  @if (allRoles.Any(r => !Model.Roles.Any(mr => mr.RoleId == r.RoleId)))
+  {
+    <div class="card-footer">
+      <form method="post" action="@Url.Action("AssignRole", new { userId = Model.UserId })" class="d-flex gap-2 align-items-center">
+        <select name="roleId" class="form-select form-select-sm" style="width:200px">
+          <option value="">-- Select Role --</option>
+          @foreach (var r in allRoles.Where(r => !Model.Roles.Any(mr => mr.RoleId == r.RoleId)))
+          {
+            <option value="@r.RoleId">@r.RoleName</option>
+          }
+        </select>
+        <button type="submit" class="btn btn-sm btn-primary"><i class="bi bi-plus"></i> Assign Role</button>
+      </form>
+    </div>
+  }
+</div>

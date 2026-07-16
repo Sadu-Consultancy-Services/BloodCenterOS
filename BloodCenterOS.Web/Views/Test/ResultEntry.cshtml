@@ -1,0 +1,113 @@
+@model TestDetailViewModel
+@{
+  ViewBag.Title = "Enter Test Results";
+  ViewBag.ActiveMenu = "Testing";
+  var tthiMarkers = new[] { "HIV", "HBV", "HCV", "Syphilis", "Malaria" };
+}
+
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Test Results <small>Bag: @Model.Record.BagNumber</small></h1>
+  </div>
+  <div class="d-flex gap-2">
+    <form method="post" action="@Url.Action("Complete",new{id=Model.Record.TestRecordId})" style="display:inline">
+      <button type="submit" class="btn btn-success" onclick="return confirm('Mark this test record as completed?')"><i class="bi bi-check-lg"></i> Complete Testing</button>
+    </form>
+    <a href="@Url.Action("Index")" class="btn btn-outline-secondary"><i class="bi bi-arrow-left"></i> Back</a>
+  </div>
+</div>
+
+@if (TempData["Success"] is string s) { <div class="alert alert-success d-flex align-items-center gap-2 mb-3 py-2 px-3"><i class="bi bi-check-circle-fill"></i><span>@s</span><button type="button" class="btn-close ms-auto" style="font-size:10px" onclick="this.parentElement.remove()"></button></div> }
+@if (TempData["Error"] is string e) { <div class="alert alert-danger d-flex align-items-center gap-2 mb-3 py-2 px-3"><i class="bi bi-exclamation-triangle-fill"></i><span>@e</span><button type="button" class="btn-close ms-auto" style="font-size:10px" onclick="this.parentElement.remove()"></button></div> }
+
+<div class="row g-2">
+  <div class="col-md-7">
+    <div class="card">
+      <div class="card-header"><h6>TTHI Marker Results</h6></div>
+      <div class="card-body p-0">
+        <div class="table-container">
+          <table class="table mb-0">
+            <thead>
+              <tr>
+                <th>Test</th>
+                <th>Result</th>
+                <th>Method</th>
+                <th style="width:140px">Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              @foreach (var marker in tthiMarkers)
+              {
+                var existing = Model.Results.FirstOrDefault(r => r.TestCode == marker);
+                <tr>
+                  <td><strong>@marker</strong></td>
+                  <td>
+                    @if (existing != null)
+                    {
+                      <span class="badge @(existing.Result == "Non-reactive" ? "badge-success" : existing.Result == "Reactive" ? "badge-danger" : "badge-warning")">@existing.Result</span>
+                    }
+                    else
+                    {
+                      <span class="badge badge-secondary">Not tested</span>
+                    }
+                  </td>
+                  <td style="font-size:11px">@(existing?.Method ?? "—")</td>
+                  <td>
+                    @if (existing == null)
+                    {
+                      <form method="post" action="@Url.Action("AddResult",new{id=Model.Record.TestRecordId})" class="d-flex gap-1" style="display:inline-flex">
+                        <input type="hidden" name="testCode" value="@marker" />
+                        <select name="result" class="form-select form-select-sm" style="width:100px" required>
+                          <option value="">Select</option>
+                          <option value="Non-reactive">Non-reactive</option>
+                          <option value="Reactive">Reactive</option>
+                          <option value="Inconclusive">Inconclusive</option>
+                        </select>
+                        <input type="hidden" name="method" value="ELISA" />
+                        <button type="submit" class="btn btn-sm btn-primary">Save</button>
+                      </form>
+                    }
+                    else
+                    {
+                      <span style="font-size:11px;color:var(--bc-text-muted)">Done</span>
+                    }
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-5">
+    <div class="card">
+      <div class="card-header"><h6>Test Record Info</h6></div>
+      <div class="card-body">
+        <div class="d-flex flex-column gap-2">
+          <div><span style="font-size:11px;color:var(--bc-text-muted)">Record ID</span><div style="font-size:13px">#@Model.Record.TestRecordId</div></div>
+          <div><span style="font-size:11px;color:var(--bc-text-muted)">Bag Number</span><div style="font-size:13px">@Model.Record.BagNumber</div></div>
+          <div><span style="font-size:11px;color:var(--bc-text-muted)">Status</span><div><span class="badge @Model.Record.StatusBadge">@Model.Record.OverallStatus</span></div></div>
+          <div><span style="font-size:11px;color:var(--bc-text-muted)">Created</span><div style="font-size:13px">@Model.Record.CreatedAt.ToString("dd MMM yyyy HH:mm")</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card mt-2">
+      <div class="card-header"><h6>TTHI Markers</h6></div>
+      <div class="card-body">
+        <div style="font-size:12px;color:var(--bc-text-secondary)">
+          <p class="mb-1">Transfusion Transmitted Infections (TTHI) screening includes:</p>
+          <ul class="mb-0" style="font-size:11px">
+            <li><strong>HIV</strong> — Human Immunodeficiency Virus</li>
+            <li><strong>HBV</strong> — Hepatitis B Virus</li>
+            <li><strong>HCV</strong> — Hepatitis C Virus</li>
+            <li><strong>Syphilis</strong> — Treponema pallidum</li>
+            <li><strong>Malaria</strong> — Plasmodium species</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

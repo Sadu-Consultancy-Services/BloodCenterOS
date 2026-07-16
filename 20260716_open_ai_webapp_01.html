@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BloodCenterOS · Web App Phase 1 — Admin Theme &amp; API Integration</title>
+<style>
+  body { font-family: system-ui, sans-serif; max-width: 1000px; margin: 2em auto; padding: 0 1em; line-height: 1.6; background: #f8fafc; color: #1e293b; }
+  h1 { border-bottom: 3px solid #22c55e; padding-bottom: .3em; }
+  h2 { color: #16a34a; margin-top: 2em; }
+  pre { background: #1e293b; color: #e2e8f0; padding: 1em; border-radius: 8px; overflow-x: auto; font-size: .85em; }
+  code { background: #e2e8f0; padding: .15em .4em; border-radius: 4px; font-size: .9em; }
+  pre code { background: transparent; padding: 0; }
+  table { border-collapse: collapse; width: 100%; margin: 1em 0; font-size: .9em; }
+  th, td { text-align: left; padding: .4em .6em; border-bottom: 1px solid #cbd5e1; }
+  th { background: #e2e8f0; font-weight: 600; }
+  .badge { display: inline-block; padding: .15em .6em; border-radius: 999px; font-size: .8em; font-weight: 600; }
+  .badge-pass { background: #dcfce7; color: #166534; }
+  .badge-fail { background: #fee2e2; color: #991b1b; }
+  .badge-warn { background: #fef9c3; color: #854d0e; }
+  .badge-info { background: #dbeafe; color: #1e40af; }
+  .summary-card { background: white; border-radius: 12px; padding: 1.5em; box-shadow: 0 1px 3px rgba(0,0,0,.1); margin: 1em 0; }
+  .warn { background: #fef9c3; border-left: 4px solid #eab308; padding: .75em 1em; border-radius: 6px; }
+  .success { background: #dcfce7; border-left: 4px solid #22c55e; padding: .75em 1em; border-radius: 6px; }
+  .diff-add { background: #dcfce7; color: #166534; }
+  .diff-rem { background: #fee2e2; color: #991b1b; }
+</style>
+</head>
+<body>
+
+<h1>✅ BloodCenterOS · Web App Phase 1</h1>
+<p><strong>Date:</strong> 2026-07-16 | <strong>Subject:</strong> Enterprise Admin Theme + API Integration Layer</p>
+
+<div class="summary-card">
+<h2>Deliverables</h2>
+<p>
+  <span class="badge badge-pass">✓ Admin theme (CSS/JS/Layouts)</span>
+  <span class="badge badge-pass">✓ 11 pages (Login, Dashboard, List, Form, Profile, Settings, Error, Components)</span>
+  <span class="badge badge-pass">✓ 9 entity models + API response types</span>
+  <span class="badge badge-pass">✓ ApiClient wrapping all 23 API endpoints</span>
+  <span class="badge badge-pass">✓ JWT auth flow (login → cookie → middleware → API calls)</span>
+  <span class="badge badge-pass">✓ Build: 0 warnings, 0 errors</span>
+  <span class="badge badge-pass">✓ End-to-end login tested (200 → 302 → 200)</span>
+</p>
+</div>
+
+<h2>Architecture</h2>
+
+<pre>BloodCenterOS.Web/
+├── Controllers/
+│   ├── AccountController.cs     — Login/Logout (real API auth)
+│   └── HomeController.cs        — Dashboard, List, Form, Profile, Settings, Error, Components
+├── Models/
+│   ├── ApiResponse.cs           — ApiResponse&lt;T&gt;, PagedResult&lt;T&gt;
+│   ├── LoginRequest.cs          — LoginRequest, LoginResponse
+│   ├── Donor.cs, Camp.cs, Hospital.cs, Collection.cs,
+│   │   Component.cs, InventoryStock.cs, PatientRequest.cs
+│   └── ViewModels/              — DashboardViewModel, ListViewModel&lt;T&gt;, DonorListItem
+├── Services/
+│   ├── TokenStore.cs            — In-memory JWT holder (singleton)
+│   ├── AuthService.cs           — Login/logout orchestration
+│   ├── ApiClient.cs             — Typed HttpClient, all 23 endpoints
+│   └── JwtCookieMiddleware.cs   — Restores JWT from cookie on each request
+├── Views/
+│   ├── Account/Login.cshtml, ForgotPassword.cshtml
+│   ├── Home/Index.cshtml (Dashboard), List.cshtml, Form.cshtml,
+│   │   Profile.cshtml, Settings.cshtml, Components.cshtml,
+│   │   AccessDenied.cshtml, PageNotFound.cshtml
+│   └── Shared/
+│       ├── _Layout.cshtml       — Master layout: full mode + login mode
+│       ├── _Header.cshtml       — Sticky header: search, notifications, theme toggle, user
+│       ├── _Sidebar.cshtml      — Collapsible sidebar: multi-level menus
+│       ├── _Footer.cshtml       — Sticky footer with version
+│       └── _MobileNav.cshtml    — Bottom nav for mobile
+├── wwwroot/assets/
+│   ├── css/bloodcenter.css      — Complete theme: light/dark, compact enterprise
+│   └── js/bloodcenter.js        — Theme toggle, sidebar, search, dropdowns, tooltips
+├── Program.cs                   — DI registration, middleware pipeline
+└── appsettings.json             — Api:BaseUrl = http://localhost:5000</pre>
+
+<h2>Theme: Compact Enterprise Design</h2>
+
+<table>
+  <tr><th>Property</th><th>Value</th></tr>
+  <tr><td>Input height</td><td>34px</td></tr>
+  <tr><td>Button height</td><td>32px</td></tr>
+  <tr><td>Base font</td><td>13px</td></tr>
+  <tr><td>Sidebar width</td><td>240px (collapsed: 60px)</td></tr>
+  <tr><td>Header height</td><td>56px</td></tr>
+  <tr><td>Table header</td><td>11px uppercase, sticky</td></tr>
+  <tr><td>Cards</td><td>Minimal shadow, compact padding</td></tr>
+  <tr><td>Stats</td><td>22px value, 12px label</td></tr>
+  <tr><td>Theme</td><td>Light/Dark with CSS variables, localStorage-persisted</td></tr>
+</table>
+
+<h2>JWT Auth Flow</h2>
+
+<pre>Browser                          Web (MVC)                     API
+  │                                │                            │
+  ├─ POST /Account/Login ──────────┤                            │
+  │   username/password             ├─ POST /api/auth/login ─────┤
+  │                                │                            ├─ Verify BCrypt
+  │                                │                            └─ Return JWT ──┐
+  │                                ├─ Store JWT in TokenStore   ◄───────────────┘
+  │                                ├─ Set bc_token cookie (HttpOnly)
+  │  ◄─ 302 Redirect ─────────────┤
+  ├─ GET /Home/Index ──────────────┤
+  │   (sends bc_token cookie)       ├─ JwtCookieMiddleware reads cookie
+  │                                ├─ Restores JWT into TokenStore
+  │                                ├─ GET /api/inventory/stock ──┤
+  │                                │   (Authorization: Bearer)   └─ Returns data
+  │  ◄─ 200 Dashboard ────────────┤
+  └─ Logout                        ├─ Clears TokenStore + cookies
+                                   └─ Redirect to /Account/Login</pre>
+
+<h2>Key Design Decisions</h2>
+<ul>
+  <li><strong>TokenStore singleton</strong> — in-process memory, survives redirects within same request. Cookie middleware rehydrates it on each new request.</li>
+  <li><strong>ApiClient uses typed HttpClient</strong> — via <code>AddHttpClient&lt;ApiClient&gt;</code> for connection pooling, timeout, and base address from config.</li>
+  <li><strong>Auth guard in every action</strong> — HomeController checks <code>_auth.IsAuthenticated</code> at the top of each action, redirects to login if missing. No <code>[Authorize]</code> filter yet (Phase 2).</li>
+  <li><strong>Graceful degradation</strong> — if the API is unreachable, the dashboard falls back to mock data so the UI is always renderable.</li>
+  <li><strong>No JS SPA pattern</strong> — server-rendered Razor Pages, full page loads. Keeps the architecture simple and aligns with the existing scaffold.</li>
+</ul>
+
+<h2>Files Created (29)</h2>
+<table>
+  <tr><th>File</th><th>Purpose</th></tr>
+  <tr><td><code>wwwroot/assets/css/bloodcenter.css</code></td><td>Complete theme (~500 lines)</td></tr>
+  <tr><td><code>wwwroot/assets/js/bloodcenter.js</code></td><td>UI behaviors (~150 lines)</td></tr>
+  <tr><td><code>Views/Shared/_Layout.cshtml</code></td><td>Master layout</td></tr>
+  <tr><td><code>Views/Shared/_Header.cshtml</code></td><td>Sticky header</td></tr>
+  <tr><td><code>Views/Shared/_Sidebar.cshtml</code></td><td>Sidebar with multi-level menus</td></tr>
+  <tr><td><code>Views/Shared/_Footer.cshtml</code></td><td>Sticky footer</td></tr>
+  <tr><td><code>Views/Shared/_MobileNav.cshtml</code></td><td>Mobile bottom navigation</td></tr>
+  <tr><td><code>Views/Shared/Error.cshtml</code></td><td>500 error page</td></tr>
+  <tr><td><code>Views/Account/Login.cshtml</code></td><td>Login page</td></tr>
+  <tr><td><code>Views/Account/ForgotPassword.cshtml</code></td><td>Password reset page</td></tr>
+  <tr><td><code>Views/Home/Index.cshtml</code></td><td>Dashboard</td></tr>
+  <tr><td><code>Views/Home/List.cshtml</code></td><td>Reusable list page</td></tr>
+  <tr><td><code>Views/Home/Form.cshtml</code></td><td>Reusable form page</td></tr>
+  <tr><td><code>Views/Home/Profile.cshtml</code></td><td>User profile</td></tr>
+  <tr><td><code>Views/Home/Settings.cshtml</code></td><td>Tabbed settings</td></tr>
+  <tr><td><code>Views/Home/Components.cshtml</code></td><td>UI component showcase</td></tr>
+  <tr><td><code>Views/Home/AccessDenied.cshtml</code></td><td>403 error page</td></tr>
+  <tr><td><code>Views/Home/PageNotFound.cshtml</code></td><td>404 error page</td></tr>
+  <tr><td><code>Models/ApiResponse.cs</code></td><td>API response types</td></tr>
+  <tr><td><code>Models/LoginRequest.cs</code></td><td>Login DTOs</td></tr>
+  <tr><td><code>Models/Donor.cs</code></td><td>Donor entity</td></tr>
+  <tr><td><code>Models/Camp.cs</code></td><td>Camp entity</td></tr>
+  <tr><td><code>Models/Hospital.cs</code></td><td>Hospital entity</td></tr>
+  <tr><td><code>Models/Collection.cs</code></td><td>Collection entity</td></tr>
+  <tr><td><code>Models/Component.cs</code></td><td>Component entity</td></tr>
+  <tr><td><code>Models/InventoryStock.cs</code></td><td>Inventory stock entity</td></tr>
+  <tr><td><code>Models/PatientRequest.cs</code></td><td>Patient request entity</td></tr>
+  <tr><td><code>Services/TokenStore.cs</code></td><td>JWT holder</td></tr>
+  <tr><td><code>Services/ApiClient.cs</code></td><td>API HTTP client</td></tr>
+  <tr><td><code>Services/AuthService.cs</code></td><td>Auth orchestration</td></tr>
+  <tr><td><code>Services/JwtCookieMiddleware.cs</code></td><td>Cookie rehydration</td></tr>
+  <tr><td><code>Controllers/AccountController.cs</code></td><td>Auth controller</td></tr>
+  <tr><td><code>Controllers/HomeController.cs</code></td><td>Home controller</td></tr>
+  <tr><td><code>Models/ViewModels/DashboardViewModel.cs</code></td><td>Dashboard VM</td></tr>
+  <tr><td><code>Models/ViewModels/ListViewModel.cs</code></td><td>List VM</td></tr>
+</table>
+
+<h2>Next Steps (Phases 2–5)</h2>
+<ol>
+  <li><strong>Donor CRUD</strong> — real create/edit/delete via API, searchable donor list</li>
+  <li><strong>Camp Management</strong> — list, create, upcoming camps</li>
+  <li><strong>Hospital Management</strong> — hospital CRUD</li>
+  <li><strong>Blood Collection</strong> — collection workflow, camp collections</li>
+  <li><strong>Component &amp; Inventory</strong> — stock view, component preparation</li>
+  <li><strong>Testing</strong> — test entry, results</li>
+  <li><strong>Requests &amp; Issue</strong> — pending requests, issue blood</li>
+  <li><strong>Billing &amp; Emergency</strong> — billing workflow, emergency requests</li>
+  <li><strong>User &amp; Role Management</strong> — admin panel</li>
+  <li><strong>Reports</strong> — Excel/PDF export</li>
+</ol>
+
+<div class="warn">
+<strong>⚠ How to run</strong><br>
+1. Start API: <code>dotnet run --project BloodCenterOS.API</code> (port 5000)<br>
+2. Start Web: <code>dotnet run --project BloodCenterOS.Web</code> (port 5055 from launchSettings)<br>
+3. Open <code>http://localhost:5055</code> — login with <code>admin</code> / <code>admin@123</code><br>
+4. Toggle theme via the sun/moon icon in the header
+</div>
+
+</body>
+</html>

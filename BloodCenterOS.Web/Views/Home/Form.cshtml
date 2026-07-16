@@ -1,0 +1,119 @@
+@{
+  ViewBag.Title = "Add Donor";
+  ViewBag.ActiveMenu = "Donors";
+}
+
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Add Donor <small>Register a new blood donor</small></h1>
+  </div>
+  <a href="@Url.Action("List","Home")" class="btn btn-outline-secondary"><i class="bi bi-arrow-left"></i> Back to List</a>
+</div>
+
+<form>
+  <div class="card mb-3">
+    <div class="card-header"><h6>Personal Information</h6></div>
+    <div class="card-body">
+      <div class="row g-2">
+        <div class="col-md-4">
+          <label class="form-label">First Name <span class="text-danger">*</span></label>
+          <input type="text" class="form-control" required />
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">Last Name <span class="text-danger">*</span></label>
+          <input type="text" class="form-control" required />
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">Gender</label>
+          <select class="form-select">
+            <option>Male</option>
+            <option>Female</option>
+            <option>Other</option>
+          </select>
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">Date of Birth</label>
+          <input type="date" class="form-control" />
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">Blood Group <span class="text-danger">*</span></label>
+          <select class="form-select" required>
+            <option value="">Select</option>
+            <option>A+</option><option>A-</option><option>B+</option><option>B-</option>
+            <option>AB+</option><option>AB-</option><option>O+</option><option>O-</option>
+          </select>
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">Occupation</label>
+          <select class="form-select">
+            <option>Government Service</option>
+            <option>Private Service</option>
+            <option>Business</option>
+            <option>Student</option>
+            <option>Other</option>
+          </select>
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">Preferred Language</label>
+          <select class="form-select">
+            <option>English</option>
+            <option>Hindi</option>
+            <option>Marathi</option>
+            <option>Other</option>
+          </select>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card mb-3">
+    <div class="card-header"><h6>Contact Details</h6></div>
+    <div class="card-body">
+      <div class="row g-2">
+        <div class="col-md-4">
+          <label class="form-label">Phone <span class="text-danger">*</span></label>
+          <input type="tel" class="form-control" required />
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">Email</label>
+          <input type="email" class="form-control" />
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">Aadhaar Number</label>
+          <input type="text" class="form-control" placeholder="1234 5678 9012" />
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Address Line 1</label>
+          <input type="text" class="form-control" />
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Address Line 2</label>
+          <input type="text" class="form-control" />
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">City</label>
+          <input type="text" class="form-control" />
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">State</label>
+          <select class="form-select">
+            <option>Maharashtra</option>
+            <option>Gujarat</option>
+            <option>Delhi</option>
+            <option>Karnataka</option>
+          </select>
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">Pincode</label>
+          <input type="text" class="form-control" />
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="d-flex gap-2 justify-content-end">
+    <a href="@Url.Action("List","Home")" class="btn btn-outline-secondary">Cancel</a>
+    <button type="reset" class="btn btn-outline-secondary">Reset</button>
+    <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg"></i> Save Donor</button>
+  </div>
+</form>

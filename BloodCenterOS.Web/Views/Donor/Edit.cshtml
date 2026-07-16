@@ -1,0 +1,137 @@
+@model DonorViewModel
+@{
+  ViewBag.Title = "Edit Donor";
+  ViewBag.ActiveMenu = "Donors";
+}
+
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Edit Donor <small>@Model.Donor.FullName</small></h1>
+  </div>
+  <a href="@Url.Action("Details", new { id = Model.Donor.DonorId })" class="btn btn-outline-secondary"><i class="bi bi-arrow-left"></i> Back to Details</a>
+</div>
+
+@if (!ViewData.ModelState.IsValid)
+{
+  <div class="alert alert-danger d-flex flex-column gap-1 mb-3 py-2 px-3">
+    @foreach (var err in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+    {
+      <div class="d-flex align-items-center gap-2"><i class="bi bi-exclamation-circle"></i> <span>@err.ErrorMessage</span></div>
+    }
+  </div>
+}
+
+<form method="post" action="@Url.Action("Edit", new { id = Model.Donor.DonorId })">
+  <div class="card mb-3">
+    <div class="card-header">
+      <h6>Personal Information</h6>
+      <span class="badge badge-secondary">@Model.Donor.DonorCode</span>
+    </div>
+    <div class="card-body">
+      <div class="row g-2">
+        <div class="col-md-4">
+          <label class="form-label">First Name <span class="text-danger">*</span></label>
+          <input type="text" name="FirstName" class="form-control" value="@Model.Donor.FirstName" required />
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">Last Name <span class="text-danger">*</span></label>
+          <input type="text" name="LastName" class="form-control" value="@Model.Donor.LastName" required />
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">Gender</label>
+          <select name="Gender" class="form-select">
+            <option value="">Select</option>
+            <option value="Male" selected="@(Model.Donor.Gender == "Male")">Male</option>
+            <option value="Female" selected="@(Model.Donor.Gender == "Female")">Female</option>
+            <option value="Other" selected="@(Model.Donor.Gender == "Other")">Other</option>
+          </select>
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">Date of Birth</label>
+          <input type="date" name="DateOfBirth" class="form-control" value="@Model.Donor.DateOfBirth?.ToString("yyyy-MM-dd")" />
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">Blood Group <span class="text-danger">*</span></label>
+          <select name="BloodGroup" class="form-select" required>
+            <option value="">Select</option>
+            @foreach (var bg in new[] { "A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-" })
+            {
+              <option value="@bg" selected="@(Model.Donor.BloodGroup == bg)">@bg</option>
+            }
+          </select>
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">Occupation</label>
+          <select name="Occupation" class="form-select">
+            <option value="">Select</option>
+            @foreach (var occ in new[] { "Government Service", "Private Service", "Business", "Student", "Other" })
+            {
+              <option value="@occ" selected="@(Model.Donor.Occupation == occ)">@occ</option>
+            }
+          </select>
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">Preferred Language</label>
+          <select name="PreferredLanguage" class="form-select">
+            <option value="">Select</option>
+            @foreach (var lang in new[] { "English", "Hindi", "Marathi", "Other" })
+            {
+              <option value="@lang" selected="@(Model.Donor.PreferredLanguage == lang)">@lang</option>
+            }
+          </select>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card mb-3">
+    <div class="card-header"><h6>Contact Details</h6></div>
+    <div class="card-body">
+      <div class="row g-2">
+        <div class="col-md-4">
+          <label class="form-label">Phone <span class="text-danger">*</span></label>
+          <input type="tel" name="Phone" class="form-control" value="@Model.Donor.Phone" required />
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">Email</label>
+          <input type="email" name="Email" class="form-control" value="@Model.Donor.Email" />
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">Aadhaar Number</label>
+          <input type="text" name="AadhaarNumber" class="form-control" placeholder="1234 5678 9012" value="@Model.Donor.AadhaarNumber" />
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Address Line 1</label>
+          <input type="text" name="AddressLine1" class="form-control" value="@Model.Donor.AddressLine1" />
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Address Line 2</label>
+          <input type="text" name="AddressLine2" class="form-control" value="@Model.Donor.AddressLine2" />
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">City</label>
+          <input type="text" name="City" class="form-control" value="@Model.Donor.City" />
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">State</label>
+          <select name="State" class="form-select">
+            <option value="">Select</option>
+            @foreach (var state in new[] { "Maharashtra", "Gujarat", "Delhi", "Karnataka", "Tamil Nadu", "Uttar Pradesh", "West Bengal", "Rajasthan" })
+            {
+              <option value="@state" selected="@(Model.Donor.City == state)">@state</option>
+            }
+          </select>
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">Pincode</label>
+          <input type="text" name="Pincode" class="form-control" value="@Model.Donor.Pincode" />
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="d-flex gap-2 justify-content-end">
+    <a href="@Url.Action("Details", new { id = Model.Donor.DonorId })" class="btn btn-outline-secondary">Cancel</a>
+    <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg"></i> Update Donor</button>
+  </div>
+</form>

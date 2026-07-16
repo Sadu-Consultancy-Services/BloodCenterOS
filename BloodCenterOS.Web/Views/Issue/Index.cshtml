@@ -1,0 +1,75 @@
+@model List<IssueRecord>
+@{
+  ViewBag.Title = "Blood Issues";
+  ViewBag.ActiveMenu = "Issue";
+  var pending = ViewBag.Pending as List<PatientRequest> ?? new();
+}
+
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Blood Issues <small>Cross-match &amp; issue blood to patients</small></h1>
+  </div>
+  <div class="d-flex gap-2">
+    <a href="@Url.Action("Create")" class="btn btn-primary"><i class="bi bi-plus-lg"></i> New Issue</a>
+  </div>
+</div>
+
+@if (TempData["Success"] is string s) { <div class="alert alert-success d-flex align-items-center gap-2 mb-3 py-2 px-3"><i class="bi bi-check-circle-fill"></i><span>@s</span></div> }
+
+<div class="card mb-3">
+  <div class="card-header">
+    <h6><i class="bi bi-clock-history me-1"></i> Pending Requests (@pending.Count)</h6>
+  </div>
+  <div class="card-body p-0">
+    @if (pending.Any())
+    {
+      <div class="table-container">
+        <table class="table mb-0">
+          <thead><tr><th>Patient</th><th>Blood Group</th><th>Component</th><th>Units</th><th>Urgency</th><th>Requested</th><th style="width:80px">Actions</th></tr></thead>
+          <tbody>
+            @foreach (var r in pending)
+            {
+              <tr>
+                <td style="font-weight:500">@r.PatientName</td>
+                <td><span class="badge" style="background:#dcfce7;color:#166534">@r.BloodGroup</span></td>
+                <td>@r.ComponentType</td>
+                <td class="text-center fw-semibold">@r.UnitsRequested</td>
+                <td><span class="badge @(r.RequestUrgency == "Critical" ? "badge-danger" : r.RequestUrgency == "High" ? "badge-warning" : "badge-info")">@r.RequestUrgency</span></td>
+                <td style="font-size:11px">@r.RequestDate.ToString("dd MMM HH:mm")</td>
+                <td><a href="@Url.Action("Create")" class="btn btn-sm btn-primary"><i class="bi bi-send"></i> Issue</a></td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+    else { <div class="empty-state py-3"><div class="empty-title">No pending requests</div></div> }
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header"><h6><i class="bi bi-clock-history me-1"></i> Issue History (@Model.Count)</h6></div>
+  <div class="card-body p-0">
+    @if (Model.Any())
+    {
+      <div class="table-container">
+        <table class="table mb-0">
+          <thead><tr><th>Slip #</th><th>Patient</th><th>Type</th><th>Date</th><th style="width:60px">Actions</th></tr></thead>
+          <tbody>
+            @foreach (var i in Model)
+            {
+              <tr>
+                <td><span class="badge badge-secondary">@i.IssueSlipNumber</span></td>
+                <td style="font-weight:500">@i.PatientName</td>
+                <td><span class="badge badge-info">@i.IssueType</span></td>
+                <td style="font-size:11px">@i.IssueDate.ToString("dd MMM yyyy HH:mm")</td>
+                <td><button class="btn btn-sm btn-outline-secondary" title="View"><i class="bi bi-eye"></i></button></td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+    else { <div class="empty-state py-3"><div class="empty-title">No issue history</div></div> }
+  </div>
+</div>

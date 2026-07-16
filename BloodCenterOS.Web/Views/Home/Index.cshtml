@@ -1,8 +1,209 @@
-﻿@{
-    ViewData["Title"] = "Home Page";
+﻿@model DashboardViewModel
+@{
+  ViewBag.Title = "Dashboard";
+  ViewBag.ActiveMenu = "Dashboard";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Dashboard <small>Main Blood Center</small></h1>
+  </div>
+  <div class="d-flex gap-2">
+    <button class="btn btn-primary"><i class="bi bi-plus-lg"></i> New Collection</button>
+    <button class="btn btn-outline-secondary"><i class="bi bi-arrow-repeat"></i> Refresh</button>
+  </div>
+</div>
+
+@if (Model.Alerts.Any())
+{
+  <div class="d-flex flex-column gap-1 mb-3">
+    @foreach (var alert in Model.Alerts)
+    {
+      <div class="alert alert-@alert.Type d-flex align-items-center gap-2 py-2 px-3 mb-0">
+        <i class="bi bi-@(alert.Type == "danger" ? "exclamation-triangle-fill" : alert.Type == "warning" ? "exclamation-circle-fill" : "info-circle-fill")"></i>
+        <span>@alert.Message</span>
+        <button type="button" class="btn-close ms-auto" style="font-size:10px" onclick="this.parentElement.remove()"></button>
+      </div>
+    }
+  </div>
+}
+
+<div class="row g-2 mb-3">
+  <div class="col-6 col-md-3">
+    <div class="card stat-card">
+      <div class="stat-icon" style="background:#dcfce7;color:#16a34a"><i class="bi bi-people-fill"></i></div>
+      <div>
+        <div class="stat-value">@Model.TotalDonors</div>
+        <div class="stat-label">Total Donors</div>
+        <div class="stat-change text-success"><i class="bi bi-arrow-up"></i> +12 this month</div>
+      </div>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="card stat-card">
+      <div class="stat-icon" style="background:#dbeafe;color:#0284c7"><i class="bi bi-droplet-half"></i></div>
+      <div>
+        <div class="stat-value">@Model.TodayCollections</div>
+        <div class="stat-label">Today's Collections</div>
+        <div class="stat-change text-info"><i class="bi bi-arrow-up"></i> +2 vs yesterday</div>
+      </div>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="card stat-card">
+      <div class="stat-icon" style="background:#fef9c3;color:#d97706"><i class="bi bi-flask"></i></div>
+      <div>
+        <div class="stat-value">@Model.PendingTests</div>
+        <div class="stat-label">Pending Tests</div>
+        <div class="stat-change text-warning">5 urgent</div>
+      </div>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="card stat-card">
+      <div class="stat-icon" style="background:#fee2e2;color:#dc2626"><i class="bi bi-file-text"></i></div>
+      <div>
+        <div class="stat-value">@Model.PendingRequests</div>
+        <div class="stat-label">Blood Requests</div>
+        <div class="stat-change text-danger">3 critical</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row g-2 mb-3">
+  <div class="col-md-8">
+    <div class="card">
+      <div class="card-header">
+        <h6>Blood Stock Summary</h6>
+        <span class="badge badge-info">@Model.AvailableUnits total units</span>
+      </div>
+      <div class="card-body p-0">
+        <div class="table-container">
+          <table class="table table-compact mb-0">
+            <thead>
+              <tr>
+                <th>Blood Group</th>
+                <th class="text-center">Available</th>
+                <th class="text-center">Reserved</th>
+                <th class="text-center">Quarantined</th>
+                <th class="text-center">Total</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              @foreach (var item in Model.StockSummary)
+              {
+                var total = item.Available + item.Reserved + item.Quarantined;
+                var pct = total > 0 ? (item.Available * 100 / Math.Max(total, 1)) : 0;
+                <tr>
+                  <td><strong>@item.BloodGroup</strong></td>
+                  <td class="text-center">@item.Available</td>
+                  <td class="text-center">@item.Reserved</td>
+                  <td class="text-center">@item.Quarantined</td>
+                  <td class="text-center fw-semibold">@total</td>
+                  <td style="width:120px">
+                    <div class="progress" style="height:6px">
+                      <div class="progress-bar" role="progressbar" style="width:@(pct)%"></div>
+                    </div>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="card">
+      <div class="card-header">
+        <h6>Recent Activity</h6>
+      </div>
+      <div class="card-body p-3">
+        <ul class="timeline">
+          @foreach (var activity in Model.RecentActivities)
+          {
+            <li class="timeline-item">
+              <div class="timeline-dot dot-@activity.Type"></div>
+              <div class="timeline-time">@activity.Time</div>
+              <div class="timeline-title">@activity.Title</div>
+              <div class="timeline-text">@activity.Description</div>
+            </li>
+          }
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row g-2">
+  <div class="col-md-6">
+    <div class="card">
+      <div class="card-header">
+        <h6>Quick Actions</h6>
+      </div>
+      <div class="card-body">
+        <div class="row g-2">
+          <div class="col-6">
+            <a href="@Url.Action("Create","Donor")" class="btn btn-outline-secondary w-100 py-3 d-flex flex-column align-items-center gap-1" style="height:auto">
+              <i class="bi bi-person-plus" style="font-size:20px"></i>
+              <span>New Donor</span>
+            </a>
+          </div>
+          <div class="col-6">
+            <a href="@Url.Action("Create","Collection")" class="btn btn-outline-secondary w-100 py-3 d-flex flex-column align-items-center gap-1" style="height:auto">
+              <i class="bi bi-droplet" style="font-size:20px"></i>
+              <span>New Collection</span>
+            </a>
+          </div>
+          <div class="col-6">
+            <a href="@Url.Action("Create","Issue")" class="btn btn-outline-secondary w-100 py-3 d-flex flex-column align-items-center gap-1" style="height:auto">
+              <i class="bi bi-send" style="font-size:20px"></i>
+              <span>Issue Blood</span>
+            </a>
+          </div>
+          <div class="col-6">
+            <a href="@Url.Action("Create","Camp")" class="btn btn-outline-secondary w-100 py-3 d-flex flex-column align-items-center gap-1" style="height:auto">
+              <i class="bi bi-truck" style="font-size:20px"></i>
+              <span>New Camp</span>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-6">
+    <div class="card">
+      <div class="card-header">
+        <h6>Upcoming Camps</h6>
+      </div>
+      <div class="card-body p-0">
+        <div class="list-group list-group-flush">
+          <div class="list-group-item d-flex align-items-center gap-3">
+            <div class="text-center" style="min-width:40px">
+              <div style="font-size:18px;font-weight:700">20</div>
+              <div style="font-size:10px;color:var(--bc-text-muted)">Jul</div>
+            </div>
+            <div>
+              <div class="fw-semibold" style="font-size:13px">Rotary Club Blood Drive</div>
+              <div style="font-size:11px;color:var(--bc-text-muted)">Mumbai — 100 donors expected</div>
+            </div>
+            <span class="badge badge-info ms-auto">Upcoming</span>
+          </div>
+          <div class="list-group-item d-flex align-items-center gap-3">
+            <div class="text-center" style="min-width:40px">
+              <div style="font-size:18px;font-weight:700">25</div>
+              <div style="font-size:10px;color:var(--bc-text-muted)">Jul</div>
+            </div>
+            <div>
+              <div class="fw-semibold" style="font-size:13px">Lions Club Camp</div>
+              <div style="font-size:11px;color:var(--bc-text-muted)">Delhi — 200 donors expected</div>
+            </div>
+            <span class="badge badge-info ms-auto">Upcoming</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>

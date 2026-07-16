@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BloodCenterOS — Step 2 Review: PL/pgSQL Stored Procedures | 2026-07-16</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; background: #f4f6f9; color: #1a1d23; padding: 2rem; line-height: 1.6; }
+        .container { max-width: 1100px; margin: 0 auto; background: #fff; border-radius: 12px; box-shadow: 0 2px 12px rgba(0,0,0,.08); padding: 2.5rem; }
+        h1 { font-size: 1.75rem; margin-bottom: .25rem; color: #0b1e33; }
+        .date { color: #6b7280; font-size: .9rem; margin-bottom: 1.5rem; }
+        h2 { font-size: 1.25rem; margin: 1.5rem 0 .75rem; color: #1f3a5f; border-bottom: 2px solid #e5e7eb; padding-bottom: .35rem; }
+        h3 { font-size: 1.05rem; margin: 1rem 0 .5rem; color: #2c3e50; }
+        table { width: 100%; border-collapse: collapse; margin: .75rem 0 1.25rem; font-size: .9rem; }
+        th, td { text-align: left; padding: .5rem .75rem; border: 1px solid #d1d5db; }
+        th { background: #1f3a5f; color: #fff; font-weight: 600; }
+        tr:nth-child(even) { background: #f9fafb; }
+        ul, ol { margin: .5rem 0 .5rem 1.5rem; }
+        li { margin-bottom: .3rem; }
+        code { background: #f1f5f9; border: 1px solid #e2e8f0; border-radius: 4px; padding: .1rem .4rem; font-size: .85rem; color: #b91c1c; }
+        pre { background: #0f172a; color: #e2e8f0; border-radius: 8px; padding: 1rem; overflow-x: auto; font-size: .8rem; line-height: 1.5; margin: .75rem 0; }
+        .badge { display: inline-block; background: #1f3a5f; color: #fff; font-size: .75rem; font-weight: 700; padding: .15rem .6rem; border-radius: 999px; }
+        .badge-green { background: #059669; }
+        .badge-blue { background: #2563eb; }
+        .badge-amber { background: #d97706; }
+        .badge-purple { background: #7c3aed; }
+        .highlight { background: #eff6ff; border-left: 4px solid #2563eb; padding: .75rem 1rem; border-radius: 6px; margin: 1rem 0; }
+        .summary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 1rem; margin: 1rem 0; }
+        .stat-card { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 1rem; text-align: center; }
+        .stat-card .num { font-size: 2rem; font-weight: 800; color: #1f3a5f; }
+        .stat-card .label { font-size: .8rem; color: #64748b; }
+        .file-info { background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px; padding: 1rem; margin: .75rem 0; }
+        .file-info code { background: #dcfce7; border-color: #86efac; color: #166534; }
+        hr { border: none; border-top: 1px solid #e5e7eb; margin: 1.5rem 0; }
+        .code-sample { background: #1e293b; color: #e2e8f0; border-radius: 8px; padding: 1rem; overflow-x: auto; font-size: .8rem; line-height: 1.5; margin: .75rem 0; }
+        .code-sample .kw { color: #c084fc; }
+        .code-sample .fn { color: #60a5fa; }
+        .code-sample .str { color: #86efac; }
+        .code-sample .cm { color: #94a3b8; font-style: italic; }
+    </style>
+</head>
+<body>
+<div class="container">
+
+<h1>BloodCenterOS — Step 2 Review: PL/pgSQL Stored Procedures</h1>
+<div class="date">Review Date: 16 July 2026 &nbsp;|&nbsp; Step 2 Complete &nbsp;|&nbsp; Database Logic Layer</div>
+
+<!-- ===== SUMMARY ===== -->
+<h2>Delivery Summary</h2>
+<div class="summary-grid">
+    <div class="stat-card"><div class="num">95</div><div class="label">PL/pgSQL Functions</div></div>
+    <div class="stat-card"><div class="num">14</div><div class="label">Module Groups</div></div>
+    <div class="stat-card"><div class="num">6</div><div class="label">Unique Indexes Added</div></div>
+    <div class="stat-card"><div class="num">89</div><div class="label">Tables Covered</div></div>
+    <div class="stat-card"><div class="num">2</div><div class="label">SQL Files Created</div></div>
+</div>
+
+<div class="file-info">
+    <strong>Main SP file:</strong> <code>DB/BloodCenterOS_DB_v3.1_SPs.sql</code> — 95 functions, ~1200 lines<br>
+    <strong>Schema (updated):</strong> <code>DB/BloodCenterOS_DB_v3.1_PostgreSQL.sql</code> — 89 tables + 6 unique indexes added<br>
+    <strong>Pattern:</strong> PostgreSQL Functions (not procedures) — <code>CREATE OR REPLACE FUNCTION</code>
+</div>
+
+<!-- ===== FILES CREATED ===== -->
+<h2>Files Created / Modified</h2>
+<table>
+    <tr><th>File</th><th>Action</th><th>Contents</th></tr>
+    <tr>
+        <td><code>DB/BloodCenterOS_DB_v3.1_SPs.sql</code></td>
+        <td><span class="badge badge-green">CREATED</span></td>
+        <td>95 PL/pgSQL functions — all CRUD + business logic for 89 tables</td>
+    </tr>
+    <tr>
+        <td><code>DB/BloodCenterOS_DB_v3.1_PostgreSQL.sql</code></td>
+        <td><span class="badge badge-amber">UPDATED</span></td>
+        <td>Added 6 unique indexes required by <code>ON CONFLICT</code> upsert functions</td>
+    </tr>
+</table>
+
+<!-- ===== FUNCTION BREAKDOWN ===== -->
+<h2>Functions by Module</h2>
+<table>
+    <tr><th>Module</th><th>Functions</th><th>Key Operations</th></tr>
+    <tr>
+        <td>0. Helpers</td><td>4</td>
+        <td><code>fn_sequence_next</code>, <code>fn_error_log</code>, <code>fn_audit_log</code>, <code>fn_change_log</code></td>
+    </tr>
+    <tr>
+        <td>1. User &amp; Access</td><td>17</td>
+        <td>User CRUD, password mgmt, login tracking, role/permission assignment, center-user mapping, settings</td>
+    </tr>
+    <tr>
+        <td>2. Donor Management</td><td>14</td>
+        <td>Full donor CRUD, health history, donation history, deferrals, appointments, comm logs, search by phone/blood group</td>
+    </tr>
+    <tr>
+        <td>3. Camp &amp; Collection</td><td>7</td>
+        <td>Camp creation/listing, organizer CRUD, donor registration, collection creation (auto-creates bag + donation record), staff assignment</td>
+    </tr>
+    <tr>
+        <td>4. Testing</td><td>7</td>
+        <td>Test record creation/status, result entry, test kit management, quality control records</td>
+    </tr>
+    <tr>
+        <td>5. Components</td><td>9</td>
+        <td>Bag lookup/status, component preparation (auto-generates codes), storage, transfer between centers, discard</td>
+    </tr>
+    <tr>
+        <td>6. Inventory</td><td>4</td>
+        <td>Stock upsert (with <code>ON CONFLICT</code>), stock dashboard by blood group, transaction logging</td>
+    </tr>
+    <tr>
+        <td>7. Issue &amp; Requests</td><td>9</td>
+        <td>Hospital CRUD, patient request, crossmatching, issue (auto-updates component status + inventory), returns, replacement donors</td>
+    </tr>
+    <tr>
+        <td>8. Billing</td><td>6</td>
+        <td>Service charges, invoice creation with line items, payment recording with auto-status, expenses</td>
+    </tr>
+    <tr>
+        <td>9. Reporting</td><td>1</td>
+        <td>Monthly report generation with JSON snapshot of key metrics</td>
+    </tr>
+    <tr>
+        <td>10. Communication</td><td>3</td>
+        <td>Notifications, outbox (SMS/Email sending log)</td>
+    </tr>
+    <tr>
+        <td>11. Emergency</td><td>2</td>
+        <td>Emergency request creation, donor response</td>
+    </tr>
+    <tr>
+        <td>12. System</td><td>6</td>
+        <td>Backup logging, config get/set (both SystemConfig and CenterConfig), center config</td>
+    </tr>
+    <tr>
+        <td>13. Master Data</td><td>3</td>
+        <td>Lookup type/value creation, lookup by type code</td>
+    </tr>
+    <tr>
+        <td>14. API Integration</td><td>3</td>
+        <td>API integration registration, response logging</td>
+    </tr>
+</table>
+
+<!-- ===== DESIGN PATTERNS ===== -->
+<h2>Design Patterns</h2>
+
+<h3>1. CRUD Pattern (4 functions per entity)</h3>
+<div class="code-sample">
+<span class="cm">-- Typical CRUD for a business entity</span><br>
+<span class="kw">CREATE OR REPLACE FUNCTION</span> <span class="fn">fn_donor_create</span>(...) <span class="kw">RETURNS</span> <span class="kw">BIGINT</span> ...<br>
+<span class="kw">CREATE OR REPLACE FUNCTION</span> <span class="fn">fn_donor_get_by_id</span>(p_id <span class="kw">BIGINT</span>) <span class="kw">RETURNS TABLE</span>(...) ...<br>
+<span class="kw">CREATE OR REPLACE FUNCTION</span> <span class="fn">fn_donor_update</span>(...) <span class="kw">RETURNS VOID</span> ...<br>
+<span class="kw">CREATE OR REPLACE FUNCTION</span> <span class="fn">fn_donor_search</span>(...) <span class="kw">RETURNS TABLE</span>(...) ...
+</div>
+
+<h3>2. Business Logic Chaining</h3>
+<p>Several functions chain multiple table operations atomically:</p>
+<ul>
+    <li><code>fn_collection_create</code> — inserts CollectionRecord + BloodBagMaster + DonorDonationHistory + updates DonorMaster stats in one call</li>
+    <li><code>fn_component_prepare</code> — inserts ComponentPreparation + ComponentMaster + ComponentPreparationLog</li>
+    <li><code>fn_issue_create</code> — inserts IssueRecord + updates ComponentMaster/BloodBagMaster status + adjusts inventory stock</li>
+    <li><code>fn_payment_create</code> — inserts PaymentRecord + auto-updates BillingTransaction payment status</li>
+</ul>
+
+<h3>3. Sequence Number Generation</h3>
+<div class="code-sample">
+<span class="kw">SELECT</span> <span class="fn">fn_sequence_next</span>(1001, <span class="str">'DonorCode'</span>);<br>
+<span class="cm">-- Returns: "DON000001" (using prefix/suffix/increment from SequenceCounters)</span>
+</div>
+
+<h3>4. Upsert Pattern (ON CONFLICT)</h3>
+<div class="code-sample">
+<span class="kw">INSERT INTO</span> InventoryStock (...)<br>
+<span class="kw">VALUES</span> (...)<br>
+<span class="kw">ON CONFLICT</span> (CenterId, ComponentType, BloodGroup)<br>
+<span class="kw">DO UPDATE SET</span> AvailableQty = InventoryStock.AvailableQty + p_available, ...
+</div>
+
+<h3>5. Paginated Search with Total Count</h3>
+<p>All search functions return both the page of results and a <code>TotalCount</code> column for UI pagination — using <code>LIMIT/OFFSET</code> with a separate <code>COUNT(*)</code> query.</p>
+
+<h3>6. Soft Delete via Status Fields</h3>
+<p>Instead of DELETE operations, functions update status fields (<code>BagStatus</code>, <code>CurrentStatus</code>, <code>IsActive</code>) to maintain audit trail.</p>
+
+<!-- ===== ARCHITECTURE DECISIONS ===== -->
+<h2>Architecture Decision Notes</h2>
+<ul>
+    <li><strong>Functions over Procedures:</strong> PostgreSQL <code>CREATE FUNCTION</code> used instead of <code>CREATE PROCEDURE</code> because functions can return values (<code>RETURNS TABLE</code>, <code>RETURNS BIGINT</code>) and be composed in queries. The .NET/Dapper layer can call them as <code>SELECT * FROM fn_donor_get_by_id(@id)</code>.</li>
+    <li><strong>No explicit transactions:</strong> Each function runs in its own implicit transaction. Callers (application layer) can wrap multiple function calls in a <code>BEGIN/COMMIT</code> block if needed.</li>
+    <li><strong>No foreign keys preserved:</strong> Consistent with the original design. All referential integrity is maintained by the stored procedures themselves.</li>
+    <li><strong><code>COALESCE</code> in updates:</strong> Update functions use <code>COALESCE(p_param, column)</code> so callers can pass <code>NULL</code> for fields they don't want to change.</li>
+    <li><strong><code>ILIKE</code> for search:</strong> Case-insensitive pattern matching across search functions for better user experience.</li>
+</ul>
+
+<!-- ===== NEXT STEPS ===== -->
+<h2>Ready for Step 3</h2>
+<div class="highlight">
+    <strong>Next: Add NuGet packages to the .NET project</strong><br>
+    <code>Npgsql</code>, <code>Dapper</code>, <code>ClosedXML</code>, <code>QuestPDF</code>, <code>BCrypt.Net-Next</code>, <code>Serilog</code>
+</div>
+
+<hr>
+<p style="color:#6b7280; font-size:.8rem; text-align:center;">
+    BloodCenterOS — Step 2 Review &bull; 16 July 2026 &bull; Generated by OpenAI Codex
+</p>
+
+</div>
+</body>
+</html>

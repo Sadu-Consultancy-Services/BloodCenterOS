@@ -1,0 +1,189 @@
+@{
+  ViewBag.Title = "Reports";
+  ViewBag.ActiveMenu = "Reports";
+}
+
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Reports Dashboard</h1>
+  </div>
+</div>
+
+<ul class="nav nav-tabs mb-3" role="tablist" id="reportTabs">
+  <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tab-donor">Donor Report</button></li>
+  <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-inventory">Inventory Report</button></li>
+  <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-camp">Camp Report</button></li>
+</ul>
+
+<div class="tab-content">
+
+  @* ── Donor Report ── *@
+  <div class="tab-pane fade show active" id="tab-donor">
+    <div class="card mb-3">
+      <div class="card-body">
+        <div class="row g-2 align-items-end">
+          <div class="col-auto">
+            <label class="form-label" style="font-size:11px">From</label>
+            <input type="date" id="donorFrom" class="form-control form-control-sm" value="@ViewBag.FromDate" />
+          </div>
+          <div class="col-auto">
+            <label class="form-label" style="font-size:11px">To</label>
+            <input type="date" id="donorTo" class="form-control form-control-sm" value="@ViewBag.ToDate" />
+          </div>
+          <div class="col-auto">
+            <button class="btn btn-primary btn-sm" onclick="loadDonorReport()"><i class="bi bi-search"></i> Load</button>
+          </div>
+          <div class="col-auto ms-auto">
+            <a href="#" id="donorExcelLink" class="btn btn-outline-success btn-sm"><i class="bi bi-file-earmark-excel"></i> Excel</a>
+            <a href="#" id="donorPdfLink" class="btn btn-outline-danger btn-sm"><i class="bi bi-file-earmark-pdf"></i> PDF</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card" id="donorTableContainer">
+      <div class="card-header"><h6>Donor Summary</h6></div>
+      <div class="card-body p-0" style="overflow-x:auto">
+        <table class="table mb-0" style="font-size:12px">
+          <thead>
+            <tr>
+              <th>Period</th><th>Registered</th><th>A+</th><th>A-</th><th>B+</th><th>B-</th>
+              <th>AB+</th><th>AB-</th><th>O+</th><th>O-</th><th>Deferrals</th><th>Collections</th>
+            </tr>
+          </thead>
+          <tbody id="donorTableBody">
+            <tr><td colspan="12" class="text-center text-muted" style="padding:2em">Select date range and click Load.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  @* ── Inventory Report ── *@
+  <div class="tab-pane fade" id="tab-inventory">
+    <div class="card mb-3">
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center">
+          <span style="font-size:13px">Current stock levels and near-expiry items</span>
+          <div class="d-flex gap-2">
+            <button class="btn btn-primary btn-sm" onclick="loadInventoryReport()"><i class="bi bi-arrow-clockwise"></i> Refresh</button>
+            <a href="#" id="invExcelLink" class="btn btn-outline-success btn-sm"><i class="bi bi-file-earmark-excel"></i> Excel</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header"><h6>Inventory Summary</h6></div>
+      <div class="card-body p-0" style="overflow-x:auto">
+        <table class="table mb-0" style="font-size:12px">
+          <thead>
+            <tr>
+              <th>Component</th><th>Blood Group</th><th>Available</th><th>Reserved</th><th>Quarantined</th><th>Near Expiry</th>
+            </tr>
+          </thead>
+          <tbody id="invTableBody">
+            <tr><td colspan="6" class="text-center text-muted" style="padding:2em">Click Refresh to load data.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  @* ── Camp Report ── *@
+  <div class="tab-pane fade" id="tab-camp">
+    <div class="card mb-3">
+      <div class="card-body">
+        <div class="row g-2 align-items-end">
+          <div class="col-auto">
+            <label class="form-label" style="font-size:11px">From</label>
+            <input type="date" id="campFrom" class="form-control form-control-sm" value="@ViewBag.FromDate" />
+          </div>
+          <div class="col-auto">
+            <label class="form-label" style="font-size:11px">To</label>
+            <input type="date" id="campTo" class="form-control form-control-sm" value="@ViewBag.ToDate" />
+          </div>
+          <div class="col-auto">
+            <button class="btn btn-primary btn-sm" onclick="loadCampReport()"><i class="bi bi-search"></i> Load</button>
+          </div>
+          <div class="col-auto ms-auto">
+            <a href="#" id="campExcelLink" class="btn btn-outline-success btn-sm"><i class="bi bi-file-earmark-excel"></i> Excel</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header"><h6>Camp Summary</h6></div>
+      <div class="card-body p-0" style="overflow-x:auto">
+        <table class="table mb-0" style="font-size:12px">
+          <thead>
+            <tr>
+              <th>Period</th><th>Camps</th><th>Expected</th><th>Collected</th><th>Rate (%)</th>
+            </tr>
+          </thead>
+          <tbody id="campTableBody">
+            <tr><td colspan="5" class="text-center text-muted" style="padding:2em">Select date range and click Load.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+@section Scripts {
+<script>
+  function fmtDate(d) { return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+
+  // ── Donor Report ──
+  function loadDonorReport() {
+    var f = document.getElementById('donorFrom').value;
+    var t = document.getElementById('donorTo').value;
+    var tb = document.getElementById('donorTableBody');
+    tb.innerHTML = '<tr><td colspan="12" class="text-center" style="padding:2em"><i class="bi bi-arrow-clockwise"></i> Loading...</td></tr>';
+
+    document.getElementById('donorExcelLink').href = '/Reports/ExportDonorExcel?fromDate='+f+'&toDate='+t;
+    document.getElementById('donorPdfLink').href = '/Reports/ExportDonorPdf?fromDate='+f+'&toDate='+t;
+
+    fetch('/Reports/DonorData?fromDate='+f+'&toDate='+t)
+      .then(r=>r.json())
+      .then(d=>{
+        if(!d||!d.length){ tb.innerHTML='<tr><td colspan="12" class="text-center text-muted" style="padding:2em">No data.</td></tr>'; return; }
+        tb.innerHTML = d.map(r=>'<tr><td>'+r.period+'</td><td>'+r.totalRegistered+'</td><td>'+r.totalBloodGroupAPositive+'</td><td>'+r.totalBloodGroupANegative+'</td><td>'+r.totalBloodGroupBPositive+'</td><td>'+r.totalBloodGroupBNegative+'</td><td>'+r.totalBloodGroupAbPositive+'</td><td>'+r.totalBloodGroupAbNegative+'</td><td>'+r.totalBloodGroupOPositive+'</td><td>'+r.totalBloodGroupONegative+'</td><td>'+r.totalDeferrals+'</td><td>'+r.totalCollections+'</td></tr>').join('');
+      })
+      .catch(()=>{ tb.innerHTML='<tr><td colspan="12" class="text-center text-danger" style="padding:2em">Failed to load.</td></tr>'; });
+  }
+
+  // ── Inventory Report ──
+  function loadInventoryReport() {
+    var tb = document.getElementById('invTableBody');
+    tb.innerHTML = '<tr><td colspan="6" class="text-center" style="padding:2em"><i class="bi bi-arrow-clockwise"></i> Loading...</td></tr>';
+
+    fetch('/Reports/InventoryData')
+      .then(r=>r.json())
+      .then(d=>{
+        if(!d||!d.length){ tb.innerHTML='<tr><td colspan="6" class="text-center text-muted" style="padding:2em">No data.</td></tr>'; return; }
+        tb.innerHTML = d.map(r=>'<tr><td>'+r.componentType+'</td><td>'+r.bloodGroup+'</td><td>'+r.availableQty+'</td><td>'+r.reservedQty+'</td><td>'+r.quarantinedQty+'</td><td>'+r.nearExpiryQty+'</td></tr>').join('');
+      })
+      .catch(()=>{ tb.innerHTML='<tr><td colspan="6" class="text-center text-danger" style="padding:2em">Failed to load.</td></tr>'; });
+  }
+
+  // ── Camp Report ──
+  function loadCampReport() {
+    var f = document.getElementById('campFrom').value;
+    var t = document.getElementById('campTo').value;
+    var tb = document.getElementById('campTableBody');
+    tb.innerHTML = '<tr><td colspan="5" class="text-center" style="padding:2em"><i class="bi bi-arrow-clockwise"></i> Loading...</td></tr>';
+
+    document.getElementById('campExcelLink').href = '/Reports/ExportCampExcel?fromDate='+f+'&toDate='+t;
+
+    fetch('/Reports/CampData?fromDate='+f+'&toDate='+t)
+      .then(r=>r.json())
+      .then(d=>{
+        if(!d||!d.length){ tb.innerHTML='<tr><td colspan="5" class="text-center text-muted" style="padding:2em">No data.</td></tr>'; return; }
+        tb.innerHTML = d.map(r=>'<tr><td>'+r.period+'</td><td>'+r.totalCamps+'</td><td>'+r.totalExpected+'</td><td>'+r.totalCollected+'</td><td>'+r.collectionRate+'</td></tr>').join('');
+      })
+      .catch(()=>{ tb.innerHTML='<tr><td colspan="5" class="text-center text-danger" style="padding:2em">Failed to load.</td></tr>'; });
+  }
+
+  // Auto-load donor report on first tab show
+  document.addEventListener('DOMContentLoaded', function() { loadDonorReport(); });
+</script>
+}

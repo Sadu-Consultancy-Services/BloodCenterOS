@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BloodCenterOS · Phase 5 Complete — Admin, Reports &amp; Settings</title>
+<style>
+  body { font-family: system-ui, sans-serif; max-width: 1000px; margin: 2em auto; padding: 0 1em; line-height: 1.6; background: #f8fafc; color: #1e293b; }
+  h1 { border-bottom: 3px solid #6366f1; padding-bottom: .3em; }
+  h2 { color: #4f46e5; margin-top: 2em; }
+  h3 { color: #1e293b; margin-top: 1.5em; }
+  pre { background: #1e293b; color: #e2e8f0; padding: 1em; border-radius: 8px; overflow-x: auto; font-size: .85em; }
+  code { background: #e2e8f0; padding: .15em .4em; border-radius: 4px; font-size: .9em; }
+  pre code { background: transparent; padding: 0; }
+  table { border-collapse: collapse; width: 100%; margin: 1em 0; font-size: .9em; }
+  th, td { text-align: left; padding: .4em .6em; border-bottom: 1px solid #cbd5e1; }
+  th { background: #e2e8f0; font-weight: 600; }
+  .badge { display: inline-block; padding: .15em .6em; border-radius: 999px; font-size: .8em; font-weight: 600; }
+  .badge-pass { background: #dcfce7; color: #166534; }
+  .badge-new { background: #fef9c3; color: #854d0e; }
+  .summary-card { background: white; border-radius: 12px; padding: 1.5em; box-shadow: 0 1px 3px rgba(0,0,0,.1); margin: 1em 0; }
+  .success { background: #dcfce7; border-left: 4px solid #22c55e; padding: .75em 1em; border-radius: 6px; }
+  .endpoint { font-family: monospace; background: #f1f5f9; padding: 2px 6px; border-radius: 4px; font-size: .85em; }
+</style>
+</head>
+<body>
+
+<h1>✅ BloodCenterOS · Phase 5 Complete</h1>
+<p><strong>Date:</strong> 2026-07-16 | <strong>Steps 12–14:</strong> Admin, Reports, Settings &amp; Configuration</p>
+
+<div class="summary-card">
+<h2>Deliverables</h2>
+<p>
+  <span class="badge badge-pass">✓ Step 12 — User &amp; Role Management (14 API endpoints, 6 Web views)</span>
+  <span class="badge badge-pass">✓ Step 13 — Reports with Excel/PDF export (3 SPs, 7 API endpoints, 1 Web view)</span>
+  <span class="badge badge-pass">✓ Step 14 — Settings &amp; Configuration (4 SPs, 8 API endpoints, live Settings view)</span>
+  <span class="badge badge-pass">✓ Build: 0 errors all projects (API + Web + IntegrationTests)</span>
+</p>
+</div>
+
+<h2>Step 12 — User &amp; Role Management</h2>
+<table>
+  <tr><th>API</th><th>Endpoints</th></tr>
+  <tr><td><code>UserController</code></td><td>
+    <span class="endpoint">GET /api/users</span> (search),
+    <span class="endpoint">GET /api/users/{id}</span>,
+    <span class="endpoint">POST /api/users</span> (BCrypt hash),
+    <span class="endpoint">PUT /api/users/{id}</span>,
+    <span class="endpoint">PUT /api/users/{id}/lock</span>,
+    <span class="endpoint">GET /api/users/{id}/roles</span>,
+    <span class="endpoint">POST /api/users/{id}/roles</span>,
+    <span class="endpoint">DELETE /api/users/{id}/roles/{roleId}</span>
+  </td></tr>
+  <tr><td><code>RoleController</code></td><td>
+    <span class="endpoint">GET /api/roles</span>,
+    <span class="endpoint">POST /api/roles</span>,
+    <span class="endpoint">GET /api/roles/permissions</span>,
+    <span class="endpoint">GET /api/roles/{id}/permissions</span>,
+    <span class="endpoint">POST /api/roles/{id}/permissions</span>,
+    <span class="endpoint">DELETE /api/roles/{id}/permissions/{permId}</span>
+  </td></tr>
+  <tr><td><strong>New files</strong></td><td>Permission.cs, RolePermission.cs, IPermissionRepository, PermissionRepository, IRoleRepository, RoleRepository, UserController, RoleController, UsersController, RolesController, 6 views, AdminDtos.cs, UserViewModel.cs, RoleViewModel.cs</td></tr>
+</table>
+
+<h2>Step 13 — Reports</h2>
+<table>
+  <tr><th>SP</th><th>Purpose</th></tr>
+  <tr><td><code>fn_report_donor_summary</code></td><td>Donor registrations, blood-group split, deferrals, collections by month</td></tr>
+  <tr><td><code>fn_report_inventory_summary</code></td><td>Stock levels + near-expiry counts by component/blood-group</td></tr>
+  <tr><td><code>fn_report_camp_summary</code></td><td>Camp counts, expected/collected, collection rate by month</td></tr>
+  <tr><td><strong>API exports</strong></td><td>
+    <span class="endpoint">GET /api/reports/export/donor-excel</span>,
+    <span class="endpoint">GET /api/reports/export/donor-pdf</span>,
+    <span class="endpoint">GET /api/reports/export/inventory-excel</span>,
+    <span class="endpoint">GET /api/reports/export/camp-excel</span>
+  </td></tr>
+  <tr><td><strong>Library</strong></td><td>ClosedXML (Excel), QuestPDF (PDF) — both in API .csproj</td></tr>
+</table>
+
+<h2>Step 14 — Settings &amp; Configuration</h2>
+<table>
+  <tr><th>New SP</th><th>Purpose</th></tr>
+  <tr><td><code>fn_center_config_get_all</code></td><td>List all center config key-values</td></tr>
+  <tr><td><code>fn_system_config_get_all</code></td><td>List all system config key-values</td></tr>
+  <tr><td><code>fn_lookup_type_get_all</code></td><td>List all lookup types</td></tr>
+  <tr><td><code>fn_lookup_value_get_all</code></td><td>List lookup values by type</td></tr>
+  <tr><td><strong>API endpoints</strong></td><td>
+    <span class="endpoint">GET/PUT /api/settings/center-config</span>,
+    <span class="endpoint">PUT /api/settings/center-config/batch</span>,
+    <span class="endpoint">GET/PUT /api/settings/system-config</span>,
+    <span class="endpoint">GET/POST /api/settings/lookup-types</span>,
+    <span class="endpoint">GET /api/settings/lookup-values/{typeId}</span>,
+    <span class="endpoint">POST /api/settings/lookup-values</span>
+  </td></tr>
+  <tr><td><strong>Web view</strong></td><td>Updated <code>Views/Home/Settings.cshtml</code> — 4 tabs: General (center config), System Config, Lookup Values (type list + value grid), Security. All data loaded via JS proxy through HomeController</td></tr>
+</table>
+
+<h2>Files Created/Modified (Phase 5 Total)</h2>
+<table>
+  <tr><th>Layer</th><th>Files</th></tr>
+  <tr><td><strong>DB (new)</strong></td><td><code>fn_report_donor_summary.sql</code>, <code>fn_report_inventory_summary.sql</code>, <code>fn_report_camp_summary.sql</code>, <code>fn_settings_sp.sql</code> (4 SPs)</td></tr>
+  <tr><td><strong>API (new)</strong></td><td>Models: Permission.cs, RolePermission.cs, ReportModels.cs, SettingModels.cs<br>Repos: IPermissionRepository, PermissionRepository, IRoleRepository, RoleRepository, IReportRepository, ReportRepository, ISettingRepository, SettingRepository<br>Controllers: UserController, RoleController, ReportsController, SettingsController</td></tr>
+  <tr><td><strong>API (mod)</strong></td><td>Program.cs (4 new DI registrations)</td></tr>
+  <tr><td><strong>Web (new)</strong></td><td>Controllers: UsersController, RolesController, ReportsController<br>Models: AdminDtos.cs, UserViewModel.cs, RoleViewModel.cs<br>Views: Users/{Index,Create,Edit}, Roles/{Index,Create,Permissions}, Reports/Index</td></tr>
+  <tr><td><strong>Web (mod)</strong></td><td>HomeController (+10 proxy actions), ApiClient (+13 methods + BuildUrl), _Sidebar.cshtml (Reports, Users, Roles linked, admin auto-expand)</td></tr>
+</table>
+
+<h2>Build Status</h2>
+<p>
+  <span class="badge badge-pass">API: 0 errors, 0 warnings</span><br>
+  <span class="badge badge-pass">Web: 0 errors, 0 warnings</span><br>
+  <span class="badge badge-pass">Integration Tests: 0 errors, 7 pre-existing warnings (unchanged)</span>
+</p>
+
+<div class="success">
+<strong>How to verify</strong><br>
+1. <code>dotnet run --project BloodCenterOS.API</code><br>
+2. <code>dotnet run --project BloodCenterOS.Web</code><br>
+3. Login: <code>admin</code> / <code>admin@123</code><br>
+4. Administration → Users (search, create, edit, lock/unlock, assign roles)<br>
+5. Administration → Roles (list, create, toggle permissions)<br>
+6. Reports (3-tab dashboard, load data, export Excel/PDF)<br>
+7. Settings → General/System Config (live key-value editor), Lookup Values (type + value CRUD)
+</div>
+
+<h2>Phase 5 Complete</h2>
+<p>All three steps of Phase 5 are delivered. The system now has:</p>
+<ul>
+  <li><strong>User &amp; Role Management:</strong> Full CRUD, lock/unlock, role-permission toggle, user-role assignment</li>
+  <li><strong>Reports:</strong> Donor/Inventory/Camp summary views with date filters and Excel/PDF export via ClosedXML + QuestPDF</li>
+  <li><strong>Settings &amp; Configuration:</strong> Center config, system config, lookup value editor — all live from API</li>
+</ul>
+
+<h2>Next Steps</h2>
+<ol>
+  <li><strong>Audit Logs</strong> — login history + data change audit trail</li>
+  <li><strong>Dashboard Enhancements</strong> — live data widgets with real-time API data</li>
+  <li><strong>Integration Tests</strong> — add tests for new Phase 5 controllers</li>
+</ol>
+
+</body>
+</html>

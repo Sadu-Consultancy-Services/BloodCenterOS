@@ -1,0 +1,96 @@
+@model Camp
+@{
+  ViewBag.Title = "Create Camp";
+  ViewBag.ActiveMenu = "Camps";
+}
+
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Create Camp <small>Schedule a new blood donation camp</small></h1>
+  </div>
+  <a href="@Url.Action("Index")" class="btn btn-outline-secondary"><i class="bi bi-arrow-left"></i> Back to List</a>
+</div>
+
+@if (!ViewData.ModelState.IsValid)
+{
+  <div class="alert alert-danger d-flex flex-column gap-1 mb-3 py-2 px-3">
+    @foreach (var err in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+    {
+      <div class="d-flex align-items-center gap-2"><i class="bi bi-exclamation-circle"></i> <span>@err.ErrorMessage</span></div>
+    }
+  </div>
+}
+
+<form method="post" action="@Url.Action("Create")">
+  <div class="card mb-3">
+    <div class="card-header"><h6>Camp Details</h6></div>
+    <div class="card-body">
+      <div class="row g-2">
+        <div class="col-md-8">
+          <label class="form-label">Camp Name <span class="text-danger">*</span></label>
+          <input type="text" name="CampName" class="form-control" value="@Model.CampName" placeholder="e.g., Rotary Club Blood Drive" required />
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">Organizer</label>
+          <select name="OrganizerId" class="form-select">
+            <option value="">Select Organizer</option>
+            <option value="1" selected="@(Model.OrganizerId == 1)">Rotary Club</option>
+            <option value="2" selected="@(Model.OrganizerId == 2)">Lions Club</option>
+            <option value="3" selected="@(Model.OrganizerId == 3)">Corporate Partner</option>
+            <option value="4" selected="@(Model.OrganizerId == 4)">Educational Institution</option>
+            <option value="5" selected="@(Model.OrganizerId == 5)">NGO</option>
+            <option value="6" selected="@(Model.OrganizerId == 6)">Religious Organization</option>
+            <option value="7" selected="@(Model.OrganizerId == 7)">Government</option>
+            <option value="8" selected="@(Model.OrganizerId == 8)">Other</option>
+          </select>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card mb-3">
+    <div class="card-header"><h6>Schedule</h6></div>
+    <div class="card-body">
+      <div class="row g-2">
+        <div class="col-md-4">
+          <label class="form-label">Camp Date <span class="text-danger">*</span></label>
+          <input type="date" name="CampDate" class="form-control" value="@Model.CampDate?.ToString("yyyy-MM-dd")" required />
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">Start Time</label>
+          <input type="time" name="StartTime" class="form-control" value="@Model.StartTime?.ToString(@"hh\:mm")" />
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">End Time</label>
+          <input type="time" name="EndTime" class="form-control" value="@Model.EndTime?.ToString(@"hh\:mm")" />
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card mb-3">
+    <div class="card-header"><h6>Location &amp; Capacity</h6></div>
+    <div class="card-body">
+      <div class="row g-2">
+        <div class="col-md-6">
+          <label class="form-label">Venue <span class="text-danger">*</span></label>
+          <input type="text" name="Venue" class="form-control" value="@Model.Venue" placeholder="e.g., Community Hall, School Auditorium" required />
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">City</label>
+          <input type="text" name="City" class="form-control" value="@Model.City" placeholder="City" />
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">Total Donors Expected</label>
+          <input type="number" name="TotalDonorsExpected" class="form-control" value="@Model.TotalDonorsExpected" placeholder="e.g., 100" min="1" />
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="d-flex gap-2 justify-content-end">
+    <a href="@Url.Action("Index")" class="btn btn-outline-secondary">Cancel</a>
+    <button type="reset" class="btn btn-outline-secondary">Reset</button>
+    <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg"></i> Create Camp</button>
+  </div>
+</form>

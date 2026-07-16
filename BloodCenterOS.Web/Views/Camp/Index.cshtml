@@ -1,0 +1,116 @@
+@model CampListViewModel
+@{
+  ViewBag.Title = "Camp Management";
+  ViewBag.ActiveMenu = "Camps";
+}
+
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Camp Management <small>Organize and track blood donation camps</small></h1>
+  </div>
+  <div class="d-flex gap-2">
+    <a href="@Url.Action("Create")" class="btn btn-primary"><i class="bi bi-plus-lg"></i> New Camp</a>
+    <button class="btn btn-outline-secondary"><i class="bi bi-download"></i> Export</button>
+  </div>
+</div>
+
+@if (TempData["Success"] is string success)
+{
+  <div class="alert alert-success d-flex align-items-center gap-2 mb-3 py-2 px-3">
+    <i class="bi bi-check-circle-fill"></i> <span>@success</span>
+    <button type="button" class="btn-close ms-auto" style="font-size:10px" onclick="this.parentElement.remove()"></button>
+  </div>
+}
+
+<div class="card mb-3">
+  <div class="card-header">
+    <h6><i class="bi bi-calendar-event me-1"></i> Upcoming Camps (@Model.UpcomingCamps.Count)</h6>
+  </div>
+  <div class="card-body p-0">
+    @if (Model.UpcomingCamps.Any())
+    {
+      <div class="row g-0">
+        @foreach (var camp in Model.UpcomingCamps)
+        {
+          <div class="col-md-6 col-lg-4 p-2" style="border-right:1px solid var(--bc-border-light);border-bottom:1px solid var(--bc-border-light)">
+            <div class="p-2">
+              <div class="d-flex align-items-start gap-3">
+                <div class="text-center" style="min-width:50px">
+                  <div style="font-size:22px;font-weight:700;color:var(--bc-primary);line-height:1">@camp.CampDate?.Day</div>
+                  <div style="font-size:10px;color:var(--bc-text-muted);text-transform:uppercase">@camp.CampDate?.ToString("MMM")</div>
+                </div>
+                <div class="flex-grow-1" style="min-width:0">
+                  <a href="@Url.Action("Details", new { id = camp.CampId })" style="font-size:14px;font-weight:600;color:var(--bc-text)">@camp.CampName</a>
+                  <div style="font-size:11px;color:var(--bc-text-muted);margin-top:2px">
+                    <i class="bi bi-geo-alt me-1"></i> @camp.Venue, @camp.City
+                  </div>
+                  <div class="d-flex gap-3 mt-2" style="font-size:11px;color:var(--bc-text-secondary)">
+                    <span><i class="bi bi-clock me-1"></i>@camp.StartTime?.ToString(@"hh\:mm") — @camp.EndTime?.ToString(@"hh\:mm")</span>
+                    <span><i class="bi bi-people me-1"></i>@camp.TotalDonorsExpected expected</span>
+                  </div>
+                </div>
+                <span class="badge badge-info" style="align-self:flex-start">Upcoming</span>
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+    }
+    else
+    {
+      <div class="empty-state">
+        <div class="empty-icon"><i class="bi bi-calendar-plus"></i></div>
+        <div class="empty-title">No upcoming camps</div>
+        <div class="empty-text">Schedule a new blood donation camp to get started.</div>
+        <a href="@Url.Action("Create")" class="btn btn-primary mt-3"><i class="bi bi-plus-lg"></i> Create Camp</a>
+      </div>
+    }
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header">
+    <h6><i class="bi bi-clock-history me-1"></i> Past Camps (@Model.PastCamps.Count)</h6>
+  </div>
+  <div class="card-body p-0">
+    <div class="table-container">
+      <table class="table mb-0">
+        <thead>
+          <tr>
+            <th>Camp Name</th>
+            <th>Venue</th>
+            <th>Date</th>
+            <th>Expected</th>
+            <th>Collected</th>
+            <th>Collection Rate</th>
+            <th style="width:60px">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          @foreach (var camp in Model.PastCamps)
+          {
+            var rate = camp.TotalDonorsExpected > 0 ? (camp.TotalDonorsCollected ?? 0) * 100 / camp.TotalDonorsExpected : 0;
+            <tr>
+              <td><a href="@Url.Action("Details", new { id = camp.CampId })" style="font-weight:500;color:var(--bc-text)">@camp.CampName</a></td>
+              <td style="font-size:11px">@camp.Venue</td>
+              <td style="font-size:11px">@camp.CampDate?.ToString("dd MMM yyyy")</td>
+              <td>@camp.TotalDonorsExpected</td>
+              <td>@camp.TotalDonorsCollected</td>
+              <td>
+                <div class="d-flex align-items-center gap-2">
+                  <div class="progress flex-grow-1" style="height:6px;max-width:100px">
+                    <div class="progress-bar" role="progressbar" style="width:@(rate)%"></div>
+                  </div>
+                  <span style="font-size:11px">@rate%</span>
+                </div>
+              </td>
+              <td>
+                <a href="@Url.Action("Details", new { id = camp.CampId })" class="btn btn-sm btn-outline-secondary" title="View"><i class="bi bi-eye"></i></a>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

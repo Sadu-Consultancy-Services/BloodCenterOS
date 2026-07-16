@@ -1,0 +1,70 @@
+@model EmergencyRequest
+@{
+  ViewBag.Title = "New Emergency Request";
+  ViewBag.ActiveMenu = "Emergency";
+}
+
+<div class="page-header">
+  <div>
+    <h1 class="page-title">New Emergency Request <small>Request urgent blood from hospitals</small></h1>
+  </div>
+  <a href="@Url.Action("Index")" class="btn btn-outline-secondary"><i class="bi bi-arrow-left"></i> Back</a>
+</div>
+
+@if (!ViewData.ModelState.IsValid) { <div class="alert alert-danger d-flex flex-column gap-1 mb-3 py-2 px-3">@foreach(var err in ViewData.ModelState.Values.SelectMany(v=>v.Errors)){<div class="d-flex align-items-center gap-2"><i class="bi bi-exclamation-circle"></i><span>@err.ErrorMessage</span></div>}</div> }
+
+<form method="post" action="@Url.Action("Create")">
+  <div class="card mb-3">
+    <div class="card-header"><h6>Emergency Request</h6></div>
+    <div class="card-body">
+      <div class="row g-2">
+        <div class="col-md-6">
+          <label class="form-label">Patient Name <span class="text-danger">*</span></label>
+          <input type="text" name="PatientName" class="form-control" value="@Model.PatientName" required />
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">Blood Group <span class="text-danger">*</span></label>
+          <select name="BloodGroup" class="form-select" required>
+            <option value="">Select</option>
+            @foreach (var bg in new[] { "A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-" })
+            { <option value="@bg" selected="@(Model.BloodGroup == bg)">@bg</option> }
+          </select>
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">Component Type</label>
+          <select name="ComponentType" class="form-select">
+            <option value="Whole Blood">Whole Blood</option>
+            <option value="PRBC">PRBC</option>
+            <option value="FFP">FFP</option>
+            <option value="Platelet">Platelet</option>
+            <option value="Cryo">Cryo</option>
+          </select>
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">Units Required <span class="text-danger">*</span></label>
+          <input type="number" name="UnitsRequired" class="form-control" value="@Model.UnitsRequired" required />
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">Hospital ID</label>
+          <input type="number" name="HospitalId" class="form-control" value="@Model.HospitalId" />
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">Request Status</label>
+          <select name="RequestStatus" class="form-select">
+            <option value="Critical" selected="@(Model.RequestStatus == "Critical")">Critical</option>
+            <option value="Pending" selected="@(Model.RequestStatus == "Pending")">Pending</option>
+          </select>
+        </div>
+        <div class="col-12">
+          <label class="form-label">Notes</label>
+          <textarea name="Notes" class="form-control" rows="2">@Model.Notes</textarea>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="d-flex gap-2 justify-content-end">
+    <a href="@Url.Action("Index")" class="btn btn-outline-secondary">Cancel</a>
+    <button type="submit" class="btn btn-danger"><i class="bi bi-exclamation-triangle-fill"></i> Submit Emergency Request</button>
+  </div>
+</form>

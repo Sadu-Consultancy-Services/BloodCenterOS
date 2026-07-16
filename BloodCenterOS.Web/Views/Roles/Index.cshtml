@@ -1,0 +1,81 @@
+@model RoleListViewModel
+@{
+  ViewBag.Title = "Roles";
+  ViewBag.ActiveMenu = "Roles";
+}
+
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Roles <small>Manage user roles &amp; permissions</small></h1>
+  </div>
+  <div class="d-flex gap-2">
+    <a href="@Url.Action("Create")" class="btn btn-primary"><i class="bi bi-plus-lg"></i> Add Role</a>
+  </div>
+</div>
+
+@if (TempData["Success"] is string success)
+{
+  <div class="alert alert-success d-flex align-items-center gap-2 mb-3 py-2 px-3">
+    <i class="bi bi-check-circle-fill"></i> <span>@success</span>
+    <button type="button" class="btn-close ms-auto" style="font-size:10px" onclick="this.parentElement.remove()"></button>
+  </div>
+}
+
+<div class="row g-3">
+  <div class="col-md-8">
+    <div class="card">
+      <div class="card-header"><h6>@Model.Roles.Count role(s)</h6></div>
+      <div class="card-body p-0">
+        <div class="table-container">
+          <table class="table mb-0">
+            <thead>
+              <tr>
+                <th>Role Name</th>
+                <th>Description</th>
+                <th>Created</th>
+                <th style="width:80px">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              @foreach (var r in Model.Roles)
+              {
+                <tr>
+                  <td><span style="font-weight:500">@r.RoleName</span></td>
+                  <td style="font-size:11px">@r.Description</td>
+                  <td style="font-size:11px">@r.CreatedAt.ToString("dd MMM yyyy")</td>
+                  <td>
+                    <a href="@Url.Action("Permissions", new { id = r.RoleId })" class="btn btn-sm btn-outline-secondary" title="Permissions"><i class="bi bi-shield-check"></i></a>
+                  </td>
+                </tr>
+              }
+              @if (!Model.Roles.Any())
+              {
+                <tr><td colspan="4"><div class="empty-state"><div class="empty-icon"><i class="bi bi-shield"></i></div><div class="empty-title">No roles defined</div></div></td></tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="card">
+      <div class="card-header"><h6>All Permissions (@Model.AllPermissions.Count)</h6></div>
+      <div class="card-body p-0" style="max-height:400px;overflow-y:auto">
+        <table class="table mb-0">
+          <thead>
+            <tr><th style="font-size:10px">Code</th></tr>
+          </thead>
+          <tbody>
+            @foreach (var p in Model.AllPermissions)
+            {
+              <tr>
+                <td style="font-size:11px;font-family:monospace">@p.PermissionCode</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BloodCenterOS — Step 1 Review: SQL Server → PostgreSQL Conversion | 2026-07-16</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; background: #f4f6f9; color: #1a1d23; padding: 2rem; line-height: 1.6; }
+        .container { max-width: 1100px; margin: 0 auto; background: #fff; border-radius: 12px; box-shadow: 0 2px 12px rgba(0,0,0,.08); padding: 2.5rem; }
+        h1 { font-size: 1.75rem; margin-bottom: .25rem; color: #0b1e33; }
+        .date { color: #6b7280; font-size: .9rem; margin-bottom: 1.5rem; }
+        h2 { font-size: 1.25rem; margin: 1.5rem 0 .75rem; color: #1f3a5f; border-bottom: 2px solid #e5e7eb; padding-bottom: .35rem; }
+        h3 { font-size: 1.05rem; margin: 1rem 0 .5rem; color: #2c3e50; }
+        table { width: 100%; border-collapse: collapse; margin: .75rem 0 1.25rem; font-size: .9rem; }
+        th, td { text-align: left; padding: .5rem .75rem; border: 1px solid #d1d5db; }
+        th { background: #1f3a5f; color: #fff; font-weight: 600; }
+        tr:nth-child(even) { background: #f9fafb; }
+        ul, ol { margin: .5rem 0 .5rem 1.5rem; }
+        li { margin-bottom: .3rem; }
+        code { background: #f1f5f9; border: 1px solid #e2e8f0; border-radius: 4px; padding: .1rem .4rem; font-size: .85rem; color: #b91c1c; }
+        pre { background: #0f172a; color: #e2e8f0; border-radius: 8px; padding: 1rem; overflow-x: auto; font-size: .8rem; line-height: 1.5; margin: .75rem 0; }
+        .badge { display: inline-block; background: #1f3a5f; color: #fff; font-size: .75rem; font-weight: 700; padding: .15rem .6rem; border-radius: 999px; }
+        .badge-green { background: #059669; }
+        .badge-blue { background: #2563eb; }
+        .badge-amber { background: #d97706; }
+        .highlight { background: #eff6ff; border-left: 4px solid #2563eb; padding: .75rem 1rem; border-radius: 6px; margin: 1rem 0; }
+        .summary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; margin: 1rem 0; }
+        .stat-card { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 1rem; text-align: center; }
+        .stat-card .num { font-size: 2rem; font-weight: 800; color: #1f3a5f; }
+        .stat-card .label { font-size: .8rem; color: #64748b; }
+        .file-info { background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px; padding: 1rem; margin: .75rem 0; }
+        .file-info code { background: #dcfce7; border-color: #86efac; color: #166534; }
+        .diff-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin: .75rem 0; }
+        .diff-col { border-radius: 8px; padding: .75rem; }
+        .diff-col h4 { font-size: .9rem; margin-bottom: .5rem; }
+        .diff-old { background: #fef2f2; border: 1px solid #fecaca; }
+        .diff-old h4 { color: #dc2626; }
+        .diff-new { background: #f0fdf4; border: 1px solid #bbf7d0; }
+        .diff-new h4 { color: #16a34a; }
+        hr { border: none; border-top: 1px solid #e5e7eb; margin: 1.5rem 0; }
+    </style>
+</head>
+<body>
+<div class="container">
+
+<h1>BloodCenterOS — Step 1: SQL Server → PostgreSQL Conversion</h1>
+<div class="date">Review Date: 16 July 2026 &nbsp;|&nbsp; Step 1 Complete &nbsp;|&nbsp; Database Schema Migration</div>
+
+<!-- ===== SUMMARY ===== -->
+<h2>Conversion Summary</h2>
+<div class="summary-grid">
+    <div class="stat-card"><div class="num">89</div><div class="label">Tables Converted</div></div>
+    <div class="stat-card"><div class="num">2</div><div class="label">Indexes Migrated</div></div>
+    <div class="stat-card"><div class="num">91</div><div class="label">DEFAULTs Converted</div></div>
+    <div class="stat-card"><div class="num">0</div><div class="label">FK Constraints</div></div>
+    <div class="stat-card"><div class="num">6</div><div class="label">Unique Indexes Added</div></div>
+</div>
+
+<div class="file-info">
+    <strong>Output file:</strong> <code>DB/BloodCenterOS_DB_v3.1_PostgreSQL.sql</code><br>
+    <strong>Input file:</strong> <code>DB/BloodCenterOS_DB_v3.1.sql</code> (SQL Server T-SQL)<br>
+    <strong>Design philosophy:</strong> No foreign key constraints — indexes only, integrity via SPs (matches original)
+</div>
+
+<!-- ===== TYPE MAPPING ===== -->
+<h2>Data Type Conversion Map</h2>
+<table>
+    <tr><th>SQL Server (T-SQL)</th><th>PostgreSQL</th><th>Notes</th></tr>
+    <tr><td><code>BIGINT IDENTITY(1,1)</code></td><td><code>BIGSERIAL</code></td><td>Auto-incrementing primary key</td></tr>
+    <tr><td><code>BIGINT</code></td><td><code>BIGINT</code></td><td>Same — no change needed</td></tr>
+    <tr><td><code>INT</code></td><td><code>INTEGER</code></td><td>Semantically identical</td></tr>
+    <tr><td><code>NVARCHAR(n)</code></td><td><code>VARCHAR(n)</code></td><td>UTF-8 in PG handles Unicode natively</td></tr>
+    <tr><td><code>NVARCHAR(MAX)</code></td><td><code>TEXT</code></td><td>Unlimited length character data</td></tr>
+    <tr><td><code>DATETIME2(7)</code></td><td><code>TIMESTAMPTZ</code></td><td>Timezone-aware timestamp with fractional seconds</td></tr>
+    <tr><td><code>DATE</code></td><td><code>DATE</code></td><td>Same</td></tr>
+    <tr><td><code>BIT</code></td><td><code>BOOLEAN</code></td><td><code>0/1</code> → <code>FALSE/TRUE</code></td></tr>
+    <tr><td><code>DECIMAL(p,s)</code></td><td><code>NUMERIC(p,s)</code></td><td>Same</td></tr>
+</table>
+
+<!-- ===== SYNTAX CHANGES ===== -->
+<h2>Syntax &amp; Structural Changes</h2>
+
+<div class="diff-grid">
+    <div class="diff-col diff-old">
+        <h4>SQL Server (Original)</h4>
+        <pre>CREATE TABLE [dbo].[DonorMaster](
+    [DonorId] [bigint] IDENTITY(1,1) NOT NULL,
+    [FirstName] [nvarchar](200) NOT NULL,
+    [IsLocked] [bit] NOT NULL,
+    [CreatedAt] [datetime2](7) NOT NULL,
+    PRIMARY KEY CLUSTERED ([DonorId] ASC)
+) ON [PRIMARY]</pre>
+    </div>
+    <div class="diff-col diff-new">
+        <h4>PostgreSQL (Converted)</h4>
+        <pre>CREATE TABLE DonorMaster (
+    DonorId BIGSERIAL NOT NULL,
+    FirstName VARCHAR(200) NOT NULL,
+    IsLocked BOOLEAN NOT NULL,
+    CreatedAt TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    PRIMARY KEY (DonorId)
+);</pre>
+    </div>
+</div>
+
+<h3>Specific Changes Applied</h3>
+<table>
+    <tr><th>Change</th><th>Before (MSSQL)</th><th>After (PG)</th><th>Count</th></tr>
+    <tr><td>Square brackets</td><td><code>[ColumnName]</code></td><td><code>ColumnName</code></td><td>~1,400 occurrences removed</td></tr>
+    <tr><td>Schema prefix</td><td><code>[dbo].TableName</code></td><td><code>TableName</code></td><td>89 tables</td></tr>
+    <tr><td>IDENTITY</td><td><code>BIGINT IDENTITY(1,1)</code></td><td><code>BIGSERIAL</code></td><td>89 PK columns</td></tr>
+    <tr><td>PK CLUSTERED</td><td><code>PRIMARY KEY CLUSTERED (col ASC)</code></td><td><code>PRIMARY KEY (col)</code></td><td>89 constraints</td></tr>
+    <tr><td>ON [PRIMARY]</td><td><code>) ON [PRIMARY]</code></td><td>Removed</td><td>~80 tables</td></tr>
+    <tr><td>TEXTIMAGE_ON</td><td><code>TEXTIMAGE_ON [PRIMARY]</code></td><td>Removed</td><td>8 tables</td></tr>
+    <tr><td>WITH options</td><td><code>WITH (PAD_INDEX = OFF, ...)</code></td><td>Removed</td><td>89 tables</td></tr>
+    <tr><td>DATETIME2 → TIMESTAMPTZ</td><td><code>datetime2(7)</code></td><td><code>TIMESTAMPTZ</code></td><td>~120 columns</td></tr>
+    <tr><td>NVARCHAR(MAX) → TEXT</td><td><code>nvarchar(max)</code></td><td><code>TEXT</code></td><td>~25 columns</td></tr>
+    <tr><td>NVARCHAR(n) → VARCHAR(n)</td><td><code>nvarchar(200)</code></td><td><code>VARCHAR(200)</code></td><td>~400 columns</td></tr>
+    <tr><td>BIT → BOOLEAN</td><td><code>bit</code></td><td><code>BOOLEAN</code></td><td>21 columns</td></tr>
+    <tr><td>DECIMAL → NUMERIC</td><td><code>decimal(18,2)</code></td><td><code>NUMERIC(18,2)</code></td><td>14 columns</td></tr>
+    <tr><td>GO / batch separators</td><td><code>GO</code></td><td>Removed</td><td>~200 statements removed</td></tr>
+    <tr><td>SET statements</td><td><code>SET ANSI_NULLS ON</code> etc.</td><td>Removed</td><td>~180 lines removed</td></tr>
+    <tr><td>Database boilerplate</td><td><code>CREATE DATABASE</code>, <code>ALTER DATABASE</code></td><td>Removed</td><td>Handled externally</td></tr>
+</table>
+
+<!-- ===== DEFAULTS ===== -->
+<h2>DEFAULT Value Conversion</h2>
+<table>
+    <tr><th>SQL Server Default</th><th>PostgreSQL Default</th><th>Occurrences</th></tr>
+    <tr><td><code>DEFAULT (sysutcdatetime())</code></td><td><code>DEFAULT NOW()</code></td><td>81 columns</td></tr>
+    <tr><td><code>DEFAULT ((0))</code> on BIT</td><td><code>DEFAULT FALSE</code></td><td>5 columns</td></tr>
+    <tr><td><code>DEFAULT ((1))</code> on BIT</td><td><code>DEFAULT TRUE</code></td><td>6 columns</td></tr>
+    <tr><td><code>DEFAULT ((0))</code> on INT/BIGINT</td><td><code>DEFAULT 0</code></td><td>5 columns</td></tr>
+    <tr><td><code>DEFAULT ((1))</code> on INT</td><td><code>DEFAULT 1</code></td><td>2 columns</td></tr>
+</table>
+
+<p><strong>Key difference:</strong> In the original SQL Server script, defaults were applied via separate <code>ALTER TABLE ... ADD DEFAULT ... FOR ...</code> statements <em>after</em> table creation. In the PostgreSQL version, all defaults are <strong>inlined</strong> in the column definitions within <code>CREATE TABLE</code>.</p>
+
+<!-- ===== INDEXES ===== -->
+<h2>Index Conversion</h2>
+<table>
+    <tr><th>Original (SQL Server)</th><th>Converted (PostgreSQL)</th></tr>
+    <tr>
+        <td><pre>CREATE NONCLUSTERED INDEX [IX_DonorMaster_Phone]
+ON [dbo].[DonorMaster] ([Phone] ASC)
+WITH (PAD_INDEX = OFF, ...) ON [PRIMARY]</pre></td>
+        <td><pre>CREATE INDEX IX_DonorMaster_Phone
+ON DonorMaster (Phone);</pre></td>
+    </tr>
+    <tr>
+        <td><pre>CREATE NONCLUSTERED INDEX [IX_CollectionRecord_CreatedAt]
+ON [dbo].[CollectionRecord] ([CreatedAt] ASC)
+WITH (PAD_INDEX = OFF, ...) ON [PRIMARY]</pre></td>
+        <td><pre>CREATE INDEX IX_CollectionRecord_CreatedAt
+ON CollectionRecord (CreatedAt);</pre></td>
+    </tr>
+</table>
+<p>PostgreSQL uses <code>CREATE INDEX</code> (B-tree by default). All <code>WITH</code> options, <code>ON [PRIMARY]</code>, and <code>NONCLUSTERED</code> keywords were stripped.</p>
+
+<!-- ===== UNIQUE INDEXES ADDED ===== -->
+<h2>Unique Indexes Added (for Upsert Support)</h2>
+<table>
+    <tr><th>Table</th><th>Index</th><th>Columns</th></tr>
+    <tr><td><code>InventoryStock</code></td><td><code>IX_InventoryStock_Unique</code></td><td>CenterId, ComponentType, BloodGroup</td></tr>
+    <tr><td><code>SystemConfig</code></td><td><code>IX_SystemConfig_Unique</code></td><td>CenterId, ConfigKey</td></tr>
+    <tr><td><code>CenterConfig</code></td><td><code>IX_CenterConfig_Unique</code></td><td>CenterId, ConfigKey</td></tr>
+    <tr><td><code>UserSettings</code></td><td><code>IX_UserSettings_Unique</code></td><td>UserId, SettingsKey</td></tr>
+    <tr><td><code>LookupType</code></td><td><code>IX_LookupType_Unique</code></td><td>TypeCode</td></tr>
+    <tr><td><code>SequenceCounters</code></td><td><code>IX_SequenceCounters_Unique</code></td><td>CenterId, SequenceName</td></tr>
+</table>
+
+<!-- ===== VERIFICATION ===== -->
+<h2>Verification</h2>
+<table>
+    <tr><th>Check</th><th>Result</th></tr>
+    <tr><td>Table count matches original</td><td><span class="badge badge-green">89 / 89</span></td></tr>
+    <tr><td>All 89 table names verified via diff</td><td><span class="badge badge-green">Pass</span></td></tr>
+    <tr><td>CenterConfig (missing in first pass)</td><td><span class="badge badge-green">Added in second pass</span></td></tr>
+    <tr><td>Original indexes converted</td><td><span class="badge badge-green">2 / 2</span></td></tr>
+    <tr><td>No FK constraints added</td><td><span class="badge badge-blue">Intentional</span></td></tr>
+</table>
+
+<div class="highlight">
+    <strong>Ready for Step 2:</strong> The PostgreSQL schema is ready. Next was PL/pgSQL stored procedures (see <code>20260716_open_ai_review_3.html</code>).
+</div>
+
+<hr>
+<p style="color:#6b7280; font-size:.8rem; text-align:center;">
+    BloodCenterOS — Step 1 Review &bull; 16 July 2026 &bull; Generated by OpenAI Codex
+</p>
+
+</div>
+</body>
+</html>

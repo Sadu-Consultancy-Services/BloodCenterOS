@@ -1,0 +1,68 @@
+@model Billing
+@{
+  ViewBag.Title = "New Invoice";
+  ViewBag.ActiveMenu = "Billing";
+}
+
+<div class="page-header">
+  <div>
+    <h1 class="page-title">New Invoice <small>Create a billing invoice</small></h1>
+  </div>
+  <a href="@Url.Action("Index")" class="btn btn-outline-secondary"><i class="bi bi-arrow-left"></i> Back</a>
+</div>
+
+@if (!ViewData.ModelState.IsValid) { <div class="alert alert-danger d-flex flex-column gap-1 mb-3 py-2 px-3">@foreach(var err in ViewData.ModelState.Values.SelectMany(v=>v.Errors)){<div class="d-flex align-items-center gap-2"><i class="bi bi-exclamation-circle"></i><span>@err.ErrorMessage</span></div>}</div> }
+
+<form method="post" action="@Url.Action("Create")">
+  <div class="card mb-3">
+    <div class="card-header"><h6>Invoice Details</h6></div>
+    <div class="card-body">
+      <div class="row g-2">
+        <div class="col-md-4">
+          <label class="form-label">Invoice Number <span class="text-danger">*</span></label>
+          <input type="text" name="InvoiceNumber" class="form-control" value="@Model.InvoiceNumber" required />
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">Patient ID</label>
+          <input type="number" name="PatientId" class="form-control" value="@Model.PatientId" />
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">Payment Status</label>
+          <select name="PaymentStatus" class="form-select">
+            <option value="Unpaid" selected="@(Model.PaymentStatus == "Unpaid")">Unpaid</option>
+            <option value="Paid" selected="@(Model.PaymentStatus == "Paid")">Paid</option>
+            <option value="Partial" selected="@(Model.PaymentStatus == "Partial")">Partial</option>
+          </select>
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">Total Amount (₹)</label>
+          <input type="number" step="0.01" name="TotalAmount" class="form-control" value="@Model.TotalAmount" />
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">Tax Amount (₹)</label>
+          <input type="number" step="0.01" name="TaxAmount" class="form-control" value="@Model.TaxAmount" />
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">Discount (₹)</label>
+          <input type="number" step="0.01" name="Discount" class="form-control" value="@Model.Discount" />
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">Payment Mode</label>
+          <select name="PaymentMode" class="form-select">
+            <option value="">Select</option>
+            <option value="Cash" selected="@(Model.PaymentMode == "Cash")">Cash</option>
+            <option value="Card" selected="@(Model.PaymentMode == "Card")">Card</option>
+            <option value="UPI" selected="@(Model.PaymentMode == "UPI")">UPI</option>
+            <option value="Cheque" selected="@(Model.PaymentMode == "Cheque")">Cheque</option>
+            <option value="Insurance" selected="@(Model.PaymentMode == "Insurance")">Insurance</option>
+          </select>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="d-flex gap-2 justify-content-end">
+    <a href="@Url.Action("Index")" class="btn btn-outline-secondary">Cancel</a>
+    <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg"></i> Create Invoice</button>
+  </div>
+</form>

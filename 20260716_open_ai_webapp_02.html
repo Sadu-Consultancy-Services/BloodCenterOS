@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BloodCenterOS · Web App Phase 2 — Core CRUD Modules</title>
+<style>
+  body { font-family: system-ui, sans-serif; max-width: 1000px; margin: 2em auto; padding: 0 1em; line-height: 1.6; background: #f8fafc; color: #1e293b; }
+  h1 { border-bottom: 3px solid #22c55e; padding-bottom: .3em; }
+  h2 { color: #16a34a; margin-top: 2em; }
+  h3 { color: #1e293b; margin-top: 1.5em; }
+  pre { background: #1e293b; color: #e2e8f0; padding: 1em; border-radius: 8px; overflow-x: auto; font-size: .85em; }
+  code { background: #e2e8f0; padding: .15em .4em; border-radius: 4px; font-size: .9em; }
+  pre code { background: transparent; padding: 0; }
+  table { border-collapse: collapse; width: 100%; margin: 1em 0; font-size: .9em; }
+  th, td { text-align: left; padding: .4em .6em; border-bottom: 1px solid #cbd5e1; }
+  th { background: #e2e8f0; font-weight: 600; }
+  .badge { display: inline-block; padding: .15em .6em; border-radius: 999px; font-size: .8em; font-weight: 600; }
+  .badge-pass { background: #dcfce7; color: #166534; }
+  .badge-info { background: #dbeafe; color: #1e40af; }
+  .summary-card { background: white; border-radius: 12px; padding: 1.5em; box-shadow: 0 1px 3px rgba(0,0,0,.1); margin: 1em 0; }
+  .warn { background: #fef9c3; border-left: 4px solid #eab308; padding: .75em 1em; border-radius: 6px; }
+  .success { background: #dcfce7; border-left: 4px solid #22c55e; padding: .75em 1em; border-radius: 6px; }
+  .file-grid { display: grid; grid-template-columns: 1fr 2fr; gap: 2px; font-size: .85em; }
+  .file-grid .fg-label { font-weight: 600; background: #f1f5f9; padding: 4px 8px; }
+  .file-grid .fg-value { background: #f8fafc; padding: 4px 8px; font-family: monospace; }
+</style>
+</head>
+<body>
+
+<h1>✅ BloodCenterOS · Web App Phase 2</h1>
+<p><strong>Date:</strong> 2026-07-16 | <strong>Subject:</strong> Core CRUD Modules — Donor, Camp, Hospital Management</p>
+
+<div class="summary-card">
+<h2>Deliverables</h2>
+<p>
+  <span class="badge badge-pass">✓ Donor Management (list + search + create + edit + details)</span>
+  <span class="badge badge-pass">✓ Camp Management (upcoming cards + past list + create + details)</span>
+  <span class="badge badge-pass">✓ Hospital Management (list + create)</span>
+  <span class="badge badge-pass">✓ 3 new SPs / API endpoints</span>
+  <span class="badge badge-pass">✓ 3 controllers, 7 views, 3 view models</span>
+  <span class="badge badge-pass">✓ Build: 0 warnings, 0 errors</span>
+</p>
+</div>
+
+<h2>Files Created / Modified</h2>
+
+<h3>API Layer (4 files)</h3>
+<div class="file-grid">
+  <div class="fg-label">New SP</div>
+  <div class="fg-value">DB/fn_hospital_get_by_center.sql</div>
+  <div class="fg-label">Modified</div>
+  <div class="fg-value">Repositories/IDonorRepository.cs + DonorRepository.cs</div>
+  <div class="fg-label">Modified</div>
+  <div class="fg-value">Repositories/IHospitalRepository.cs + HospitalRepository.cs</div>
+  <div class="fg-label">Modified</div>
+  <div class="fg-value">Controllers/DonorController.cs — new GET /api/donors/{id}/donations</div>
+  <div class="fg-label">Modified</div>
+  <div class="fg-value">Controllers/HospitalController.cs — new GET /api/hospitals</div>
+</div>
+
+<h3>Web Layer (13 files)</h3>
+<div class="file-grid">
+  <div class="fg-label">New Model</div>
+  <div class="fg-value">Models/Donation.cs</div>
+  <div class="fg-label">New ViewModel</div>
+  <div class="fg-value">Models/ViewModels/DonorViewModel.cs</div>
+  <div class="fg-label">New ViewModel</div>
+  <div class="fg-value">Models/ViewModels/CampViewModel.cs</div>
+  <div class="fg-label">Modified</div>
+  <div class="fg-value">Services/ApiClient.cs (+GetDonationsByDonorAsync, +GetHospitalsAsync)</div>
+  <div class="fg-label">New Controller</div>
+  <div class="fg-value">Controllers/DonorController.cs</div>
+  <div class="fg-label">New Controller</div>
+  <div class="fg-value">Controllers/CampController.cs</div>
+  <div class="fg-label">New Controller</div>
+  <div class="fg-value">Controllers/HospitalController.cs</div>
+  <div class="fg-label">New Views</div>
+  <div class="fg-value">Views/Donor/{Index,Create,Edit,Details}.cshtml</div>
+  <div class="fg-label">New Views</div>
+  <div class="fg-value">Views/Camp/{Index,Create,Details}.cshtml</div>
+  <div class="fg-label">New Views</div>
+  <div class="fg-value">Views/Hospital/{Index,Create}.cshtml</div>
+  <div class="fg-label">Modified</div>
+  <div class="fg-value">Views/Shared/_Sidebar.cshtml (Donors→/Donor, Camps→/Camp, Hospitals→/Hospital)</div>
+</div>
+
+<h2>Module Details</h2>
+
+<h3>1. Donor Management</h3>
+<table>
+  <tr><th>Page</th><th>Route</th><th>API Endpoint</th></tr>
+  <tr><td>List + Search</td><td>GET /Donor?keyword=&amp;bloodGroup=&amp;gender=&amp;page=</td><td>GET /api/donors/search</td></tr>
+  <tr><td>Create</td><td>GET/POST /Donor/Create</td><td>POST /api/donors</td></tr>
+  <tr><td>Edit</td><td>GET/POST /Donor/Edit/{id}</td><td>GET /api/donors/{id} + PUT /api/donors/{id}</td></tr>
+  <tr><td>Details</td><td>GET /Donor/Details/{id}</td><td>GET /api/donors/{id} + GET /api/donors/{id}/donations</td></tr>
+</table>
+<ul>
+  <li><strong>Search filters:</strong> keyword (name/code/phone), blood group dropdown (8 types), gender dropdown</li>
+  <li><strong>Pagination:</strong> server-side via API, pagination bar with page numbers + prev/next</li>
+  <li><strong>Donation history:</strong> wired to <code>fn_donor_donation_get_by_donor</code> SP (was orphaned, now connected)</li>
+  <li><strong>Form:</strong> personal info (name, gender, DOB, blood group, occupation, language) + contact (phone, email, aadhaar, address fields)</li>
+  <li><strong>Fallback:</strong> 15 mock donors when API is unavailable</li>
+</ul>
+
+<h3>2. Camp Management</h3>
+<table>
+  <tr><th>Page</th><th>Route</th><th>API Endpoint</th></tr>
+  <tr><td>List</td><td>GET /Camp</td><td>GET /api/camps/upcoming</td></tr>
+  <tr><td>Create</td><td>GET/POST /Camp/Create</td><td>POST /api/camps</td></tr>
+  <tr><td>Details</td><td>GET /Camp/Details/{id}</td><td>GET /api/camps/{id}</td></tr>
+</table>
+<ul>
+  <li><strong>Upcoming camps:</strong> card layout showing date (big day number), name, venue, time range, expected donors</li>
+  <li><strong>Past camps:</strong> table with collection rate progress bar</li>
+  <li><strong>Create form:</strong> camp name, organizer dropdown (8 types), date picker, start/end time, venue, city, expected donors</li>
+  <li><strong>Detail page:</strong> stats cards (date, expected, collected, rate), progress bar, quick actions</li>
+  <li><strong>Fallback:</strong> 3 upcoming + 2 past mock camps</li>
+</ul>
+
+<h3>3. Hospital Management</h3>
+<table>
+  <tr><th>Page</th><th>Route</th><th>API Endpoint</th></tr>
+  <tr><td>List</td><td>GET /Hospital</td><td>GET /api/hospitals</td></tr>
+  <tr><td>Create</td><td>GET/POST /Hospital/Create</td><td>POST /api/hospitals</td></tr>
+</table>
+<ul>
+  <li><strong>List:</strong> table with name, address, contact person, phone, email</li>
+  <li><strong>Create form:</strong> hospital name*, code (auto), address, contact person, phone, email</li>
+  <li><strong>New SP:</strong> <code>fn_hospital_get_by_center</code> — applied to both dev + test DBs</li>
+  <li><strong>Fallback:</strong> 4 mock hospitals (City General, Apex Medical, Sunrise, Lifeline)</li>
+</ul>
+
+<h2>Patterns &amp; Conventions</h2>
+<ul>
+  <li><strong>Auth guard:</strong> every action checks <code>_auth.IsAuthenticated</code>, redirects to login if false</li>
+  <li><strong>Mock fallback:</strong> <code>try/catch</code> around API calls, fall back to inline mock data for all list pages</li>
+  <li><strong>TempData messages:</strong> <code>TempData["Success"]</code> banner after create/edit</li>
+  <li><strong>ModelState validation:</strong> required field checks, error list displayed in red alert box</li>
+  <li><strong>Consistent page header:</strong> <code>.page-header</code> with title/subtitle + action buttons</li>
+  <li><strong>Stat cards:</strong> 4-up grid with colored icons, used on Donor Details + Camp Details</li>
+  <li><strong>Table styling:</strong> sticky header, compact rows, hover highlight, badge for status/blood group</li>
+  <li><strong>Dropdowns:</strong> blood group (8), gender (3), organizer (8), state (8), occupation (5), language (4)</li>
+</ul>
+
+<h2>Build Status</h2>
+<p>
+  <span class="badge badge-pass">API: 0 errors, 0 warnings</span><br>
+  <span class="badge badge-pass">Web: 0 errors, 0 warnings</span><br>
+  <span class="badge badge-pass">Integration Tests: 0 errors (7 pre-existing CS8602 nullable warnings only)</span>
+</p>
+
+<div class="success">
+<strong>How to run</strong><br>
+1. Start API: <code>dotnet run --project BloodCenterOS.API</code> (port 5000)<br>
+2. Start Web: <code>dotnet run --project BloodCenterOS.Web</code> (port 5055)<br>
+3. Open <code>http://localhost:5055</code> — login with <code>admin</code> / <code>admin@123</code><br>
+4. Navigate to Donors, Camps, or Hospitals from the sidebar
+</div>
+
+<h2>Next Steps</h2>
+<ol>
+  <li><strong>Blood Collection</strong> — collection workflow, camp collections, donation recording</li>
+  <li><strong>Component &amp; Inventory</strong> — stock view, component preparation, inventory dashboard</li>
+  <li><strong>Testing</strong> — test entry, results, pending tests</li>
+  <li><strong>Requests &amp; Issue</strong> — pending requests, issue blood, billing</li>
+  <li><strong>User &amp; Role Management</strong> — admin panel</li>
+  <li><strong>Reports</strong> — Excel/PDF export</li>
+</ol>
+
+</body>
+</html>

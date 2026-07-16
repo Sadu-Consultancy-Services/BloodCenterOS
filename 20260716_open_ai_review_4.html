@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BloodCenterOS · Step 3 Review — API Scaffold</title>
+<style>
+  body { font-family: system-ui, sans-serif; max-width: 1000px; margin: 2em auto; padding: 0 1em; line-height: 1.6; background: #f8fafc; color: #1e293b; }
+  h1 { border-bottom: 3px solid #3b82f6; padding-bottom: .3em; }
+  h2 { color: #2563eb; margin-top: 2em; }
+  pre { background: #1e293b; color: #e2e8f0; padding: 1em; border-radius: 8px; overflow-x: auto; }
+  code { background: #e2e8f0; padding: .15em .4em; border-radius: 4px; font-size: .9em; }
+  pre code { background: transparent; padding: 0; }
+  table { border-collapse: collapse; width: 100%; margin: 1em 0; }
+  th, td { text-align: left; padding: .5em .75em; border-bottom: 1px solid #cbd5e1; }
+  th { background: #e2e8f0; font-weight: 600; }
+  .badge { display: inline-block; padding: .15em .6em; border-radius: 999px; font-size: .8em; font-weight: 600; }
+  .badge-pass { background: #dcfce7; color: #166534; }
+  .badge-fail { background: #fee2e2; color: #991b1b; }
+  .badge-warn { background: #fef9c3; color: #854d0e; }
+  .summary-card { background: white; border-radius: 12px; padding: 1.5em; box-shadow: 0 1px 3px rgba(0,0,0,.1); margin: 1em 0; }
+  .warn { background: #fef9c3; border-left: 4px solid #eab308; padding: .75em 1em; border-radius: 6px; }
+</style>
+</head>
+<body>
+
+<h1>🧪 BloodCenterOS · Step 3 Review</h1>
+<p><strong>Date:</strong> 2026-07-16 | <strong>Subject:</strong> ASP.NET Core 9 Web API Scaffold — Models, Repositories, Controllers</p>
+
+<div class="summary-card">
+<h2>Project Health</h2>
+<p>
+  <span class="badge badge-pass">✓ Build: Succeeded</span>
+  <span class="badge badge-pass">✓ Restore: Succeeded</span>
+  <span class="badge badge-warn">⚠ Tests: None defined</span>
+</p>
+<p><strong>Target:</strong> <code>net9.0</code> · <strong>Output:</strong> <code>bin/Debug/net9.0/BloodCenterOS.API.dll</code></p>
+</div>
+
+<h2>NuGet Dependencies</h2>
+<table>
+  <tr><th>Package</th><th>Version</th><th>Purpose</th></tr>
+  <tr><td>Npgsql</td><td>9.0.3</td><td>PostgreSQL ADO.NET provider</td></tr>
+  <tr><td>Dapper</td><td>2.1.35</td><td>Micro-ORM for SP calls</td></tr>
+  <tr><td>BCrypt.Net-Next</td><td>4.0.3</td><td>Password hashing (used by AuthService)</td></tr>
+  <tr><td>Microsoft.AspNetCore.Authentication.JwtBearer</td><td>9.0.3</td><td>JWT auth middleware</td></tr>
+  <tr><td>ClosedXML</td><td>0.104.2</td><td>Excel export (Inventory, Donors)</td></tr>
+  <tr><td>QuestPDF</td><td>2025.12.1</td><td>PDF generation (Labels, Reports)</td></tr>
+  <tr><td>Serilog.AspNetCore + Sinks.Console/File</td><td>9.0.0</td><td>Structured logging</td></tr>
+  <tr><td>Swashbuckle.AspNetCore</td><td>7.2.0</td><td>Swagger UI</td></tr>
+</table>
+<p>No deprecated or vulnerable packages detected.</p>
+
+<h2>Project Structure</h2>
+<pre><code>BloodCenterOS.API/
+├── Program.cs                   ← JWT + Serilog + Swagger wired
+├── appsettings.json             ← Connection string, JWT key
+├── appsettings.Development.json
+├── Properties/launchSettings.json
+├── Data/
+│   └── DbConnectionFactory.cs   ← Npgsql connection factory
+├── Models/                      ← 14 POCOs + 2 commons
+│   ├── Common/
+│   │   ├── ApiResponse.cs       ← Standard response wrapper
+│   │   └── PagedResult.cs       ← Paginated result wrapper
+│   ├── Billing.cs
+│   ├── BloodBag.cs
+│   ├── Camp.cs
+│   ├── Collection.cs
+│   ├── Component.cs
+│   ├── Donation.cs
+│   ├── Donor.cs
+│   ├── EmergencyRequest.cs
+│   ├── Hospital.cs
+│   ├── InventoryStock.cs
+│   ├── IssueRecord.cs
+│   ├── LoginRequest.cs
+│   ├── PatientRequest.cs
+│   ├── Role.cs
+│   └── User.cs
+├── Repositories/                ← 10 interfaces + 10 implementations
+│   ├── IDonorRepository.cs / DonorRepository.cs
+│   ├── IUserRepository.cs / UserRepository.cs
+│   ├── ICollectionRepository.cs / CollectionRepository.cs
+│   ├── IInventoryRepository.cs / InventoryRepository.cs
+│   ├── IIssueRepository.cs / IssueRepository.cs
+│   ├── IBillingRepository.cs / BillingRepository.cs
+│   ├── ICampRepository.cs / CampRepository.cs
+│   ├── IHospitalRepository.cs / HospitalRepository.cs
+│   ├── IEmergencyRepository.cs / EmergencyRepository.cs
+│   └── IComponentRepository.cs / ComponentRepository.cs
+├── Controllers/                 ← 10 REST controllers
+│   ├── AuthController.cs        [AllowAnonymous on POST /login]
+│   ├── DonorController.cs       CRUD + search + phone lookup
+│   ├── CampController.cs        CRUD + upcoming
+│   ├── CollectionController.cs  CRUD
+│   ├── InventoryController.cs   stock/summary/adjust
+│   ├── IssueController.cs       create + pending requests
+│   ├── BillingController.cs     billing + payment
+│   ├── HospitalController.cs    CRUD
+│   ├── ComponentController.cs   4 endpoints
+│   └── EmergencyController.cs   request
+└── Services/
+    ├── IJwtService.cs / JwtService.cs
+    └── IAuthService.cs / AuthService.cs
+</code></pre>
+
+<h2>Architecture Decisions</h2>
+
+<table>
+  <tr><th>Decision</th><th>Choice</th><th>Rationale</th></tr>
+  <tr><td>Data Access</td><td>Dapper + Npgsql</td><td>Direct SP invocation with dynamic mapping; no EF Core overhead</td></tr>
+  <tr><td>Auth</td><td>JWT Bearer + BCrypt</td><td>Stateless, self-contained tokens; BCrypt for password storage</td></tr>
+  <tr><td>Response Pattern</td><td><code>ApiResponse&lt;T&gt;</code></td><td>Consistent JSON envelope: <code>{success, data, message, errors}</code></td></tr>
+  <tr><td>Pagination</td><td><code>PagedResult&lt;T&gt;</code></td><td>Standard: <code>{items, totalCount, page, pageSize, totalPages}</code></td></tr>
+  <tr><td>Multi-tenant</td><td>CenterId claim</td><td>Extracted from JWT in each controller; passed to SPs</td></tr>
+  <tr><td>Error Handling</td><td>try-catch per action</td><td>Returns 400/404/500 with <code>ApiResponse.Fail</code></td></tr>
+  <tr><td>Logging</td><td>Serilog (Console + File)</td><td>Structured JSON logs with rolling file sink</td></tr>
+  <tr><td>DI Lifetime</td><td>Scoped</td><td>Per-request lifetime for repos and services</td></tr>
+</table>
+
+<h2>Controller Endpoints</h2>
+<table>
+  <tr><th>Controller</th><th>Route</th><th>Auth</th><th>Methods</th></tr>
+  <tr><td>Auth</td><td><code>/api/auth/login</code></td><td><span class="badge badge-pass">Anonymous</span></td><td>POST</td></tr>
+  <tr><td>Donor</td><td><code>/api/donors</code></td><td><span class="badge badge-pass">Authorize</span></td><td>GET/{id}, POST, PUT/{id}, GET/search, GET/by-phone</td></tr>
+  <tr><td>Camp</td><td><code>/api/camps</code></td><td><span class="badge badge-pass">Authorize</span></td><td>GET/{id}, POST, GET/upcoming</td></tr>
+  <tr><td>Collection</td><td><code>/api/collections</code></td><td><span class="badge badge-pass">Authorize</span></td><td>GET/{id}, POST</td></tr>
+  <tr><td>Inventory</td><td><code>/api/inventory</code></td><td><span class="badge badge-pass">Authorize</span></td><td>GET/stock, GET/summary, POST/adjust</td></tr>
+  <tr><td>Issue</td><td><code>/api/issues</code></td><td><span class="badge badge-pass">Authorize</span></td><td>POST, GET/pending-requests</td></tr>
+  <tr><td>Billing</td><td><code>/api/billing</code></td><td><span class="badge badge-pass">Authorize</span></td><td>POST, POST/{billingId}/payment</td></tr>
+  <tr><td>Hospital</td><td><code>/api/hospitals</code></td><td><span class="badge badge-pass">Authorize</span></td><td>POST</td></tr>
+  <tr><td>Component</td><td><code>/api/components</code></td><td><span class="badge badge-pass">Authorize</span></td><td>POST/prepare, GET/available, POST/{id}/transfer, POST/discard</td></tr>
+  <tr><td>Emergency</td><td><code>/api/emergency</code></td><td><span class="badge badge-pass">Authorize</span></td><td>POST/requests</td></tr>
+</table>
+
+<h2>DI Registration (<code>Program.cs</code>)</h2>
+<pre><code>All 10 repositories registered as Scoped:
+  IDonorRepository → DonorRepository
+  IUserRepository → UserRepository
+  ICollectionRepository → CollectionRepository
+  IInventoryRepository → InventoryRepository
+  IIssueRepository → IssueRepository
+  IBillingRepository → BillingRepository
+  ICampRepository → CampRepository
+  IHospitalRepository → HospitalRepository
+  IEmergencyRepository → EmergencyRepository
+  IComponentRepository → ComponentRepository
+
+Services:
+  IJwtService → JwtService
+  IAuthService → AuthService
+
+Singleton:
+  IDbConnectionFactory → DbConnectionFactory</code></pre>
+
+<h2>Solution File</h2>
+<p>Updated <code>BloodCenterOS.sln</code> — now includes both projects:</p>
+<table>
+  <tr><th>Project</th><th>Type</th><th>GUID</th></tr>
+  <tr><td>BloodCenterOS.Web</td><td>MVC</td><td><code>{708FF62C-E2BC-4AE5-9C07-E65CCA87F664}</code></td></tr>
+  <tr><td>BloodCenterOS.API</td><td>Web API</td><td><code>{A8B3C4D5-E6F7-8901-2345-6789ABCDEF01}</code></td></tr>
+</table>
+
+<h2>Issues Found &amp; Fixed</h2>
+<table>
+  <tr><th>Issue</th><th>File</th><th>Fix</th></tr>
+  <tr><td>Type mismatch: <code>BillingTransaction</code> vs <code>Billing</code></td><td><code>IBillingRepository.cs</code>, <code>BillingController.cs</code>, <code>BillingRepository.cs</code></td><td>Replaced all <code>BillingTransaction</code> → <code>Billing</code></td></tr>
+  <tr><td>Old F# project files persisted</td><td><code>*.fsproj</code>, <code>*.fs</code></td><td>Deleted: <code>BloodCenterOS.API.fsproj</code>, <code>Program.fs</code>, <code>WeatherForecast.fs</code>, <code>Controllers/WeatherForecastController.fs</code></td></tr>
+  <tr><td>Solution had wrong project type (F#)</td><td><code>BloodCenterOS.sln</code></td><td>Updated to C# project GUID <code>FAE04EC0…</code> + <code>.csproj</code> path</td></tr>
+</table>
+
+<h2>Next Steps (recommended)</h2>
+<ol>
+  <li><strong>Integration Tests</strong> — Connect to a test PostgreSQL, verify each SP returns expected results via Dapper</li>
+  <li><strong>Seed Script</strong> — Create <code>seed_data.sql</code> with default admin user, sample centers, donor records</li>
+  <li><strong>Frontend Integration</strong> — Connect <code>BloodCenterOS.Web</code> (MVC) or create a separate SPA to consume the API</li>
+  <li><strong>CI/CD Pipeline</strong> — Add GitHub Actions for build + lint + test</li>
+  <li><strong>API Versioning</strong> — Consider <code>Microsoft.AspNetCore.Mvc.Versioning</code> for future backward compatibility</li>
+  <li><strong>Rate Limiting</strong> — Add <code>[EnableRateLimiting]</code> on auth endpoint to prevent brute force</li>
+</ol>
+
+<div class="warn">
+<strong>⚠ Known Gaps</strong><br>
+• No integration tests exist yet — SP contract compliance is unverified<br>
+• No seed data / migration runner — DB must be initialized manually<br>
+• No request validation attributes (<code>[Required]</code>, <code>[StringLength]</code>) on DTOs<br>
+• <code>appsettings.json</code> contains static JWT secret — should use <code>User Secrets</code> / environment variables in production
+</div>
+
+</body>
+</html>

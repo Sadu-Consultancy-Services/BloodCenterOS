@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BloodCenterOS · Step 7b — JWT Secret Hardened (User Secrets)</title>
+<style>
+  body { font-family: system-ui, sans-serif; max-width: 1000px; margin: 2em auto; padding: 0 1em; line-height: 1.6; background: #f8fafc; color: #1e293b; }
+  h1 { border-bottom: 3px solid #22c55e; padding-bottom: .3em; }
+  h2 { color: #16a34a; margin-top: 2em; }
+  pre { background: #1e293b; color: #e2e8f0; padding: 1em; border-radius: 8px; overflow-x: auto; }
+  code { background: #e2e8f0; padding: .15em .4em; border-radius: 4px; font-size: .9em; }
+  pre code { background: transparent; padding: 0; }
+  table { border-collapse: collapse; width: 100%; margin: 1em 0; }
+  th, td { text-align: left; padding: .4em .6em; border-bottom: 1px solid #cbd5e1; }
+  th { background: #e2e8f0; font-weight: 600; }
+  .badge { display: inline-block; padding: .15em .6em; border-radius: 999px; font-size: .8em; font-weight: 600; }
+  .badge-pass { background: #dcfce7; color: #166534; }
+  .badge-fail { background: #fee2e2; color: #991b1b; }
+  .badge-warn { background: #fef9c3; color: #854d0e; }
+  .badge-info { background: #dbeafe; color: #1e40af; }
+  .summary-card { background: white; border-radius: 12px; padding: 1.5em; box-shadow: 0 1px 3px rgba(0,0,0,.1); margin: 1em 0; }
+  .warn { background: #fef9c3; border-left: 4px solid #eab308; padding: .75em 1em; border-radius: 6px; }
+  .success { background: #dcfce7; border-left: 4px solid #22c55e; padding: .75em 1em; border-radius: 6px; }
+  .error-box { background: #fee2e2; border-left: 4px solid #ef4444; padding: .75em 1em; border-radius: 6px; }
+</style>
+</head>
+<body>
+
+<h1>✅ BloodCenterOS · JWT Secret Hardening</h1>
+<p><strong>Date:</strong> 2026-07-16 | <strong>Subject:</strong> Moved JWT signing key from <code>appsettings.json</code> to .NET User Secrets</p>
+
+<div class="summary-card">
+<h2>Summary</h2>
+<p>
+  <span class="badge badge-pass">✓ Secret removed from appsettings.json</span>
+  <span class="badge badge-pass">✓ Stored in User Secrets (per-developer, never committed)</span>
+  <span class="badge badge-pass">✓ Test environment unchanged (appsettings.Test.json has own test key)</span>
+  <span class="badge badge-pass">✓ 23/23 integration tests green</span>
+  <span class="badge badge-pass">✓ Dev login flow verified (200 OK)</span>
+</p>
+</div>
+
+<h2>Before</h2>
+<pre><code class="diff-rem">// appsettings.json — secret in plain text, committed to source control
+{
+  "Jwt": {
+    "SecretKey": "BloodCenterOS_SuperSecretKey_2026_MinLength32Chars!",
+    "Issuer": "BloodCenterOS",
+    "Audience": "BloodCenterOS",
+    "ExpiryMinutes": 480
+  }
+}</code></pre>
+
+<h2>After</h2>
+
+<p><strong>appsettings.json</strong> — only non-sensitive config remains:</p>
+<pre><code class="diff-add">{
+  "Jwt": {
+    "Issuer": "BloodCenterOS",
+    "Audience": "BloodCenterOS",
+    "ExpiryMinutes": 480
+  }
+}</code></pre>
+
+<p><strong>User Secrets</strong> — stored per-developer at <code>%APPDATA%\Microsoft\UserSecrets\2d4b0154-...\secrets.json</code>:</p>
+<pre><code class="diff-add">{
+  "Jwt:SecretKey": "BloodCenterOS_SuperSecretKey_2026_MinLength32Chars!"
+}</code></pre>
+
+<p><strong>BloodCenterOS.API.csproj</strong> — <code>&lt;UserSecretsId&gt;</code> added by <code>dotnet user-secrets init</code>:</p>
+<pre><code class="diff-add">&lt;PropertyGroup&gt;
+  &lt;TargetFramework&gt;net9.0&lt;/TargetFramework&gt;
+  &lt;Nullable&gt;enable&lt;/Nullable&gt;
+  &lt;ImplicitUsings&gt;enable&lt;/ImplicitUsings&gt;
+  &lt;UserSecretsId&gt;2d4b0154-888a-4964-a4e2-3651dbdce86b&lt;/UserSecretsId&gt;
+&lt;/PropertyGroup&gt;</code></pre>
+
+<h2>Secret Resolution Chain</h2>
+<table>
+  <tr><th>Environment</th><th>Source</th><th>Value</th></tr>
+  <tr><td><strong>Development</strong> (local dev)</td><td>User Secrets</td><td><code>"BloodCenterOS_SuperSecretKey_2026_MinLength32Chars!"</code></td></tr>
+  <tr><td><strong>Test</strong> (integration tests)</td><td><code>appsettings.Test.json</code></td><td><code>"Test_SecretKey_AtLeast_32_Characters_Long_For_HS256!"</code></td></tr>
+  <tr><td><strong>Staging / Production</strong></td><td>Environment variable <code>Jwt__SecretKey</code></td><td>Set by deployment pipeline (not in repo)</td></tr>
+  <tr><td><em>Fallback</em></td><td><code>appsettings.json</code></td><td><em>No longer present</em> — missing key crashes startup with: <code>InvalidOperationException: JWT SecretKey not configured</code></td></tr>
+</table>
+
+<p>The <code>Program.cs</code> already has a safe-guard at line 21:</p>
+<pre>var jwtKey = builder.Configuration["Jwt:SecretKey"]
+    ?? throw new InvalidOperationException("JWT SecretKey not configured");</pre>
+
+<p>This ensures the app fails fast at startup if the secret is missing, rather than producing invalid tokens at runtime.</p>
+
+<h2>Why This Matters</h2>
+<ul>
+  <li><code>appsettings.json</code> is typically committed to source control — the secret was previously visible to anyone with repo access</li>
+  <li>User Secrets are stored in <code>%APPDATA%</code>, per-developer, never committed</li>
+  <li>Tests use their own isolated key — a leaked test key doesn't compromise the real secret</li>
+  <li>Production secrets are managed via environment variables or Azure Key Vault, independent of both settings</li>
+</ul>
+
+<h2>Files Modified</h2>
+<table>
+  <tr><th>File</th><th>Change</th></tr>
+  <tr><td><code>BloodCenterOS.API/appsettings.json</code></td><td>Removed <code>SecretKey</code> from <code>Jwt</code> section</td></tr>
+  <tr><td><code>BloodCenterOS.API/BloodCenterOS.API.csproj</code></td><td>Added <code>&lt;UserSecretsId&gt;</code></td></tr>
+  <tr><td>User Secrets store</td><td>Added <code>Jwt:SecretKey</code> via <code>dotnet user-secrets set</code></td></tr>
+</table>
+
+<h2>Next Steps</h2>
+<ol>
+  <li><strong>Frontend</strong> — connect <code>BloodCenterOS.Web</code> (MVC or SPA) to consume the API</li>
+  <li>Document onboarding steps: new devs run <code>dotnet user-secrets set "Jwt:SecretKey" "&lt;value&gt;"</code></li>
+</ol>
+
+<div class="warn">
+<strong>⚠ Reminder</strong><br>
+• Admin credentials: <code>admin</code> / <code>admin@123</code> at <code>localhost:5000</code><br>
+• 23/23 integration tests · 19/19 PowerShell endpoint tests<br>
+• To verify local setup: <code>dotnet user-secrets list --project BloodCenterOS.API</code>
+</div>
+
+</body>
+</html>

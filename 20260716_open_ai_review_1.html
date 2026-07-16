@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BloodCenterOS Review — 2026-07-16</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; background: #f4f6f9; color: #1a1d23; padding: 2rem; line-height: 1.6; }
+        .container { max-width: 1100px; margin: 0 auto; background: #fff; border-radius: 12px; box-shadow: 0 2px 12px rgba(0,0,0,.08); padding: 2.5rem; }
+        h1 { font-size: 1.75rem; margin-bottom: .25rem; color: #0b1e33; }
+        .date { color: #6b7280; font-size: .9rem; margin-bottom: 1.5rem; }
+        h2 { font-size: 1.25rem; margin: 1.5rem 0 .75rem; color: #1f3a5f; border-bottom: 2px solid #e5e7eb; padding-bottom: .35rem; }
+        h3 { font-size: 1.05rem; margin: 1rem 0 .5rem; color: #2c3e50; }
+        table { width: 100%; border-collapse: collapse; margin: .75rem 0 1.25rem; font-size: .9rem; }
+        th, td { text-align: left; padding: .5rem .75rem; border: 1px solid #d1d5db; }
+        th { background: #1f3a5f; color: #fff; font-weight: 600; }
+        tr:nth-child(even) { background: #f9fafb; }
+        ul, ol { margin: .5rem 0 .5rem 1.5rem; }
+        li { margin-bottom: .3rem; }
+        .badge { display: inline-block; background: #1f3a5f; color: #fff; font-size: .75rem; font-weight: 700; padding: .15rem .6rem; border-radius: 999px; }
+        .badge-green { background: #059669; }
+        .badge-amber { background: #d97706; }
+        .highlight { background: #eff6ff; border-left: 4px solid #2563eb; padding: .75rem 1rem; border-radius: 6px; margin: 1rem 0; }
+        .summary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin: 1rem 0; }
+        .stat-card { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 1rem; text-align: center; }
+        .stat-card .num { font-size: 2rem; font-weight: 800; color: #1f3a5f; }
+        .stat-card .label { font-size: .8rem; color: #64748b; }
+        .gap-box { background: #fef2f2; border-left: 4px solid #dc2626; padding: .75rem 1rem; border-radius: 6px; margin: .75rem 0; }
+        .step-list { counter-reset: step; }
+        .step-list li { counter-increment: step; margin-bottom: .6rem; }
+        .step-list li::marker { content: counter(step) ". "; font-weight: 700; color: #1f3a5f; }
+        .module-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: .75rem; margin: .75rem 0; }
+        .module-card { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: .75rem 1rem; }
+        .module-card strong { color: #1f3a5f; }
+        .module-card .count { float: right; background: #e5e7eb; border-radius: 999px; padding: .1rem .55rem; font-size: .75rem; font-weight: 600; }
+        hr { border: none; border-top: 1px solid #e5e7eb; margin: 1.5rem 0; }
+    </style>
+</head>
+<body>
+<div class="container">
+
+<h1>BloodCenterOS — Project Review &amp; Plan</h1>
+<div class="date">Review Date: 16 July 2026 &nbsp;|&nbsp; Prepared for: OpenAI Codex</div>
+
+<!-- ===== OVERVIEW ===== -->
+<h2>Overview</h2>
+<p><strong>BloodCenterOS</strong> is an open-source Blood Center Management System for India (NBTC/NACO compliant), developed by <strong>Sadu Consultancy Services</strong> (Pune, India). It is currently in <strong>Phase 1</strong> (Analysis &amp; Database Design).</p>
+
+<div class="highlight">
+    <strong>Goal:</strong> Convert the existing SQL Server (T-SQL) schema to <strong>PostgreSQL</strong> and build the full application stack on .NET 9 with Dapper + Npgsql.
+</div>
+
+<!-- ===== STATS ===== -->
+<h2>Key Metrics</h2>
+<div class="summary-grid">
+    <div class="stat-card"><div class="num">87</div><div class="label">Database Tables (v3.1)</div></div>
+    <div class="stat-card"><div class="num">5</div><div class="label">Schema Versions (V1.0 → V3.1)</div></div>
+    <div class="stat-card"><div class="num">14</div><div class="label">Module Groups</div></div>
+    <div class="stat-card"><div class="num">10</div><div class="label">Commits on Master</div></div>
+    <div class="stat-card"><div class="num">.NET 9</div><div class="label">Target Framework</div></div>
+    <div class="stat-card"><div class="num">SP-only</div><div class="label">Data Access Pattern</div></div>
+</div>
+
+<!-- ===== SOURCES ===== -->
+<h2>Sources Examined</h2>
+<table>
+    <tr><th>Source</th><th>Location</th><th>Details</th></tr>
+    <tr><td>GitHub Repository</td><td><a href="https://github.com/Sadu-Consultancy-Services/BloodCenterOS" target="_blank">Sadu-Consultancy-Services/BloodCenterOS</a></td><td>README, roadmap, tech stack, 10 commits</td></tr>
+    <tr><td>Website</td><td><a href="https://www.bloodcenteros.com/" target="_blank">bloodcenteros.com</a></td><td>Core modules, vision, FAQ, registration form</td></tr>
+    <tr><td>DB Schema v3.1 SQL</td><td><code>DB/BloodCenterOS_DB_v3.1.sql</code></td><td>Full T-SQL schema (87 tables + indexes + defaults)</td></tr>
+    <tr><td>DB Schema v3.1 PDF</td><td><code>DB/BloodCenterOS_DB_v3.1.pdf</code></td><td>Documentation (binary — could not extract text)</td></tr>
+    <tr><td>DB Schema v2.0</td><td><code>DB/BloodCenterOS_DB_V2.0.txt</code></td><td>Text-format schema (fewer columns, simpler structure)</td></tr>
+    <tr><td>DB Schema v1.0</td><td><code>DB/BloodCenterOS_DB_V1.0.txt</code></td><td>Earliest schema version</td></tr>
+    <tr><td>Web Project</td><td><code>BloodCenterOS.Web/</code></td><td>Barebones ASP.NET Core MVC — only HomeController + ErrorViewModel</td></tr>
+</table>
+
+<!-- ===== MODULE TABLES ===== -->
+<h2>87 Tables by Module</h2>
+<div class="module-grid">
+    <div class="module-card"><strong>User &amp; Access</strong> <span class="count">8</span><br>UserMaster, RoleMaster, RolePermissionMap, PermissionMaster, UserRoleMap, LoginHistory, AuditLog, UserSettings, CenterUserMap</div>
+    <div class="module-card"><strong>Center / Infrastructure</strong> <span class="count">8</span><br>BloodCenterMaster, BranchMaster, DepartmentMaster, EmployeeMaster, DesignationMaster, DeviceMaster, FridgeStorageMaster</div>
+    <div class="module-card"><strong>Donor Management</strong> <span class="count">7</span><br>DonorMaster, DonorHealthHistory, DonorDonationHistory, DeferralRecord, DonorAppointment, DonorCommunicationLog, ReplacementDonor</div>
+    <div class="module-card"><strong>Camps &amp; Collection</strong> <span class="count">7</span><br>BloodCampMaster, CampOrganizer, CampDonorMap, CollectionRecord, CollectionStaffMap, CampInventory, CampExpenseLog</div>
+    <div class="module-card"><strong>Testing &amp; Screening</strong> <span class="count">6</span><br>BloodTestRecord, BloodTestResult, TestKitMaster, TestTechnicianMap, QualityControlRecord</div>
+    <div class="module-card"><strong>Components &amp; Storage</strong> <span class="count">8</span><br>ComponentMaster, ComponentPreparation, ComponentPreparationLog, ComponentStorage, ComponentTransferLog, DiscardRecord, ComponentTypeMaster, BloodBagMaster</div>
+    <div class="module-card"><strong>Inventory</strong> <span class="count">2</span><br>InventoryStock, InventoryTransactionLog</div>
+    <div class="module-card"><strong>Issue / Requests</strong> <span class="count">6</span><br>IssueRecord, PatientRequest, CrossMatchRecord, ReturnRecord, HospitalMaster, RequestStatusLog</div>
+    <div class="module-card"><strong>Billing &amp; Finance</strong> <span class="count">5</span><br>BillingTransaction, InvoiceDetail, ServiceChargeMaster, PaymentRecord, ExpenseMaster</div>
+    <div class="module-card"><strong>Reporting</strong> <span class="count">6</span><br>MonthlyReportLog, ExportFileLog, DataUploadHistory, ReportTemplate, AnalyticsDashboardData, ChangeLog</div>
+    <div class="module-card"><strong>Communication</strong> <span class="count">8</span><br>NotificationMaster, SmsTemplateMaster, EmailTemplateMaster, OutboxLog, FeedbackMaster, NewsletterSubscription, EmergencyRequest, EmergencyDonorResponse</div>
+    <div class="module-card"><strong>System / Admin</strong> <span class="count">6</span><br>SystemConfig, BackupLog, ErrorLog, SchedulerJobLog, SequenceCounters, AttachmentStore</div>
+    <div class="module-card"><strong>Master / Reference</strong> <span class="count">7</span><br>StateMaster, DistrictMaster, CityMaster, PincodeMaster, BloodGroupMaster, LookupType, LookupValue, ReasonMaster, HolidayMaster</div>
+    <div class="module-card"><strong>API / Integration</strong> <span class="count">3</span><br>ApiIntegrationMaster, ApiResponseLog, PortalUploadQueue</div>
+</div>
+
+<!-- ===== CURRENT STATE ===== -->
+<h2>Current Project State</h2>
+<table>
+    <tr><th>Component</th><th>Status</th><th>Notes</th></tr>
+    <tr><td>Database Schema (SQL Server)</td><td><span class="badge badge-green">Complete (v3.1)</span></td><td>87 tables, indexes, defaults — no foreign keys (SP-based integrity)</td></tr>
+    <tr><td>PostgreSQL Schema</td><td><span class="badge badge-amber">Not Started</span></td><td>README says "coming soon"</td></tr>
+    <tr><td>Stored Procedures</td><td><span class="badge badge-amber">Not Started</span></td><td>SQL file contains only DDL — no SPs yet</td></tr>
+    <tr><td>.NET 9 Web App</td><td><span class="badge badge-amber">Scaffold Only</span></td><td>Default MVC template, no packages added</td></tr>
+    <tr><td>Models / Repositories</td><td><span class="badge" style="background:#9ca3af;">Empty</span></td><td>Only ErrorViewModel.cs exists</td></tr>
+    <tr><td>Controllers</td><td><span class="badge badge-amber">1 Only</span></td><td>HomeController with Index/Privacy</td></tr>
+    <tr><td>Views</td><td><span class="badge badge-amber">Scaffold Only</span></td><td>Default shared layout + home views</td></tr>
+    <tr><td>Authentication</td><td><span class="badge" style="background:#9ca3af;">Not Started</span></td><td>No auth middleware configured</td></tr>
+    <tr><td>Reporting (Excel/PDF)</td><td><span class="badge" style="background:#9ca3af;">Not Started</span></td><td>ClosedXML / QuestPDF packages not added</td></tr>
+</table>
+
+<!-- ===== ASSESSMENT ===== -->
+<h2>Assessment</h2>
+<h3>Strengths</h3>
+<ul>
+    <li>Schema is <strong>comprehensive</strong> — covers full blood center lifecycle (donor → collection → testing → components → inventory → issue → billing → reporting)</li>
+    <li>NBTC/NACO compliant design suitable for Indian regulatory reporting</li>
+    <li>Multi-center architecture built in (<code>CenterId</code> on most tables)</li>
+    <li>Clean "no FK" design optimized for SP-based high-performance transactions</li>
+    <li>Good audit trail (<code>AuditLog</code>, <code>ChangeLog</code>, <code>LoginHistory</code>)</li>
+</ul>
+
+<h3>Gaps &amp; Observations</h3>
+<div class="gap-box">
+    <strong>1.</strong> No stored procedures in the repo yet — only DDL. SPs are the core of the data access strategy.<br>
+    <strong>2.</strong> No PostgreSQL version exists — full T-SQL → PL/pgSQL conversion needed.<br>
+    <strong>3.</strong> Schema uses <code>NVARCHAR(MAX)</code> extensively — should right-size columns for PostgreSQL.<br>
+    <strong>4.</strong> No cross-matching compatibility rules table (logic presumably in SPs).<br>
+    <strong>5.</strong> Some tables have overlapping concerns (e.g., <code>DonorDonationHistory</code> overlaps with <code>CollectionRecord</code>).<br>
+    <strong>6.</strong> No seed/master data scripts provided.
+</div>
+
+<!-- ===== PLAN ===== -->
+<h2>Recommended Step-by-Step Plan</h2>
+<ol class="step-list">
+    <li><strong>Convert v3.1 SQL Server → PostgreSQL Schema</strong><br>
+        Map types (<code>NVARCHAR</code> → <code>VARCHAR</code>, <code>DATETIME2</code> → <code>TIMESTAMP</code>, <code>BIT</code> → <code>BOOLEAN</code>, <code>BIGINT IDENTITY</code> → <code>BIGSERIAL</code>), add FK constraints, convert indexes, add <code>created_at</code>/<code>updated_at</code> conventions.</li>
+    <li><strong>Create PostgreSQL Stored Procedures (PL/pgSQL)</strong><br>
+        Map the intended SP layer — CRUD per module, business logic, reporting queries.</li>
+    <li><strong>Add NuGet Packages</strong><br>
+        <code>Npgsql</code>, <code>Dapper</code>, <code>ClosedXML</code>, <code>QuestPDF</code>, <code>BCrypt.Net-Next</code> (password hashing), <code>Serilog</code> (logging).</li>
+    <li><strong>Build Repository Layer</strong><br>
+        Create <code>IDonorRepository</code>, <code>ICollectionRepository</code>, etc. using Dapper + Npgsql calling stored procedures.</li>
+    <li><strong>Build Domain Models</strong><br>
+        POCO classes matching the 87 tables — could be auto-generated from the PostgreSQL schema.</li>
+    <li><strong>Implement Authentication &amp; Authorization</strong><br>
+        JWT-based or cookie auth with role-based access for Super Admin, Center Admin, MO, Technician, etc.</li>
+    <li><strong>Build Web Controllers &amp; Views (Module by Module)</strong><br>
+        Start with <strong>Donor Management</strong> → Collection → Testing → Components → Inventory → Issue → Billing → Reports.</li>
+    <li><strong>Implement Reporting Engine</strong><br>
+        Excel exports via ClosedXML, PDF via QuestPDF for NACO/State compliance reports.</li>
+    <li><strong>Add Seed Data</strong><br>
+        Blood groups, default roles/permissions, lookup values, Indian states/districts/cities.</li>
+    <li><strong>Testing &amp; Deployment</strong><br>
+        Unit tests, integration tests, Docker Compose for PostgreSQL + .NET app, CI/CD pipeline.</li>
+</ol>
+
+<div class="highlight">
+    <strong>Priority Start:</strong> Step 1 (PostgreSQL schema conversion) followed by Step 2 (PL/pgSQL stored procedures) — these are the foundation everything else builds on.
+</div>
+
+<hr>
+<p style="color:#6b7280; font-size:.8rem; text-align:center;">
+    BloodCenterOS — Review Document &bull; 16 July 2026 &bull; Generated by OpenAI Codex
+</p>
+
+</div>
+</body>
+</html>

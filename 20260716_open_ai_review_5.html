@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BloodCenterOS · Step 5 Review — Local DB Setup &amp; Login Test</title>
+<style>
+  body { font-family: system-ui, sans-serif; max-width: 1000px; margin: 2em auto; padding: 0 1em; line-height: 1.6; background: #f8fafc; color: #1e293b; }
+  h1 { border-bottom: 3px solid #22c55e; padding-bottom: .3em; }
+  h2 { color: #16a34a; margin-top: 2em; }
+  pre { background: #1e293b; color: #e2e8f0; padding: 1em; border-radius: 8px; overflow-x: auto; }
+  code { background: #e2e8f0; padding: .15em .4em; border-radius: 4px; font-size: .9em; }
+  pre code { background: transparent; padding: 0; }
+  table { border-collapse: collapse; width: 100%; margin: 1em 0; }
+  th, td { text-align: left; padding: .5em .75em; border-bottom: 1px solid #cbd5e1; }
+  th { background: #e2e8f0; font-weight: 600; }
+  .badge { display: inline-block; padding: .15em .6em; border-radius: 999px; font-size: .8em; font-weight: 600; }
+  .badge-pass { background: #dcfce7; color: #166534; }
+  .badge-fail { background: #fee2e2; color: #991b1b; }
+  .badge-warn { background: #fef9c3; color: #854d0e; }
+  .badge-info { background: #dbeafe; color: #1e40af; }
+  .summary-card { background: white; border-radius: 12px; padding: 1.5em; box-shadow: 0 1px 3px rgba(0,0,0,.1); margin: 1em 0; }
+  .warn { background: #fef9c3; border-left: 4px solid #eab308; padding: .75em 1em; border-radius: 6px; }
+  .success { background: #dcfce7; border-left: 4px solid #22c55e; padding: .75em 1em; border-radius: 6px; }
+  .step { display: flex; align-items: flex-start; gap: 1em; margin: 1em 0; }
+  .step-num { background: #3b82f6; color: white; width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: .9em; flex-shrink: 0; }
+  .step-num.done { background: #22c55e; }
+</style>
+</head>
+<body>
+
+<h1>✅ BloodCenterOS · Step 5 Review</h1>
+<p><strong>Date:</strong> 2026-07-16 | <strong>Subject:</strong> Local PostgreSQL Setup, Seed Data &amp; Login End-to-End Test</p>
+
+<div class="summary-card">
+<h2>Test Result</h2>
+<p>
+  <span class="badge badge-pass">✓ Login: 200 OK</span>
+  <span class="badge badge-pass">✓ JWT Issued</span>
+  <span class="badge badge-pass">✓ Build: Succeeded</span>
+  <span class="badge badge-pass">✓ DB: 89 tables / 95 functions</span>
+</p>
+</div>
+
+<h2>Environment</h2>
+<table>
+  <tr><th>Component</th><th>Value</th></tr>
+  <tr><td>PostgreSQL</td><td>18.1 on x86_64-windows (msvc-19.44.35219)</td></tr>
+  <tr><td>Service</td><td><code>postgresql-x64-18</code> — Running</td></tr>
+  <tr><td>Host</td><td><code>localhost:5432</code></td></tr>
+  <tr><td>Database</td><td><code>bloodcenter</code></td></tr>
+  <tr><td>Auth method</td><td><code>scram-sha-256</code> → user <code>postgres</code> / password <code>postgres</code></td></tr>
+  <tr><td>.NET SDK</td><td><code>10.0.302</code></td></tr>
+  <tr><td>API Framework</td><td><code>net9.0</code> ASP.NET Core 9 Web API</td></tr>
+</table>
+
+<h2>Setup Steps Performed</h2>
+
+<div class="step">
+  <div class="step-num done">1</div>
+  <div>
+    <strong>pg_hba.conf — Trust override for password reset</strong><br>
+    Temporarily set local connections to <code>trust</code>, restarted service, reset postgres password to <code>postgres</code>, then restored <code>scram-sha-256</code> and reloaded.
+  </div>
+</div>
+
+<div class="step">
+  <div class="step-num done">2</div>
+  <div>
+    <strong>Database created</strong><br>
+    <code>CREATE DATABASE bloodcenter WITH ENCODING 'UTF8' ...</code>
+  </div>
+</div>
+
+<div class="step">
+  <div class="step-num done">3</div>
+  <div>
+    <strong>Schema applied</strong><br>
+    Ran <code>BloodCenterOS_DB_v3.1_PostgreSQL.sql</code> → 89 tables + 6 unique indexes created.
+  </div>
+</div>
+
+<div class="step">
+  <div class="step-num done">4</div>
+  <div>
+    <strong>Stored procedures applied</strong><br>
+    Ran <code>BloodCenterOS_DB_v3.1_SPs.sql</code> → 95 PL/pgSQL functions created.
+  </div>
+</div>
+
+<div class="step">
+  <div class="step-num done">5</div>
+  <div>
+    <strong>Connection string aligned</strong><br>
+    Updated both <code>appsettings.json</code> and <code>appsettings.Development.json</code> to point at <code>Database=bloodcenter</code>.
+  </div>
+</div>
+
+<div class="step">
+  <div class="step-num done">6</div>
+  <div>
+    <strong>Seed data inserted</strong><br>
+    <table>
+      <tr><th>Table</th><th>Record</th></tr>
+      <tr><td><code>bloodcentermaster</code></td><td><code>centerid=1</code>, <code>centername='Main Blood Center'</code>, Mumbai</td></tr>
+      <tr><td><code>rolemaster</code></td><td><code>roleid=1</code>, <code>rolename='Administrator'</code></td></tr>
+      <tr><td><code>usermaster</code></td><td><code>userid=1</code>, <code>username='admin'</code> (BCrypt hashed)</td></tr>
+      <tr><td><code>userrolemap</code></td><td><code>userid=1 → roleid=1</code> at center 1</td></tr>
+    </table>
+    Seed script saved at <code>DB/seed_admin.sql</code>.
+  </div>
+</div>
+
+<div class="step">
+  <div class="step-num done">7</div>
+  <div>
+    <strong>launchSettings.json updated</strong><br>
+    Disabled browser launch, set <code>launchUrl=swagger</code>, unified ports to <code>5000/5001</code>.
+  </div>
+</div>
+
+<h2>Login Test (End-to-End)</h2>
+
+<div class="success">
+<strong>Request:</strong><br>
+<pre><code>POST http://localhost:5000/api/auth/login
+Content-Type: application/json
+
+{"userName": "admin", "password": "admin@123"}</code></pre>
+</div>
+
+<div class="success">
+<strong>Response: 200 OK</strong><br>
+<pre><code>{
+  "success": true,
+  "message": "Success",
+  "data": {
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+    "displayName": "Administrator",
+    "userId": 1,
+    "role": "Administrator"
+  }
+}</code></pre>
+</div>
+
+<h3>JWT Decoded</h3>
+<table>
+  <tr><th>Claim</th><th>Value</th></tr>
+  <tr><td><code>nameidentifier</code></td><td>1</td></tr>
+  <tr><td><code>name</code></td><td>admin</td></tr>
+  <tr><td><code>role</code></td><td>Administrator</td></tr>
+  <tr><td><code>CenterId</code></td><td>1</td></tr>
+  <tr><td><code>exp</code></td><td>2026-07-17 (8 hours from login)</td></tr>
+  <tr><td><code>iss</code></td><td>BloodCenterOS</td></tr>
+  <tr><td><code>aud</code></td><td>BloodCenterOS</td></tr>
+</table>
+
+<h2>Issues Found &amp; Fixed</h2>
+<table>
+  <tr><th>Issue</th><th>Cause</th><th>Fix</th></tr>
+  <tr><td>500 — <code>database "BloodCenterOS_DB" does not exist</code></td><td><code>appsettings.Development.json</code> had old database name (overrides <code>appsettings.json</code>)</td><td>Updated to <code>Database=bloodcenter</code></td></tr>
+  <tr><td>500 — <code>Invalid salt version</code></td><td>PowerShell escaping mangled <code>$</code> in BCrypt hash during inline <code>psql -c</code></td><td>Used SQL file (<code>seed_admin.sql</code>) via <code>psql -f</code> to avoid shell interpolation</td></tr>
+  <tr><td>PostgreSQL password unknown</td><td>Installation default — user didn't recall it</td><td>Temporarily set <code>trust</code> in pg_hba.conf, reset password to <code>postgres</code>, restored <code>scram-sha-256</code></td></tr>
+</table>
+
+<h2>Key Files</h2>
+<table>
+  <tr><th>File</th><th>Purpose</th></tr>
+  <tr><td><code>DB/BloodCenterOS_DB_v3.1_PostgreSQL.sql</code></td><td>PostgreSQL schema (89 tables)</td></tr>
+  <tr><td><code>DB/BloodCenterOS_DB_v3.1_SPs.sql</code></td><td>95 PL/pgSQL stored functions</td></tr>
+  <tr><td><code>DB/seed_admin.sql</code></td><td>Admin user seed script (idempotent UPDATE)</td></tr>
+  <tr><td><code>BloodCenterOS.API/appsettings.json</code></td><td>Main config (conn string + JWT)</td></tr>
+  <tr><td><code>BloodCenterOS.API/appsettings.Development.json</code></td><td>Dev override (conn string)</td></tr>
+  <tr><td><code>BloodCenterOS.API/Properties/launchSettings.json</code></td><td>Launch profile (port 5000, swagger)</td></tr>
+</table>
+
+<h2>Next Steps</h2>
+<ol>
+  <li><strong>Test more endpoints</strong> — call <code>/api/donors</code>, <code>/api/camps</code>, etc. with the JWT to verify SP data flow</li>
+  <li><strong>Integration tests</strong> — automated <code>WebApplicationFactory</code> tests for each controller</li>
+  <li><strong>Seed more reference data</strong> — blood groups, component types, lookup values, test results</li>
+  <li><strong>Frontend start</strong> — connect <code>BloodCenterOS.Web</code> MVC to consume this API</li>
+</ol>
+
+<div class="warn">
+<strong>⚠ Notes</strong><br>
+• The admin seed script <code>DB/seed_admin.sql</code> uses <code>UPDATE</code> — safe to re-run without duplication<br>
+• JWT secret in <code>appsettings.json</code> is hardcoded — move to <code>User Secrets</code> or environment variable before production<br>
+• No HTTPS enforced in dev — <code>appsettings.Development.json</code> has no SSL URL
+</div>
+
+</body>
+</html>

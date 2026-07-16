@@ -1,0 +1,81 @@
+@model InventoryViewModel
+@{
+  ViewBag.Title = "Inventory";
+  ViewBag.ActiveMenu = "Inventory";
+}
+
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Inventory Stock <small>Blood stock by group &amp; component</small></h1>
+  </div>
+</div>
+
+<div class="row g-2 mb-3">
+  <div class="col-4 col-md-3">
+    <div class="card stat-card">
+      <div class="stat-icon" style="background:#dcfce7;color:#16a34a"><i class="bi bi-box"></i></div>
+      <div><div class="stat-value">@Model.TotalAvailable</div><div class="stat-label">Available</div></div>
+    </div>
+  </div>
+  <div class="col-4 col-md-3">
+    <div class="card stat-card">
+      <div class="stat-icon" style="background:#fef9c3;color:#d97706"><i class="bi bi-bookmark"></i></div>
+      <div><div class="stat-value">@Model.TotalReserved</div><div class="stat-label">Reserved</div></div>
+    </div>
+  </div>
+  <div class="col-4 col-md-3">
+    <div class="card stat-card">
+      <div class="stat-icon" style="background:#fee2e2;color:#dc2626"><i class="bi bi-exclamation-triangle"></i></div>
+      <div><div class="stat-value">@Model.TotalQuarantined</div><div class="stat-label">Quarantined</div></div>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="card stat-card">
+      <div class="stat-icon" style="background:#dbeafe;color:#0284c7"><i class="bi bi-calculator"></i></div>
+      <div><div class="stat-value">@(Model.TotalAvailable + Model.TotalReserved + Model.TotalQuarantined)</div><div class="stat-label">Total Units</div></div>
+    </div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header"><h6>Stock by Blood Group</h6></div>
+  <div class="card-body p-0">
+    <div class="table-container">
+      <table class="table mb-0">
+        <thead>
+          <tr>
+            <th>Component</th>
+            <th>Blood Group</th>
+            <th class="text-center">Available</th>
+            <th class="text-center">Reserved</th>
+            <th class="text-center">Quarantined</th>
+            <th class="text-center">Total</th>
+            <th style="width:120px">Utilization</th>
+          </tr>
+        </thead>
+        <tbody>
+          @foreach (var s in Model.Stock)
+          {
+            var total = s.AvailableQty + s.ReservedQty + s.QuarantinedQty;
+            var pct = total > 0 ? s.AvailableQty * 100 / total : 0;
+            <tr>
+              <td style="font-weight:500">@(s.ComponentType ?? "Whole Blood")</td>
+              <td><span class="badge" style="background:#dcfce7;color:#166534">@s.BloodGroup</span></td>
+              <td class="text-center fw-semibold text-success">@s.AvailableQty</td>
+              <td class="text-center">@s.ReservedQty</td>
+              <td class="text-center text-danger">@s.QuarantinedQty</td>
+              <td class="text-center fw-semibold">@total</td>
+              <td>
+                <div class="d-flex align-items-center gap-2">
+                  <div class="progress flex-grow-1" style="height:6px"><div class="progress-bar" style="width:@(pct)%"></div></div>
+                  <span style="font-size:11px">@pct%</span>
+                </div>
+              </td>
+            </tr>
+          }
+          @if (!Model.Stock.Any()) { <tr><td colspan="7"><div class="empty-state"><div class="empty-icon"><i class="bi bi-archive"></i></div><div class="empty-title">No stock data</div></div></td></tr> }
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

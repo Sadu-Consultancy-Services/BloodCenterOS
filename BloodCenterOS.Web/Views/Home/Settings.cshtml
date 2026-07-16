@@ -1,0 +1,209 @@
+@{
+  ViewBag.Title = "Settings";
+  ViewBag.ActiveMenu = "Settings";
+}
+
+<div class="page-header">
+  <h1 class="page-title">System Settings</h1>
+</div>
+
+@if (TempData["Success"] is string success)
+{
+  <div class="alert alert-success d-flex align-items-center gap-2 mb-3 py-2 px-3">
+    <i class="bi bi-check-circle-fill"></i> <span>@success</span>
+    <button type="button" class="btn-close ms-auto" style="font-size:10px" onclick="this.parentElement.remove()"></button>
+  </div>
+}
+
+<ul class="nav nav-tabs mb-3" role="tablist">
+  <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tab-general">General</button></li>
+  <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-system">System Config</button></li>
+  <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-lookups">Lookup Values</button></li>
+  <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-security">Security</button></li>
+</ul>
+
+<div class="tab-content">
+
+  @* ── General (Center Config) ── *@
+  <div class="tab-pane fade show active" id="tab-general">
+    <div class="card mb-3">
+      <div class="card-header d-flex justify-content-between"><h6>Blood Center Settings</h6><button class="btn btn-sm btn-primary" onclick="saveCenterConfig()"><i class="bi bi-check-lg"></i> Save All</button></div>
+      <div class="card-body" id="centerConfigContainer">
+        <div class="text-center text-muted py-3"><i class="bi bi-arrow-clockwise"></i> Loading...</div>
+      </div>
+    </div>
+  </div>
+
+  @* ── System Config ── *@
+  <div class="tab-pane fade" id="tab-system">
+    <div class="card">
+      <div class="card-header d-flex justify-content-between"><h6>System Configuration</h6><button class="btn btn-sm btn-primary" onclick="saveSystemConfig()"><i class="bi bi-check-lg"></i> Save All</button></div>
+      <div class="card-body" id="systemConfigContainer">
+        <div class="text-center text-muted py-3"><i class="bi bi-arrow-clockwise"></i> Loading...</div>
+      </div>
+    </div>
+  </div>
+
+  @* ── Lookup Values ── *@
+  <div class="tab-pane fade" id="tab-lookups">
+    <div class="card mb-3">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <h6 style="margin:0">Lookup Types</h6>
+        <button class="btn btn-sm btn-primary" onclick="document.getElementById('newLookupTypeForm').classList.toggle('d-none')"><i class="bi bi-plus"></i> New Type</button>
+      </div>
+      <div class="card-body" id="lookupTypesContainer">
+        <div class="text-center text-muted py-3"><i class="bi bi-arrow-clockwise"></i> Loading...</div>
+      </div>
+    </div>
+    <div class="card d-none" id="lookupValuesCard">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <h6 style="margin:0" id="lookupValuesTitle">Lookup Values</h6>
+        <button class="btn btn-sm btn-primary" onclick="document.getElementById('newLookupValueForm').classList.toggle('d-none')"><i class="bi bi-plus"></i> New Value</button>
+      </div>
+      <div class="card-body" id="lookupValuesContainer"></div>
+    </div>
+  </div>
+
+  @* ── Security ── *@
+  <div class="tab-pane fade" id="tab-security">
+    <div class="card">
+      <div class="card-header"><h6>Session Settings</h6></div>
+      <div class="card-body">
+        <p style="font-size:12px;color:var(--bc-text-muted)">Configure session timeout and security policies via System Config tab.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+@section Scripts {
+<script>
+// ── Center Config ──
+function loadCenterConfig() {
+  fetch('/Home/SettingsCenterConfig')
+    .then(r=>r.json()).then(d=>{
+      var c = document.getElementById('centerConfigContainer');
+      if(!d||!d.data||!d.data.length){ c.innerHTML='<div class="text-muted text-center py-3">No settings configured.</div>'; return; }
+      var html = '<div class="row g-2">';
+      d.data.forEach(function(item) {
+        var label = item.configKey.replace(/_/g,' ').replace(/\b\w/g,l=>l.toUpperCase());
+        html += '<div class="col-md-4"><label class="form-label" style="font-size:11px">'+label+'</label>';
+        html += '<input type="text" class="form-control form-control-sm config-val" data-key="'+item.configKey+'" value="'+(item.configValue||'')+'" /></div>';
+      });
+      html += '</div>';
+      c.innerHTML = html;
+    }).catch(()=>{ document.getElementById('centerConfigContainer').innerHTML='<div class="text-danger text-center py-3">Failed to load.</div>'; });
+}
+
+function saveCenterConfig() {
+  var vals = [];
+  document.querySelectorAll('.config-val').forEach(function(el) {
+    vals.push({ key: el.dataset.key, value: el.value });
+  });
+  fetch('/Home/SettingsSaveCenterConfig', {
+    method: 'PUT',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify(vals)
+  }).then(r=>r.json()).then(d=>{ if(d.success) alert('Settings saved.'); }).catch(()=>alert('Failed.'));
+}
+
+// ── System Config ──
+function loadSystemConfig() {
+  fetch('/Home/SettingsSystemConfig')
+    .then(r=>r.json()).then(d=>{
+      var c = document.getElementById('systemConfigContainer');
+      if(!d||!d.data||!d.data.length){ c.innerHTML='<div class="text-muted text-center py-3">No config found.</div>'; return; }
+      var html = '<div class="row g-2">';
+      d.data.forEach(function(item) {
+        var label = item.configKey.replace(/_/g,' ').replace(/\b\w/g,l=>l.toUpperCase());
+        html += '<div class="col-md-4"><label class="form-label" style="font-size:11px">'+label+'<br><small style="color:var(--bc-text-muted)">'+(item.description||'')+'</small></label>';
+        html += '<input type="text" class="form-control form-control-sm sys-val" data-key="'+item.configKey+'" value="'+(item.configValue||'')+'" /></div>';
+      });
+      html += '</div>';
+      c.innerHTML = html;
+    }).catch(()=>{ document.getElementById('systemConfigContainer').innerHTML='<div class="text-danger text-center py-3">Failed to load.</div>'; });
+}
+
+function saveSystemConfig() {
+  document.querySelectorAll('.sys-val').forEach(function(el) {
+    fetch('/Home/SettingsSaveSystemConfig', {
+      method: 'PUT',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ key: el.dataset.key, value: el.value })
+    }).catch(function(){});
+  });
+  alert('Configs saved.');
+}
+
+// ── Lookup Types ──
+var currentLookupTypeId = 0;
+
+function loadLookupTypes() {
+  fetch('/Home/SettingsLookupTypes')
+    .then(r=>r.json()).then(d=>{
+      var c = document.getElementById('lookupTypesContainer');
+      if(!d||!d.data||!d.data.length){ c.innerHTML='<div class="text-muted text-center py-3">No lookup types.</div>'; return; }
+      var html = '<div class="list-group" style="max-height:300px;overflow-y:auto">';
+      d.data.forEach(function(t) {
+        html += '<button type="button" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center" onclick="loadLookupValues('+t.lookupTypeId+',\''+t.typeName+'\')">';
+        html += '<div><strong style="font-size:13px">'+t.typeName+'</strong><br><small style="font-size:11px;color:var(--bc-text-muted)">'+t.typeCode+'</small></div>';
+        html += '<span class="badge bg-secondary">'+t.typeCode+'</span></button>';
+      });
+      html += '</div>';
+      // inline add form
+      html += '<div id="newLookupTypeForm" class="d-none mt-2"><div class="row g-1"><div class="col-4"><input type="text" id="ltCode" class="form-control form-control-sm" placeholder="Code" /></div><div class="col-4"><input type="text" id="ltName" class="form-control form-control-sm" placeholder="Name" /></div><div class="col-4"><button class="btn btn-sm btn-success" onclick="createLookupType()">Add</button></div></div></div>';
+      c.innerHTML = html;
+    }).catch(()=>{ document.getElementById('lookupTypesContainer').innerHTML='<div class="text-danger text-center py-3">Failed to load.</div>'; });
+}
+
+function createLookupType() {
+  var code = document.getElementById('ltCode').value;
+  var name = document.getElementById('ltName').value;
+  if(!code||!name) return alert('Code and name required.');
+  fetch('/Home/SettingsCreateLookupType', {
+    method: 'POST',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({ typeCode: code, typeName: name })
+  }).then(r=>r.json()).then(function(){ loadLookupTypes(); document.getElementById('newLookupTypeForm').classList.add('d-none'); }).catch(()=>alert('Failed.'));
+}
+
+function loadLookupValues(typeId, typeName) {
+  currentLookupTypeId = typeId;
+  document.getElementById('lookupValuesCard').classList.remove('d-none');
+  document.getElementById('lookupValuesTitle').textContent = 'Values: '+typeName;
+  var c = document.getElementById('lookupValuesContainer');
+  c.innerHTML = '<div class="text-center text-muted py-2"><i class="bi bi-arrow-clockwise"></i> Loading...</div>';
+
+  fetch('/Home/SettingsLookupValues?typeId='+typeId)
+    .then(r=>r.json()).then(d=>{
+      if(!d||!d.data||!d.data.length){ c.innerHTML='<div class="text-muted text-center py-2">No values.</div>'; return; }
+      var html = '<table class="table mb-0" style="font-size:12px"><thead><tr><th>Code</th><th>Text</th><th>Sort</th><th>Status</th></tr></thead><tbody>';
+      d.data.forEach(function(v) {
+        html += '<tr><td>'+v.valueCode+'</td><td>'+v.valueText+'</td><td>'+(v.sortOrder||0)+'</td><td><span class="badge '+(v.isActive?'badge-success':'badge-warning')+'">'+(v.isActive?'Active':'Inactive')+'</span></td></tr>';
+      });
+      html += '</tbody></table>';
+      // inline add form
+      html += '<div id="newLookupValueForm" class="d-none mt-2 p-2 border-top"><div class="row g-1"><div class="col-3"><input type="text" id="lvCode" class="form-control form-control-sm" placeholder="Code" /></div><div class="col-3"><input type="text" id="lvText" class="form-control form-control-sm" placeholder="Text" /></div><div class="col-2"><input type="number" id="lvSort" class="form-control form-control-sm" placeholder="Sort" value="0" /></div><div class="col-2"><select id="lvActive" class="form-select form-select-sm"><option value="true">Active</option><option value="false">Inactive</option></select></div><div class="col-2"><button class="btn btn-sm btn-success" onclick="createLookupValue()">Add</button></div></div></div>';
+      c.innerHTML = html;
+    }).catch(()=>{ c.innerHTML='<div class="text-danger text-center py-2">Failed to load.</div>'; });
+}
+
+function createLookupValue() {
+  var code = document.getElementById('lvCode').value;
+  var text = document.getElementById('lvText').value;
+  var sort = parseInt(document.getElementById('lvSort').value) || 0;
+  var active = document.getElementById('lvActive').value === 'true';
+  if(!code||!text) return alert('Code and text required.');
+  fetch('/Home/SettingsCreateLookupValue', {
+    method: 'POST',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({ lookupTypeId: currentLookupTypeId, valueCode: code, valueText: text, sortOrder: sort, isActive: active })
+  }).then(r=>r.json()).then(function(){ loadLookupValues(currentLookupTypeId,''); document.getElementById('newLookupValueForm').classList.add('d-none'); }).catch(()=>alert('Failed.'));
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+  loadCenterConfig();
+  loadSystemConfig();
+  loadLookupTypes();
+});
+</script>
+}

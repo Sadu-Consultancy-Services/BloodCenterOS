@@ -1,0 +1,61 @@
+@model RolePermissionViewModel
+@{
+  ViewBag.Title = "Role Permissions";
+  ViewBag.ActiveMenu = "Roles";
+}
+
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Permissions <small>@Model.RoleName</small></h1>
+  </div>
+  <a href="@Url.Action("Index")" class="btn btn-outline-secondary"><i class="bi bi-arrow-left"></i> Back to Roles</a>
+</div>
+
+@if (TempData["Success"] is string success)
+{
+  <div class="alert alert-success d-flex align-items-center gap-2 mb-3 py-2 px-3">
+    <i class="bi bi-check-circle-fill"></i> <span>@success</span>
+    <button type="button" class="btn-close ms-auto" style="font-size:10px" onclick="this.parentElement.remove()"></button>
+  </div>
+}
+@if (TempData["Error"] is string error)
+{
+  <div class="alert alert-danger d-flex align-items-center gap-2 mb-3 py-2 px-3">
+    <i class="bi bi-exclamation-triangle-fill"></i> <span>@error</span>
+    <button type="button" class="btn-close ms-auto" style="font-size:10px" onclick="this.parentElement.remove()"></button>
+  </div>
+}
+
+<div class="card">
+  <div class="card-header"><h6>Toggle permissions for @Model.RoleName</h6></div>
+  <div class="card-body p-0">
+    <div class="table-container">
+      <table class="table mb-0">
+        <thead>
+          <tr>
+            <th style="width:40px">Assigned</th>
+            <th>Permission Code</th>
+            <th>Description</th>
+          </tr>
+        </thead>
+        <tbody>
+          @foreach (var p in Model.AllPermissions)
+          {
+            var isAssigned = Model.AssignedCodes.Contains(p.PermissionCode);
+            <tr>
+              <td>
+                <form method="post" action="@Url.Action("TogglePermission", new { roleId = Model.RoleId, permissionId = p.PermissionId, assign = !isAssigned })" style="display:inline">
+                  <button type="submit" class="btn btn-sm @(isAssigned ? "btn-success" : "btn-outline-secondary")" style="width:32px;height:32px">
+                    <i class="bi @(isAssigned ? "bi-check-lg" : "bi-plus")"></i>
+                  </button>
+                </form>
+              </td>
+              <td><span style="font-family:monospace;font-size:12px">@p.PermissionCode</span></td>
+              <td style="font-size:11px">@p.Description</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

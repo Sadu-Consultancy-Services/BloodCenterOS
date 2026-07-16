@@ -7,8 +7,8 @@ Developed & Maintained by **Sadu Consultancy Services**
 
 ## 🇮🇳 Overview
 
-**BloodCenterOS** is an open-source, cloud-ready **Blood Center Management System** designed for **Indian Blood Centers** (as per NBTC/NACO norms).  
-It simplifies operations from **donor registration** to **blood issue**, and includes **government-compliant Excel/PDF reporting** for State and Central Health Authorities.
+**BloodCenterOS** is an open-source, cloud-ready **Blood Center Management System** designed for **Indian Blood Centers** (aligned with common blood center workflows).  
+It simplifies operations from **donor registration** to **blood issue**, and includes Excel/PDF reporting useful for regulatory submissions.
 
 Developed using **.NET 9**, **SQL Server**, and **Stored Procedures** (without Entity Framework), this system provides a **secure, scalable, and fast** solution suitable for hospitals, NGOs, and regional blood centers.
 

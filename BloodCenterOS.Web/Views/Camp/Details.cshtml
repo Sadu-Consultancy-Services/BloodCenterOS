@@ -1,0 +1,134 @@
+@model CampDetailViewModel
+@{
+  ViewBag.ActiveMenu = "Camps";
+  var c = Model.Camp;
+  var isUpcoming = c.CampDate >= DateTime.Today;
+  var collectionRate = c.TotalDonorsExpected > 0 ? (c.TotalDonorsCollected ?? 0) * 100 / c.TotalDonorsExpected : 0;
+}
+
+<div class="page-header">
+  <div>
+    <h1 class="page-title">@c.CampName <small>@c.CampCode</small></h1>
+  </div>
+  <div class="d-flex gap-2">
+    <a href="@Url.Action("Index")" class="btn btn-outline-secondary"><i class="bi bi-arrow-left"></i> Back to List</a>
+  </div>
+</div>
+
+<div class="row g-2 mb-3">
+  <div class="col-6 col-md-3">
+    <div class="card stat-card">
+      <div class="stat-icon" style="background:#dcfce7;color:#16a34a"><i class="bi bi-calendar-event"></i></div>
+      <div>
+        <div class="stat-value" style="font-size:16px">@c.CampDate?.ToString("dd MMM yyyy")</div>
+        <div class="stat-label">Camp Date</div>
+      </div>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="card stat-card">
+      <div class="stat-icon" style="background:#dbeafe;color:#0284c7"><i class="bi bi-people"></i></div>
+      <div>
+        <div class="stat-value">@c.TotalDonorsExpected</div>
+        <div class="stat-label">Expected Donors</div>
+      </div>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="card stat-card">
+      <div class="stat-icon" style="background:#fef9c3;color:#d97706"><i class="bi bi-droplet"></i></div>
+      <div>
+        <div class="stat-value">@(c.TotalDonorsCollected ?? 0)</div>
+        <div class="stat-label">Collected</div>
+      </div>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="card stat-card">
+      <div class="stat-icon" style="background:#fee2e2;color:#dc2626"><i class="bi bi-graph-up"></i></div>
+      <div>
+        <div class="stat-value">@collectionRate%</div>
+        <div class="stat-label">Collection Rate</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row g-2 mb-3">
+  <div class="col-md-7">
+    <div class="card">
+      <div class="card-header"><h6>Camp Information</h6></div>
+      <div class="card-body">
+        <div class="row g-2">
+          <div class="col-md-6">
+            <div style="font-size:11px;color:var(--bc-text-muted)">Camp Name</div>
+            <div style="font-size:13px;font-weight:500">@c.CampName</div>
+          </div>
+          <div class="col-md-6">
+            <div style="font-size:11px;color:var(--bc-text-muted)">Status</div>
+            <div style="font-size:13px">
+              <span class="badge @(isUpcoming ? "badge-info" : "badge-secondary")">@(isUpcoming ? "Upcoming" : "Completed")</span>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div style="font-size:11px;color:var(--bc-text-muted)">Camp Date</div>
+            <div style="font-size:13px">@c.CampDate?.ToString("dddd, dd MMMM yyyy")</div>
+          </div>
+          <div class="col-md-6">
+            <div style="font-size:11px;color:var(--bc-text-muted)">Timings</div>
+            <div style="font-size:13px">@c.StartTime?.ToString(@"hh\:mm") — @c.EndTime?.ToString(@"hh\:mm")</div>
+          </div>
+          <div class="col-12">
+            <div style="font-size:11px;color:var(--bc-text-muted)">Venue</div>
+            <div style="font-size:13px">@c.Venue, @c.City</div>
+          </div>
+          <div class="col-md-6">
+            <div style="font-size:11px;color:var(--bc-text-muted)">Expected Donors</div>
+            <div style="font-size:13px">@c.TotalDonorsExpected</div>
+          </div>
+          <div class="col-md-6">
+            <div style="font-size:11px;color:var(--bc-text-muted)">Donors Collected</div>
+            <div style="font-size:13px">@(c.TotalDonorsCollected ?? 0)</div>
+          </div>
+          @if (c.TotalDonorsExpected > 0)
+          {
+            <div class="col-12">
+              <div style="font-size:11px;color:var(--bc-text-muted);margin-bottom:4px">Collection Progress</div>
+              <div class="d-flex align-items-center gap-2">
+                <div class="progress flex-grow-1" style="height:8px">
+                  <div class="progress-bar" role="progressbar" style="width:@collectionRate%"></div>
+                </div>
+                <span style="font-size:12px;font-weight:600">@collectionRate%</span>
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-5">
+    <div class="card">
+      <div class="card-header"><h6>Quick Actions</h6></div>
+      <div class="card-body">
+        <div class="d-flex flex-column gap-2">
+          <a href="@Url.Action("Create","Collection",new{campId=c.CampId})" class="btn btn-outline-secondary w-100 justify-content-start"><i class="bi bi-droplet"></i> Record Collection</a>
+          <a href="@Url.Action("Create","Donor")" class="btn btn-outline-secondary w-100 justify-content-start"><i class="bi bi-person-plus"></i> Register Donor</a>
+          <a href="@Url.Action("Index","Camp")" class="btn btn-outline-secondary w-100 justify-content-start"><i class="bi bi-list"></i> All Camps</a>
+          <a href="@Url.Action("Index","Reports")" class="btn btn-outline-secondary w-100 justify-content-start"><i class="bi bi-file-text"></i> Generate Report</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="card mt-2">
+      <div class="card-header"><h6>Registered Donors</h6></div>
+      <div class="card-body">
+        <div class="empty-state py-3">
+          <div class="empty-icon" style="font-size:32px"><i class="bi bi-people"></i></div>
+          <div class="empty-title">No registered donors yet</div>
+          <div class="empty-text">Donors will appear here when they register for this camp.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,52 @@
+@{
+  ViewBag.Title = "Prepare Component";
+  ViewBag.ActiveMenu = "Components";
+}
+
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Prepare Component <small>Process a blood bag into components</small></h1>
+  </div>
+  <a href="@Url.Action("Index")" class="btn btn-outline-secondary"><i class="bi bi-arrow-left"></i> Back to List</a>
+</div>
+
+@if (!ViewData.ModelState.IsValid)
+{
+  <div class="alert alert-danger d-flex flex-column gap-1 mb-3 py-2 px-3">
+    @foreach (var err in ViewData.ModelState.Values.SelectMany(v => v.Errors)) { <div class="d-flex align-items-center gap-2"><i class="bi bi-exclamation-circle"></i><span>@err.ErrorMessage</span></div> }
+  </div>
+}
+
+<form method="post" action="@Url.Action("Prepare")">
+  <div class="card mb-3">
+    <div class="card-header"><h6>Component Preparation</h6></div>
+    <div class="card-body">
+      <div class="row g-2">
+        <div class="col-md-4">
+          <label class="form-label">Blood Bag ID <span class="text-danger">*</span></label>
+          <input type="number" name="bagId" class="form-control" placeholder="e.g., 1" required />
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">Component Type <span class="text-danger">*</span></label>
+          <select name="componentType" class="form-select" required>
+            <option value="">Select</option>
+            <option value="PRBC">Packed Red Blood Cells (PRBC)</option>
+            <option value="FFP">Fresh Frozen Plasma (FFP)</option>
+            <option value="Platelet">Platelet Concentrate</option>
+            <option value="Cryo">Cryoprecipitate</option>
+            <option value="Whole Blood">Whole Blood</option>
+          </select>
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">Volume (ml) <span class="text-danger">*</span></label>
+          <input type="number" name="volume" class="form-control" placeholder="e.g., 350" required />
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="d-flex gap-2 justify-content-end">
+    <a href="@Url.Action("Index")" class="btn btn-outline-secondary">Cancel</a>
+    <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg"></i> Prepare Component</button>
+  </div>
+</form>

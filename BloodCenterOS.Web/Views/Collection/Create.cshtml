@@ -1,0 +1,92 @@
+@model CollectionCreateViewModel
+@{
+  ViewBag.Title = "New Blood Collection";
+  ViewBag.ActiveMenu = "Collection";
+}
+
+<div class="page-header">
+  <div>
+    <h1 class="page-title">New Blood Collection <small>Record a blood donation</small></h1>
+  </div>
+  <a href="@Url.Action("Index")" class="btn btn-outline-secondary"><i class="bi bi-arrow-left"></i> Back to List</a>
+</div>
+
+@if (!ViewData.ModelState.IsValid)
+{
+  <div class="alert alert-danger d-flex flex-column gap-1 mb-3 py-2 px-3">
+    @foreach (var err in ViewData.ModelState.Values.SelectMany(v => v.Errors)) { <div class="d-flex align-items-center gap-2"><i class="bi bi-exclamation-circle"></i><span>@err.ErrorMessage</span></div> }
+  </div>
+}
+
+<form method="post" action="@Url.Action("Create")">
+  <input type="hidden" name="CampId" value="@Model.Collection.CampId" />
+
+  <div class="card mb-3">
+    <div class="card-header"><h6>Donation Details</h6></div>
+    <div class="card-body">
+      <div class="row g-2">
+        <div class="col-md-6">
+          <label class="form-label">Bag Number <span class="text-danger">*</span></label>
+          <input type="text" name="BloodBagNumber" class="form-control" value="@Model.Collection.BloodBagNumber" placeholder="e.g., BAG-2026-0001" required />
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">Bag Barcode</label>
+          <input type="text" name="BagBarcode" class="form-control" value="@Model.Collection.BagBarcode" />
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">Lot Number</label>
+          <input type="text" name="BagLotNumber" class="form-control" value="@Model.Collection.BagLotNumber" />
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">Donor</label>
+          <select name="DonorId" class="form-select">
+            <option value="">Select Donor</option>
+            @foreach (var d in Model.Donors) { <option value="@d.Id">@d.Name (@d.BloodGroup)</option> }
+          </select>
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">Volume (ml)</label>
+          <input type="number" name="BagVolumeMl" class="form-control" value="@Model.Collection.BagVolumeMl" placeholder="450" />
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">Location Type</label>
+          <select name="CollectionLocationType" class="form-select">
+            <option value="In-house" selected="@(Model.Collection.CollectionLocationType == "In-house")">In-house</option>
+            <option value="Camp" selected="@(Model.Collection.CollectionLocationType == "Camp")">Camp</option>
+            <option value="Mobile" selected="@(Model.Collection.CollectionLocationType == "Mobile")">Mobile</option>
+            <option value="Home" selected="@(Model.Collection.CollectionLocationType == "Home")">Home</option>
+          </select>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card mb-3">
+    <div class="card-header"><h6>Timing &amp; Notes</h6></div>
+    <div class="card-body">
+      <div class="row g-2">
+        <div class="col-md-4">
+          <label class="form-label">Start Time</label>
+          <input type="datetime-local" name="CollectionStartTime" class="form-control" value="@Model.Collection.CollectionStartTime?.ToString("yyyy-MM-ddTHH:mm")" />
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">End Time</label>
+          <input type="datetime-local" name="CollectionEndTime" class="form-control" value="@Model.Collection.CollectionEndTime?.ToString("yyyy-MM-ddTHH:mm")" />
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">Collector Employee ID</label>
+          <input type="number" name="CollectorEmployeeId" class="form-control" value="@Model.Collection.CollectorEmployeeId" />
+        </div>
+        <div class="col-12">
+          <label class="form-label">Notes</label>
+          <textarea name="Notes" class="form-control" rows="2">@Model.Collection.Notes</textarea>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="d-flex gap-2 justify-content-end">
+    <a href="@Url.Action("Index")" class="btn btn-outline-secondary">Cancel</a>
+    <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg"></i> Save Collection</button>
+  </div>
+</form>

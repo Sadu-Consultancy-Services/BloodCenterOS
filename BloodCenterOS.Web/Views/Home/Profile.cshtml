@@ -1,0 +1,88 @@
+@{
+  ViewBag.Title = "My Profile";
+  ViewBag.ActiveMenu = "Dashboard";
+}
+
+<div class="page-header">
+  <h1 class="page-title">My Profile</h1>
+</div>
+
+<div class="row g-3">
+  <div class="col-md-4">
+    <div class="card text-center p-4">
+      <div class="avatar avatar-lg mx-auto mb-3" style="width:72px;height:72px;font-size:28px;background:var(--bc-primary)">A</div>
+      <h5 style="font-size:15px;margin-bottom:2px">Administrator</h5>
+      <p style="font-size:12px;color:var(--bc-text-muted)">Administrator</p>
+      <span class="badge badge-success mx-auto">Active</span>
+      <hr style="margin:16px 0;border-color:var(--bc-border)" />
+      <div class="text-start" style="font-size:12px">
+        <div class="d-flex justify-content-between mb-2">
+          <span class="text-muted">Employee ID</span>
+          <span class="fw-semibold">EMP-001</span>
+        </div>
+        <div class="d-flex justify-content-between mb-2">
+          <span class="text-muted">Center</span>
+          <span class="fw-semibold">Main Blood Center</span>
+        </div>
+        <div class="d-flex justify-content-between">
+          <span class="text-muted">Member Since</span>
+          <span class="fw-semibold">Jan 2026</span>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-8">
+    <div class="card mb-3">
+      <div class="card-header"><h6>Account Information</h6></div>
+      <div class="card-body">
+        <form>
+          <div class="row g-2">
+            <div class="col-md-6">
+              <label class="form-label">Username</label>
+              <input type="text" class="form-control" value="admin" readonly />
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Display Name</label>
+              <input type="text" class="form-control" value="Administrator" />
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Email</label>
+              <input type="email" class="form-control" value="admin@bloodcenter.os" />
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Phone</label>
+              <input type="tel" class="form-control" value="9876543210" />
+            </div>
+          </div>
+          <div class="mt-3">
+            <button type="submit" class="btn btn-primary">Save Changes</button>
+          </div>
+        </form>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header"><h6>Change Password</h6></div>
+      <div class="card-body">
+        <form>
+          <div class="row g-2">
+            <div class="col-md-4">
+              <label class="form-label">Current Password</label>
+              <input type="password" class="form-control" />
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">New Password</label>
+              <input type="password" class="form-control" />
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Confirm Password</label>
+              <input type="password" class="form-control" />
+            </div>
+          </div>
+          <div class="mt-3">
+            <button type="submit" class="btn btn-primary">Update Password</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>

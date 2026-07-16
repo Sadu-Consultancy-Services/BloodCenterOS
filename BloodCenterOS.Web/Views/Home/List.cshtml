@@ -1,0 +1,115 @@
+@model ListViewModel<DonorListItem>
+@{
+  ViewBag.Title = Model.Title;
+  ViewBag.ActiveMenu = "Donors";
+}
+
+<div class="page-header">
+  <div>
+    <h1 class="page-title">@Model.Title <small>@Model.Subtitle</small></h1>
+  </div>
+  <div class="d-flex gap-2">
+    <a href="@Model.CreateUrl" class="btn btn-primary"><i class="bi bi-plus-lg"></i> @Model.CreateText</a>
+    <button class="btn btn-outline-secondary"><i class="bi bi-download"></i> Export</button>
+  </div>
+</div>
+
+<div class="card mb-3">
+  <div class="filter-bar">
+    <i class="bi bi-funnel text-muted" style="font-size:14px"></i>
+    <input type="text" class="form-control" placeholder="Search name, code, phone..." style="min-width:200px" />
+    <select class="form-select" style="min-width:140px">
+      <option value="">All Blood Groups</option>
+      <option>A+</option><option>A-</option><option>B+</option><option>B-</option>
+      <option>AB+</option><option>AB-</option><option>O+</option><option>O-</option>
+    </select>
+    <select class="form-select" style="min-width:120px">
+      <option value="">All Status</option>
+      <option>Active</option><option>Deferred</option>
+    </select>
+    <button class="btn btn-primary"><i class="bi bi-search"></i> Search</button>
+    <button class="btn btn-outline-secondary"><i class="bi bi-x-circle"></i> Clear</button>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header">
+    <h6>@Model.TotalCount records found</h6>
+    <div class="d-flex gap-2 align-items-center">
+      <span style="font-size:11px;color:var(--bc-text-muted)">Show</span>
+      <select class="form-select form-select-sm" style="width:70px">
+        <option>20</option><option>50</option><option>100</option>
+      </select>
+    </div>
+  </div>
+  <div class="card-body p-0">
+    <div class="table-container">
+      <table class="table mb-0">
+        <thead>
+          <tr>
+            <th style="width:36px"><input type="checkbox" class="form-check-input" /></th>
+            @foreach (var col in Model.Columns)
+            {
+              <th>@col</th>
+            }
+            <th style="width:80px">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          @foreach (var item in Model.Items)
+          {
+            <tr>
+              <td><input type="checkbox" class="form-check-input" /></td>
+              <td><span class="badge badge-secondary">@item.Code</span></td>
+              <td>
+                <div class="d-flex align-items-center gap-2">
+                  <span class="avatar" style="background:#dc2626">@item.Name.Split(' ').Last()[0]</span>
+                  <div>
+                    <div style="font-weight:500;font-size:13px">@item.Name</div>
+                  </div>
+                </div>
+              </td>
+              <td><span class="badge" style="background:#dcfce7;color:#166534">@item.BloodGroup</span></td>
+              <td>@item.Phone</td>
+              <td>@item.City</td>
+              <td style="font-size:11px">@item.LastDonation?.ToString("dd MMM yyyy") ?? "—"</td>
+              <td class="text-center">@item.TotalDonations</td>
+              <td>
+                <span class="badge @(item.Status == "Active" ? "badge-success" : "badge-warning")">@item.Status</span>
+              </td>
+              <td>
+                <div class="d-flex gap-1">
+                  <button class="btn btn-sm btn-outline-secondary" title="View"><i class="bi bi-eye"></i></button>
+                  <button class="btn btn-sm btn-outline-secondary" title="Edit"><i class="bi bi-pencil"></i></button>
+                  <div class="dropdown" style="position:relative">
+                    <button class="btn btn-sm btn-outline-secondary" data-bc-dropdown-toggle data-bc-target="row-action-@item.Id"><i class="bi bi-three-dots-vertical"></i></button>
+                    <div class="dropdown-menu" id="row-action-@item.Id" style="position:absolute;right:0;min-width:160px">
+                      <a class="dropdown-item" href="#"><i class="bi bi-clock-history"></i> History</a>
+                      <a class="dropdown-item" href="#"><i class="bi bi-exclamation-triangle"></i> Defer</a>
+                      <div class="dropdown-divider"></div>
+                      <a class="dropdown-item text-danger" href="#"><i class="bi bi-trash"></i> Delete</a>
+                    </div>
+                  </div>
+                </div>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <div class="card-footer d-flex align-items-center justify-content-between">
+    <span style="font-size:11px;color:var(--bc-text-muted)">Showing 1-@Model.Items.Count of @Model.TotalCount</span>
+    <nav>
+      <ul class="pagination pagination-sm mb-0">
+        <li class="page-item disabled"><a class="page-link" href="#"><i class="bi bi-chevron-left"></i></a></li>
+        <li class="page-item active"><a class="page-link" href="#">1</a></li>
+        <li class="page-item"><a class="page-link" href="#">2</a></li>
+        <li class="page-item"><a class="page-link" href="#">3</a></li>
+        <li class="page-item"><a class="page-link" href="#">...</a></li>
+        <li class="page-item"><a class="page-link" href="#">63</a></li>
+        <li class="page-item"><a class="page-link" href="#"><i class="bi bi-chevron-right"></i></a></li>
+      </ul>
+    </nav>
+  </div>
+</div>
