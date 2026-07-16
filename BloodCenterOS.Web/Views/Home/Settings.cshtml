@@ -200,10 +200,24 @@ function createLookupValue() {
   }).then(r=>r.json()).then(function(){ loadLookupValues(currentLookupTypeId,''); document.getElementById('newLookupValueForm').classList.add('d-none'); }).catch(()=>alert('Failed.'));
 }
 
+function activateTabFromHash() {
+  var hash = window.location.hash;
+  if (!hash) return;
+  var btn = document.querySelector('[data-bs-target="'+hash+'"]');
+  if (btn) { btn.click(); }
+}
+
+document.querySelectorAll('[data-bs-toggle="tab"]').forEach(function(btn) {
+  btn.addEventListener('click', function() {
+    history.replaceState(null, '', window.location.pathname + this.getAttribute('data-bs-target'));
+  });
+});
+
 document.addEventListener('DOMContentLoaded', function() {
   loadCenterConfig();
   loadSystemConfig();
   loadLookupTypes();
+  activateTabFromHash();
 });
 </script>
 }
