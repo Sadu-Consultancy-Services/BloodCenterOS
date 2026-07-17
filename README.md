@@ -10,7 +10,7 @@ Developed & Maintained by **Sadu Consultancy Services**
 **BloodCenterOS** is an open-source, cloud-ready **Blood Center Management System** designed for **Indian Blood Centers** (aligned with common blood center workflows).  
 It simplifies operations from **donor registration** to **blood issue**, and includes Excel/PDF reporting useful for regulatory submissions.
 
-Developed using **.NET 9**, **SQL Server**, and **Stored Procedures** (without Entity Framework), this system provides a **secure, scalable, and fast** solution suitable for hospitals, NGOs, and regional blood centers.
+Developed using **.NET 9**, **PostgreSQL**, and **Stored Procedures** (without Entity Framework), this system provides a **secure, scalable, and fast** solution suitable for hospitals, NGOs, and regional blood centers.
 
 ---
 
@@ -28,7 +28,7 @@ Developed using **.NET 9**, **SQL Server**, and **Stored Procedures** (without E
 | Layer | Technology |
 |-------|-------------|
 | Backend | .NET 9 (ASP.NET Core MVC / Web API) |
-| Database | Microsoft SQL Server |
+| Database | PostgreSQL |
 | Data Access | ADO.NET / Dapper using Stored Procedures |
 | Reporting | ClosedXML (Excel), Autovitia / QuestPDF (PDF) |
 | Frontend | Razor Pages / Bootstrap (Responsive) |
