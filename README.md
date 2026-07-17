@@ -92,6 +92,19 @@ Developed using **.NET 9**, **SQL Server**, and **Stored Procedures** (without E
 
 ---
 
+## 📸 Screens
+
+A preview of the BloodCenterOS interface:
+
+| # | Screen | Preview |
+|---|--------|---------|
+| 1 | **Login** | ![Login](Screens/bcos_001_login.png) |
+| 2 | **Dashboard** | ![Dashboard](Screens/bcos_002_dashboard.png) |
+
+> More screens will be added as modules are finalized.
+
+---
+
 ## 🧑‍💻 User Roles
 
 | Role | Description |

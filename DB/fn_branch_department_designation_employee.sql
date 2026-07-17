@@ -2,6 +2,15 @@
 -- Stored Procedures: BranchMaster, DepartmentMaster, DesignationMaster, EmployeeMaster
 -- ============================================================================
 
+DROP FUNCTION IF EXISTS fn_branch_get_by_id(BIGINT);
+DROP FUNCTION IF EXISTS fn_branch_get_by_center(BIGINT);
+DROP FUNCTION IF EXISTS fn_department_get_by_id(BIGINT);
+DROP FUNCTION IF EXISTS fn_department_get_by_center(BIGINT);
+DROP FUNCTION IF EXISTS fn_designation_get_by_id(BIGINT);
+DROP FUNCTION IF EXISTS fn_designation_get_by_center(BIGINT);
+DROP FUNCTION IF EXISTS fn_employee_get_by_id(BIGINT);
+DROP FUNCTION IF EXISTS fn_employee_get_by_center(BIGINT);
+
 -- ── BranchMaster ──
 CREATE OR REPLACE FUNCTION fn_branch_create(
     p_center_id BIGINT, p_code VARCHAR, p_name VARCHAR,
@@ -43,7 +52,7 @@ $$ LANGUAGE plpgsql;
 CREATE OR REPLACE FUNCTION fn_branch_get_by_id(p_branch_id BIGINT)
 RETURNS TABLE(BranchId BIGINT, CenterId BIGINT, BranchCode VARCHAR, BranchName VARCHAR,
     AddressLine1 VARCHAR, AddressLine2 VARCHAR, City VARCHAR, State VARCHAR,
-    Pincode VARCHAR, Phone VARCHAR, Email VARCHAR, CreatedAt TIMESTAMP, CreatedBy BIGINT) AS $$
+    Pincode VARCHAR, Phone VARCHAR, Email VARCHAR, CreatedAt TIMESTAMPTZ, CreatedBy BIGINT) AS $$
 BEGIN
     RETURN QUERY SELECT b.BranchId, b.CenterId, b.BranchCode, b.BranchName,
         b.AddressLine1, b.AddressLine2, b.City, b.State, b.Pincode, b.Phone, b.Email,
@@ -55,7 +64,7 @@ $$ LANGUAGE plpgsql;
 CREATE OR REPLACE FUNCTION fn_branch_get_by_center(p_center_id BIGINT)
 RETURNS TABLE(BranchId BIGINT, CenterId BIGINT, BranchCode VARCHAR, BranchName VARCHAR,
     AddressLine1 VARCHAR, AddressLine2 VARCHAR, City VARCHAR, State VARCHAR,
-    Pincode VARCHAR, Phone VARCHAR, Email VARCHAR, CreatedAt TIMESTAMP, CreatedBy BIGINT) AS $$
+    Pincode VARCHAR, Phone VARCHAR, Email VARCHAR, CreatedAt TIMESTAMPTZ, CreatedBy BIGINT) AS $$
 BEGIN
     RETURN QUERY SELECT b.BranchId, b.CenterId, b.BranchCode, b.BranchName,
         b.AddressLine1, b.AddressLine2, b.City, b.State, b.Pincode, b.Phone, b.Email,
@@ -97,7 +106,7 @@ $$ LANGUAGE plpgsql;
 
 CREATE OR REPLACE FUNCTION fn_department_get_by_id(p_department_id BIGINT)
 RETURNS TABLE(DepartmentId BIGINT, CenterId BIGINT, DepartmentCode VARCHAR,
-    DepartmentName VARCHAR, Description VARCHAR, CreatedAt TIMESTAMP) AS $$
+    DepartmentName VARCHAR, Description VARCHAR, CreatedAt TIMESTAMPTZ) AS $$
 BEGIN
     RETURN QUERY SELECT d.DepartmentId, d.CenterId, d.DepartmentCode,
         d.DepartmentName, d.Description, d.CreatedAt
@@ -107,7 +116,7 @@ $$ LANGUAGE plpgsql;
 
 CREATE OR REPLACE FUNCTION fn_department_get_by_center(p_center_id BIGINT)
 RETURNS TABLE(DepartmentId BIGINT, CenterId BIGINT, DepartmentCode VARCHAR,
-    DepartmentName VARCHAR, Description VARCHAR, CreatedAt TIMESTAMP) AS $$
+    DepartmentName VARCHAR, Description VARCHAR, CreatedAt TIMESTAMPTZ) AS $$
 BEGIN
     RETURN QUERY SELECT d.DepartmentId, d.CenterId, d.DepartmentCode,
         d.DepartmentName, d.Description, d.CreatedAt
@@ -144,7 +153,7 @@ END;
 $$ LANGUAGE plpgsql;
 
 CREATE OR REPLACE FUNCTION fn_designation_get_by_id(p_designation_id BIGINT)
-RETURNS TABLE(DesignationId BIGINT, CenterId BIGINT, DesignationName VARCHAR, CreatedAt TIMESTAMP) AS $$
+RETURNS TABLE(DesignationId BIGINT, CenterId BIGINT, DesignationName VARCHAR, CreatedAt TIMESTAMPTZ) AS $$
 BEGIN
     RETURN QUERY SELECT d.DesignationId, d.CenterId, d.DesignationName, d.CreatedAt
     FROM DesignationMaster d WHERE d.DesignationId = p_designation_id;
@@ -152,7 +161,7 @@ END;
 $$ LANGUAGE plpgsql;
 
 CREATE OR REPLACE FUNCTION fn_designation_get_by_center(p_center_id BIGINT)
-RETURNS TABLE(DesignationId BIGINT, CenterId BIGINT, DesignationName VARCHAR, CreatedAt TIMESTAMP) AS $$
+RETURNS TABLE(DesignationId BIGINT, CenterId BIGINT, DesignationName VARCHAR, CreatedAt TIMESTAMPTZ) AS $$
 BEGIN
     RETURN QUERY SELECT d.DesignationId, d.CenterId, d.DesignationName, d.CreatedAt
     FROM DesignationMaster d WHERE d.CenterId = p_center_id ORDER BY d.DesignationName;
@@ -206,7 +215,7 @@ CREATE OR REPLACE FUNCTION fn_employee_get_by_id(p_employee_id BIGINT)
 RETURNS TABLE(EmployeeId BIGINT, CenterId BIGINT, EmployeeCode VARCHAR,
     FirstName VARCHAR, LastName VARCHAR, Email VARCHAR, Phone VARCHAR,
     Designation VARCHAR, DepartmentId BIGINT, JoinDate DATE, IsActive BOOLEAN,
-    CreatedAt TIMESTAMP, CreatedBy BIGINT, UpdatedAt TIMESTAMP) AS $$
+    CreatedAt TIMESTAMPTZ, CreatedBy BIGINT, UpdatedAt TIMESTAMPTZ) AS $$
 BEGIN
     RETURN QUERY SELECT e.EmployeeId, e.CenterId, e.EmployeeCode, e.FirstName,
         e.LastName, e.Email, e.Phone, e.Designation, e.DepartmentId, e.JoinDate,
@@ -219,7 +228,7 @@ CREATE OR REPLACE FUNCTION fn_employee_get_by_center(p_center_id BIGINT)
 RETURNS TABLE(EmployeeId BIGINT, CenterId BIGINT, EmployeeCode VARCHAR,
     FirstName VARCHAR, LastName VARCHAR, Email VARCHAR, Phone VARCHAR,
     Designation VARCHAR, DepartmentId BIGINT, JoinDate DATE, IsActive BOOLEAN,
-    CreatedAt TIMESTAMP, CreatedBy BIGINT, UpdatedAt TIMESTAMP) AS $$
+    CreatedAt TIMESTAMPTZ, CreatedBy BIGINT, UpdatedAt TIMESTAMPTZ) AS $$
 BEGIN
     RETURN QUERY SELECT e.EmployeeId, e.CenterId, e.EmployeeCode, e.FirstName,
         e.LastName, e.Email, e.Phone, e.Designation, e.DepartmentId, e.JoinDate,
