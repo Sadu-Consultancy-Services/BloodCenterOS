@@ -31,9 +31,10 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+DROP FUNCTION IF EXISTS fn_device_get_by_id(BIGINT);
 CREATE OR REPLACE FUNCTION fn_device_get_by_id(p_device_id BIGINT)
 RETURNS TABLE(DeviceId BIGINT, CenterId BIGINT, DeviceName VARCHAR, DeviceType VARCHAR,
-    SerialNumber VARCHAR, PurchaseDate DATE, WarrantyEndDate DATE, CreatedAt TIMESTAMP) AS $$
+    SerialNumber VARCHAR, PurchaseDate DATE, WarrantyEndDate DATE, CreatedAt TIMESTAMPTZ) AS $$
 BEGIN
     RETURN QUERY SELECT d.DeviceId, d.CenterId, d.DeviceName, d.DeviceType,
         d.SerialNumber, d.PurchaseDate, d.WarrantyEndDate, d.CreatedAt
@@ -41,9 +42,10 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+DROP FUNCTION IF EXISTS fn_device_get_by_center(BIGINT);
 CREATE OR REPLACE FUNCTION fn_device_get_by_center(p_center_id BIGINT)
 RETURNS TABLE(DeviceId BIGINT, CenterId BIGINT, DeviceName VARCHAR, DeviceType VARCHAR,
-    SerialNumber VARCHAR, PurchaseDate DATE, WarrantyEndDate DATE, CreatedAt TIMESTAMP) AS $$
+    SerialNumber VARCHAR, PurchaseDate DATE, WarrantyEndDate DATE, CreatedAt TIMESTAMPTZ) AS $$
 BEGIN
     RETURN QUERY SELECT d.DeviceId, d.CenterId, d.DeviceName, d.DeviceType,
         d.SerialNumber, d.PurchaseDate, d.WarrantyEndDate, d.CreatedAt
@@ -86,9 +88,10 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+DROP FUNCTION IF EXISTS fn_fridge_get_by_id(BIGINT);
 CREATE OR REPLACE FUNCTION fn_fridge_get_by_id(p_fridge_id BIGINT)
 RETURNS TABLE(FridgeId BIGINT, CenterId BIGINT, FridgeCode VARCHAR, FridgeName VARCHAR,
-    Capacity INT, Location VARCHAR, TemperatureLogRequired BOOLEAN, CreatedAt TIMESTAMP) AS $$
+    Capacity INT, Location VARCHAR, TemperatureLogRequired BOOLEAN, CreatedAt TIMESTAMPTZ) AS $$
 BEGIN
     RETURN QUERY SELECT f.FridgeId, f.CenterId, f.FridgeCode, f.FridgeName,
         f.Capacity, f.Location, f.TemperatureLogRequired, f.CreatedAt
@@ -96,9 +99,10 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+DROP FUNCTION IF EXISTS fn_fridge_get_by_center(BIGINT);
 CREATE OR REPLACE FUNCTION fn_fridge_get_by_center(p_center_id BIGINT)
 RETURNS TABLE(FridgeId BIGINT, CenterId BIGINT, FridgeCode VARCHAR, FridgeName VARCHAR,
-    Capacity INT, Location VARCHAR, TemperatureLogRequired BOOLEAN, CreatedAt TIMESTAMP) AS $$
+    Capacity INT, Location VARCHAR, TemperatureLogRequired BOOLEAN, CreatedAt TIMESTAMPTZ) AS $$
 BEGIN
     RETURN QUERY SELECT f.FridgeId, f.CenterId, f.FridgeCode, f.FridgeName,
         f.Capacity, f.Location, f.TemperatureLogRequired, f.CreatedAt

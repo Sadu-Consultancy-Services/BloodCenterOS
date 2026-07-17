@@ -76,4 +76,28 @@ public class CampRepository : ICampRepository
             TotalDonorsExpected = (int?)r.totaldonorsexpected
         });
     }
+
+    public async Task<IEnumerable<Camp>> GetByCenterAsync(long centerId)
+    {
+        using var conn = _db.CreateConnection();
+        var rows = await conn.QueryAsync<dynamic>(
+            "SELECT * FROM fn_camp_get_by_center(@p_center_id)",
+            new { p_center_id = centerId });
+        return rows.Select(r => new Camp
+        {
+            CampId = (long)r.campid,
+            CenterId = (long?)r.centerid,
+            CampCode = (string?)r.campcode,
+            CampName = (string?)r.campname,
+            OrganizerId = (long?)r.organizerid,
+            Venue = (string?)r.venue,
+            City = (string?)r.city,
+            CampDate = (DateTime?)r.campdate,
+            StartTime = r.starttime == null ? (TimeSpan?)null : ((DateTime)r.starttime).TimeOfDay,
+            EndTime = r.endtime == null ? (TimeSpan?)null : ((DateTime)r.endtime).TimeOfDay,
+            TotalDonorsExpected = (int?)r.totaldonorsexpected,
+            TotalDonorsCollected = (int?)r.totaldonorscollected,
+            CreatedAt = (DateTime)r.createdat
+        });
+    }
 }

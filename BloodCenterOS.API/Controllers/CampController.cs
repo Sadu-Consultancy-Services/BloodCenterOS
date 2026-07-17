@@ -18,6 +18,24 @@ public class CampController : ControllerBase
         _campRepo = campRepo;
     }
 
+    [HttpGet]
+    public async Task<IActionResult> GetAll()
+    {
+        try
+        {
+            var centerId = User.FindFirst("CenterId")?.Value;
+            if (!long.TryParse(centerId, out var cid))
+                return BadRequest(ApiResponse<IEnumerable<Camp>>.Fail("Invalid center id"));
+
+            var camps = await _campRepo.GetByCenterAsync(cid);
+            return Ok(ApiResponse<IEnumerable<Camp>>.Ok(camps));
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, ApiResponse<IEnumerable<Camp>>.Fail($"An unexpected error occurred: {ex.Message}"));
+        }
+    }
+
     [HttpGet("{id}")]
     public async Task<IActionResult> GetById(long id)
     {

@@ -9,8 +9,8 @@
     <h1 class="page-title">Dashboard <small>Main Blood Center</small></h1>
   </div>
   <div class="d-flex gap-2">
-    <button class="btn btn-primary"><i class="bi bi-plus-lg"></i> New Collection</button>
-    <button class="btn btn-outline-secondary"><i class="bi bi-arrow-repeat"></i> Refresh</button>
+    <a href="@Url.Action("Create","Collection")" class="btn btn-primary"><i class="bi bi-plus-lg"></i> New Collection</a>
+    <button class="btn btn-outline-secondary" onclick="location.reload()"><i class="bi bi-arrow-repeat"></i> Refresh</button>
   </div>
 </div>
 
@@ -58,7 +58,7 @@
   <div class="col-6 col-md-3">
     <a href="@Url.Action("Index","Test")" class="text-decoration-none stat-link">
       <div class="card stat-card">
-        <div class="stat-icon" style="background:#fef9c3;color:#d97706"><i class="bi bi-flask"></i></div>
+        <div class="stat-icon" style="background:#fef9c3;color:#d97706"><i class="bi bi-eyedropper"></i></div>
         <div>
           <div class="stat-value">@Model.PendingTests</div>
           <div class="stat-label">Pending Tests</div>

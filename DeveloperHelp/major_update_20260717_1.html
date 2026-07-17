@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Major Update 2026-07-17 (1) — Swagger 401 / Web Auth Root Cause &amp; Fix</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
+    <style>
+        :root { --bc-primary:#c0202e; --bc-bg:#f7f8fa; --bc-border:#e3e6ea; --bc-text:#222; }
+        body { font-family: -apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif; background:var(--bc-bg); color:var(--bc-text); line-height:1.6; margin:0; }
+        .wrap { max-width:920px; margin:0 auto; padding:32px 20px 64px; }
+        h1 { color:var(--bc-primary); border-bottom:3px solid var(--bc-primary); padding-bottom:10px; }
+        h2 { margin-top:36px; color:#333; border-left:4px solid var(--bc-primary); padding-left:10px; }
+        code, pre { background:#1e1e1e; color:#d4d4d4; border-radius:6px; }
+        code { padding:2px 6px; font-size:13px; }
+        pre { padding:14px 16px; overflow:auto; font-size:13px; }
+        .card { background:#fff; border:1px solid var(--bc-border); border-radius:10px; padding:18px 20px; margin:16px 0; box-shadow:0 1px 3px rgba(0,0,0,.04); }
+        .badge { display:inline-block; background:var(--bc-primary); color:#fff; border-radius:20px; padding:2px 12px; font-size:12px; }
+        table { width:100%; border-collapse:collapse; margin:12px 0; }
+        th, td { border:1px solid var(--bc-border); padding:8px 10px; text-align:left; font-size:14px; }
+        th { background:#f0f1f3; }
+        .ok { color:#1a7f37; font-weight:600; }
+        .fix { background:#eafaf0; border-left:4px solid #1a7f37; padding:10px 14px; border-radius:6px; }
+        .warn { background:#fff8e6; border-left:4px solid #d4a017; padding:10px 14px; border-radius:6px; }
+        ul li { margin:4px 0; }
+    </style>
+</head>
+<body>
+<div class="wrap">
+    <span class="badge">BloodCenterOS v1.0</span>
+    <h1>Major Update — 2026-07-17 (Build 1)</h1>
+    <p><strong>Subject:</strong> "Swagger gives 401 on all GET endpoints" — investigation, true root cause, and the fix.</p>
+    <p><strong>Affected components:</strong> BloodCenterOS.API (JWT auth, Swagger), BloodCenterOS.Web (ApiClient → API calls).</p>
+
+    <h2>1. The Reported Symptom</h2>
+    <div class="card">
+        <ul>
+            <li>Opening Swagger UI and clicking <em>Execute</em> on any secured <code>GET</code> endpoint returned <strong>401 Unauthorized</strong>.</li>
+            <li>Some endpoints returned <strong>405 Method Not Allowed</strong> instead, which was confusing and looked inconsistent.</li>
+            <li>The Web application also failed to load data on protected pages.</li>
+        </ul>
+    </div>
+
+    <h2>2. What It Was NOT</h2>
+    <div class="card">
+        <p>Early diagnostics pointed at the JWT itself — a possible signing/validation secret mismatch. This was ruled out:</p>
+        <ul>
+            <li>The JWT <code>SecretKey</code>, <code>Issuer</code>, and <code>Audience</code> are read from the same <code>IConfiguration</code> in both <code>JwtService</code> (sign) and <code>Program.cs</code> (validate).</li>
+            <li>We cryptographically verified the token signature against the configured key — it <strong>matched exactly</strong>.</li>
+            <li>The token was not expired (server UTC 06:33 &lt; exp 14:33).</li>
+        </ul>
+        <p class="ok">Conclusion: the token was always valid. The 401 was not a JWT problem.</p>
+    </div>
+
+    <h2>3. The Two Real Root Causes</h2>
+
+    <div class="card">
+        <h3>Cause A — A broken API build served a stale DLL</h3>
+        <p><code>BloodCenterOS.API/Program.cs</code> contained a Swagger configuration call:</p>
+        <pre><code>c.IndexHtmlTransform((html) =&gt; { ... })</code></pre>
+        <p>This method does <strong>not exist</strong> in Swashbuckle.AspNetCore <strong>7.2.0</strong>, so the project failed to compile:</p>
+        <pre><code>error CS1061: 'SwaggerUIOptions' does not contain a definition for 'IndexHtmlTransform'</code></pre>
+        <p>Because subsequent runs used <code>dotnet run --no-build</code>, they executed a <strong>previously built (stale) DLL</strong> from before the route/auth fixes. That stale binary produced the erratic 401/405 behavior and made debugging impossible.</p>
+    </div>
+
+    <div class="card">
+        <h3>Cause B — HTTP&rarr;HTTPS redirect silently dropped the Bearer token</h3>
+        <p>The API enforces <code>app.UseHttpsRedirection()</code>, so any call to <code>http://localhost:5000</code> is <strong>redirected (307) to https://localhost:5001</strong>.</p>
+        <ul>
+            <li>Test calls (and the Web app) targeted <code>http://localhost:5000</code>.</li>
+            <li>When the 307 redirect fired, the <code>Authorization: Bearer &lt;token&gt;</code> header (and the auth cookie) was <strong>not carried over</strong> to the redirected HTTPS request.</li>
+            <li>The API then saw an anonymous request on a <code>[Authorize]</code> endpoint &rarr; <strong>401</strong>.</li>
+        </ul>
+        <p>The 405s came from endpoints that do <em>not</em> require auth (e.g. <code>/api/donors</code> had no parameterless <code>[HttpGet]</code>), so the redirect/anonymous request surfaced as 405 instead of 401 — which is why the failures looked inconsistent.</p>
+        <p class="warn"><strong>Key insight:</strong> this same redirect also broke the <strong>Web application</strong> — its <code>ApiClient</code> called <code>http://localhost:5000</code>, so every server-side API call lost its token.</p>
+    </div>
+
+    <h2>4. The Fixes Applied</h2>
+
+    <div class="fix">
+        <h3>Fix 1 — Restore a clean API build</h3>
+        <p>Removed the invalid <code>IndexHtmlTransform</code> call from <code>Program.cs</code> and used the standard Swagger UI setup:</p>
+        <pre><code>app.UseSwagger();
+app.UseSwaggerUI(c =&gt;
+{
+    c.SwaggerEndpoint("/swagger/v1/swagger.json", "BloodCenterOS API v1");
+    c.DocumentTitle = "BloodCenterOS API";
+    c.DisplayRequestDuration();
+});</code></pre>
+        <p>API now builds with <strong>0 errors</strong> and runs the current code.</p>
+    </div>
+
+    <div class="fix">
+        <h3>Fix 2 — Point the Web directly at the API's HTTPS endpoint</h3>
+        <p><code>BloodCenterOS.Web/appsettings.json</code>:</p>
+        <pre><code>"Api": { "BaseUrl": "https://localhost:5001" }</code></pre>
+        <p><code>BloodCenterOS.Web/Program.cs</code> — register HttpClient against the HTTPS URL and accept the dev self-signed certificate:</p>
+        <pre><code>builder.Services.AddHttpClient&lt;ApiClient&gt;(client =&gt;
+{
+    var baseUrl = builder.Configuration["Api:BaseUrl"] ?? "https://localhost:5001";
+    client.BaseAddress = new Uri(baseUrl);
+    client.Timeout = TimeSpan.FromSeconds(30);
+}).ConfigurePrimaryHttpMessageHandler(() =&gt; new HttpClientHandler
+{
+    // Dev only: accept the API's self-signed HTTPS dev certificate.
+    ServerCertificateCustomValidationCallback = (_, _, _, _) =&gt; true
+});</code></pre>
+        <p>This eliminates the redirect entirely, so the <code>Authorization</code> header is never dropped.</p>
+    </div>
+
+    <div class="fix">
+        <h3>Fix 3 — TIMESTAMPTZ / return-type mismatches (42804) on list SPs</h3>
+        <p>Several <code>fn_*_get_by_center</code> functions declared <code>CreatedAt TIMESTAMP</code> while the underlying table columns are <code>TIMESTAMPTZ</code> (populated by <code>NOW()</code>). PostgreSQL raised <code>42804: structure of query does not match function result type</code> &rarr; <strong>500</strong> on <code>/api/devices</code>, <code>/api/fridges</code>, <code>/api/hospitals</code>.</p>
+        <ul>
+            <li><code>DB/fn_device_fridge.sql</code> — changed <code>CreatedAt TIMESTAMP</code> &rarr; <code>TIMESTAMPTZ</code> in 4 functions (with <code>DROP FUNCTION</code> guards).</li>
+            <li><code>DB/fn_newsletter_sms_email.sql</code> — same fix for SMS/Email template get functions.</li>
+            <li><code>DB/fn_hospital.sql</code> — new source file (was missing from repo, only existed in the DB dump); recreated <code>fn_hospital_get_by_center</code> with <code>TIMESTAMPTZ</code>.</li>
+        </ul>
+        <p>All three scripts were applied to the database.</p>
+    </div>
+
+    <div class="fix">
+        <h3>Fix 4 — Missing parameterless list GET routes (405 / 404)</h3>
+        <ul>
+            <li><code>DonorController</code> — added <code>[HttpGet]</code> list action (<code>GET /api/donors</code>, 405 &rarr; 200) + a <code>GetCenterId()</code> helper.</li>
+            <li><code>CampController</code> — added <code>[HttpGet]</code> list action (<code>GET /api/camps</code>, 404 &rarr; 200).</li>
+            <li><code>DB/fn_camp.sql</code> (new) — added <code>fn_camp_get_by_center</code> returning all camps for a center.</li>
+            <li><code>ICampRepository</code> / <code>CampRepository</code> — added <code>GetByCenterAsync</code>; fixed <code>StartTime</code>/<code>EndTime</code> mapping (<code>timestamptz</code> &rarr; <code>TimeSpan</code> via <code>.TimeOfDay</code>).</li>
+        </ul>
+    </div>
+
+    <h2>5. Verification</h2>
+    <div class="card">
+        <p>Full end-to-end test using a real browser-style flow (login through the Web, then load a protected page):</p>
+        <table>
+            <thead><tr><th>Check</th><th>Result</th></tr></thead>
+            <tbody>
+                <tr><td>API project build</td><td class="ok">0 errors, 0 warnings</td></tr>
+                <tr><td>Web project build</td><td class="ok">0 errors</td></tr>
+                <tr><td>Web login <code>/Account/Login</code></td><td class="ok">302 + <code>bc_token</code> cookie set (valid JWT)</td></tr>
+                <tr><td>Protected page <code>/Branch</code> via Web</td><td class="ok">200 — renders HQ, PUN-MR, MUM-AN, NAG-CP</td></tr>
+                <tr><td>API log: <code>POST /api/auth/login</code></td><td class="ok">200</td></tr>
+                <tr><td>API log: <code>GET /api/branches</code> (from Web)</td><td class="ok">200</td></tr>
+                <tr><td><code>/api/devices</code>, <code>/api/fridges</code>, <code>/api/hospitals</code></td><td class="ok">200 (was 500)</td></tr>
+                <tr><td><code>/api/donors</code>, <code>/api/camps</code></td><td class="ok">200 (were 405 / 404)</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <h2>6. How To Run / Use</h2>
+    <div class="card">
+        <p><strong>Swagger UI:</strong> open <code class="ok">https://localhost:5001/swagger</code> (use HTTPS, not HTTP). Click <strong>Authorize</strong> and paste <code>Bearer &lt;token&gt;</code> obtained from <code>POST /api/auth/login</code> with <code>admin</code> / <code>admin@123</code>.</p>
+        <p><strong>Web app:</strong> open <code>https://localhost:7180</code>, log in with <code>admin</code> / <code>admin@123</code>. It now reaches the API over HTTPS and all protected pages load data.</p>
+    </div>
+
+    <h2>7. Remaining (non-blocking)</h2>
+    <div class="card">
+        <p>A few controllers (e.g. <code>newsletters</code>, <code>camp-inventory</code>, <code>testings</code>) have no parameterless <code>[HttpGet]</code> list route, so a bare <code>GET /api/&lt;name&gt;</code> returns 404 by design — the Web UI uses their specific endpoints. Optional future work: add list GETs for full Swagger coverage.</p>
+    </div>
+
+    <p style="margin-top:40px; font-size:12px; color:#888;">
+        BloodCenterOS v1.0 — Developed &amp; Maintained by Sadu Consultancy Services, Pune, Maharashtra, India.
+    </p>
+</div>
+</body>
+</html>

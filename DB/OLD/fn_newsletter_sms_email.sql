@@ -76,16 +76,18 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+DROP FUNCTION IF EXISTS fn_sms_template_get_by_id(BIGINT);
 CREATE OR REPLACE FUNCTION fn_sms_template_get_by_id(p_template_id BIGINT)
-RETURNS TABLE(SmsTemplateId BIGINT, CenterId BIGINT, TemplateCode VARCHAR, TemplateText VARCHAR, CreatedAt TIMESTAMP) AS $$
+RETURNS TABLE(SmsTemplateId BIGINT, CenterId BIGINT, TemplateCode VARCHAR, TemplateText VARCHAR, CreatedAt TIMESTAMPTZ) AS $$
 BEGIN
     RETURN QUERY SELECT t.SmsTemplateId, t.CenterId, t.TemplateCode, t.TemplateText, t.CreatedAt
     FROM SmsTemplateMaster t WHERE t.SmsTemplateId = p_template_id;
 END;
 $$ LANGUAGE plpgsql;
 
+DROP FUNCTION IF EXISTS fn_sms_template_get_by_center(BIGINT);
 CREATE OR REPLACE FUNCTION fn_sms_template_get_by_center(p_center_id BIGINT)
-RETURNS TABLE(SmsTemplateId BIGINT, CenterId BIGINT, TemplateCode VARCHAR, TemplateText VARCHAR, CreatedAt TIMESTAMP) AS $$
+RETURNS TABLE(SmsTemplateId BIGINT, CenterId BIGINT, TemplateCode VARCHAR, TemplateText VARCHAR, CreatedAt TIMESTAMPTZ) AS $$
 BEGIN
     RETURN QUERY SELECT t.SmsTemplateId, t.CenterId, t.TemplateCode, t.TemplateText, t.CreatedAt
     FROM SmsTemplateMaster t WHERE t.CenterId = p_center_id ORDER BY t.TemplateCode;
@@ -123,16 +125,18 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+DROP FUNCTION IF EXISTS fn_email_template_get_by_id(BIGINT);
 CREATE OR REPLACE FUNCTION fn_email_template_get_by_id(p_template_id BIGINT)
-RETURNS TABLE(EmailTemplateId BIGINT, CenterId BIGINT, TemplateCode VARCHAR, Subject VARCHAR, BodyHtml TEXT, CreatedAt TIMESTAMP) AS $$
+RETURNS TABLE(EmailTemplateId BIGINT, CenterId BIGINT, TemplateCode VARCHAR, Subject VARCHAR, BodyHtml TEXT, CreatedAt TIMESTAMPTZ) AS $$
 BEGIN
     RETURN QUERY SELECT t.EmailTemplateId, t.CenterId, t.TemplateCode, t.Subject, t.BodyHtml, t.CreatedAt
     FROM EmailTemplateMaster t WHERE t.EmailTemplateId = p_template_id;
 END;
 $$ LANGUAGE plpgsql;
 
+DROP FUNCTION IF EXISTS fn_email_template_get_by_center(BIGINT);
 CREATE OR REPLACE FUNCTION fn_email_template_get_by_center(p_center_id BIGINT)
-RETURNS TABLE(EmailTemplateId BIGINT, CenterId BIGINT, TemplateCode VARCHAR, Subject VARCHAR, BodyHtml TEXT, CreatedAt TIMESTAMP) AS $$
+RETURNS TABLE(EmailTemplateId BIGINT, CenterId BIGINT, TemplateCode VARCHAR, Subject VARCHAR, BodyHtml TEXT, CreatedAt TIMESTAMPTZ) AS $$
 BEGIN
     RETURN QUERY SELECT t.EmailTemplateId, t.CenterId, t.TemplateCode, t.Subject, t.BodyHtml, t.CreatedAt
     FROM EmailTemplateMaster t WHERE t.CenterId = p_center_id ORDER BY t.TemplateCode;

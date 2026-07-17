@@ -6,12 +6,16 @@ builder.Services.AddControllersWithViews();
 
 builder.Services.AddHttpClient<ApiClient>(client =>
 {
-    var baseUrl = builder.Configuration["Api:BaseUrl"] ?? "http://localhost:5000";
+    var baseUrl = builder.Configuration["Api:BaseUrl"] ?? "https://localhost:5001";
     client.BaseAddress = new Uri(baseUrl);
     client.Timeout = TimeSpan.FromSeconds(30);
+}).ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler
+{
+    // Dev only: accept the API's self-signed HTTPS dev certificate.
+    ServerCertificateCustomValidationCallback = (_, _, _, _) => true
 });
 
-builder.Services.AddSingleton<ITokenStore, TokenStore>();
+builder.Services.AddScoped<ITokenStore, TokenStore>();
 builder.Services.AddScoped<IWebAuthService, WebAuthService>();
 
 var app = builder.Build();
@@ -32,6 +36,6 @@ app.UseAuthorization();
 
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=Account}/{action=Login}/{id?}");
+    pattern: "{controller=Home}/{action=Index}/{id?}");
 
 app.Run();

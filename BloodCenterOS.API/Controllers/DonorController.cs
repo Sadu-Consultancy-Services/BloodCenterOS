@@ -19,6 +19,27 @@ public class DonorController : ControllerBase
         _donorRepo = donorRepo;
     }
 
+    private long GetCenterId()
+    {
+        var claim = User.FindFirst("CenterId")?.Value;
+        return long.TryParse(claim, out var id) ? id : 0;
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> GetAll([FromQuery] int page = 1, [FromQuery] int size = 20)
+    {
+        try
+        {
+            var centerId = GetCenterId();
+            var result = await _donorRepo.SearchAsync(centerId, null, null, null, page, size);
+            return Ok(ApiResponse<PagedResult<Donor>>.Ok(result));
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, ApiResponse<PagedResult<Donor>>.Fail($"An unexpected error occurred: {ex.Message}"));
+        }
+    }
+
     [HttpGet("{id}")]
     public async Task<IActionResult> GetById(long id)
     {
