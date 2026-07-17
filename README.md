@@ -96,11 +96,11 @@ Developed using **.NET 9**, **SQL Server**, and **Stored Procedures** (without E
 
 **Login**
 
-![Login](Screens/bcos_001_login.png)
+![Login](Screens/bcos_v1_001_login.png)
 
 **Dashboard**
 
-![Dashboard](Screens/bcos_002_dashboard.png)
+![Dashboard](Screens/bcos_v1_002_dashboard.png)
 
 ---
 
