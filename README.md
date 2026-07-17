@@ -139,6 +139,33 @@ For any queries or collaboration requests, please contact:
 🌐 [www.saducs.com/bloodcenteros](https://www.saducs.com/bloodcenteros) | Pune, Maharashtra, India  
 
 
+### 🚀 BloodCenterOS v1.0 (Open Source) — We're Nearing the MVP!
+
+We're excited to share that **BloodCenterOS v1.0** is nearing its **Minimum Viable Product (MVP)** release!
+
+Built specifically for **Indian blood centers**, it comes with ready-to-use modules for:
+
+- **Donors** · **Camps** · **Hospitals**
+- **Blood Collection** · **Inventory** · **Testing**
+- **Blood Issue** · **Billing** · **Reports**
+- **Role-Based Access Control (RBAC)** & **Settings**
+
+> 🩺 **NBTC / NACO compliance is in progress** — we are actively aligning workflows and reporting with national guidelines.
+
+#### 💡 Get Involved
+
+You can **download the code, build it, and start using the application** right away.  
+We invite blood centers, developers, and NGOs to:
+
+- Deploy and implement it in your setup
+- Report **bugs**, **missing processes**, and **improvement ideas**
+- Share feedback on real-world workflows
+
+We'll work together with the community to make BloodCenterOS the **best open-source blood center management system for global use**. 🌍
+
+📧 **bloodcenteros@saducs.com** | 📱 [WhatsApp](https://wa.me/+919765975757?text=Hello%20BloodCenterOS%20Team%2C%20I%20am%20interested%20in%20the%20application.%20Please%20contact%20me.)
+
+
 ### 📢 Upcoming Update: PostgreSQL Database Schema (v1)
 
 We are currently finalizing the PostgreSQL version of the BloodCenterOS database.
