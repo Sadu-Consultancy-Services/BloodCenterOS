@@ -139,7 +139,8 @@ For any queries or collaboration requests, please contact:
 🌐 [www.saducs.com/bloodcenteros](https://www.saducs.com/bloodcenteros) | Pune, Maharashtra, India  
 
 
-### 🚀 BloodCenterOS v1.0 (Open Source) — We're Nearing the MVP!
+### 🚀 BloodCenterOS v1.0 (Open Source) — We're Nearing the MVP!  
+<sup><sub>📅 Announced: 17 July 2026</sub></sup>
 
 We're excited to share that **BloodCenterOS v1.0** is nearing its **Minimum Viable Product (MVP)** release!
 
@@ -165,24 +166,6 @@ We'll work together with the community to make BloodCenterOS the **best open-sou
 
 📧 **bloodcenteros@saducs.com** | 📱 [WhatsApp](https://wa.me/+919765975757?text=Hello%20BloodCenterOS%20Team%2C%20I%20am%20interested%20in%20the%20application.%20Please%20contact%20me.)
 
-
-### 📢 Upcoming Update: PostgreSQL Database Schema (v1)
-
-We are currently finalizing the PostgreSQL version of the BloodCenterOS database.
-The file **`BloodCenterOS_DB_PostgreSQL_v1.sql`** will be uploaded soon.
-
-This new schema is designed to:
-
-* Improve open-source compatibility
-* Support affordable Linux-based hosting
-* Enable better performance and scalability
-* Align with PL/pgSQL stored procedures
-* Maintain our *no direct foreign key* design philosophy
-
-A migration guide and updated documentation will follow.
-
-Thank you for your patience and continued support!
-— *Sadu Consultancy Services*
 
 ---
 
