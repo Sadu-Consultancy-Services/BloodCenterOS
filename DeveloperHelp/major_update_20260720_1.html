@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Major Update 2026-07-20 (1) — CRUD Bug Fixes (DATE/TIMESTAMPTZ SPs)</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
+    <style>
+        :root { --bc-primary:#c0202e; --bc-bg:#f7f8fa; --bc-border:#e3e6ea; --bc-text:#222; }
+        body { font-family: -apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif; background:var(--bc-bg); color:var(--bc-text); line-height:1.6; margin:0; }
+        .wrap { max-width:920px; margin:0 auto; padding:32px 20px 64px; }
+        h1 { color:var(--bc-primary); border-bottom:3px solid var(--bc-primary); padding-bottom:10px; }
+        h2 { margin-top:36px; color:#333; border-left:4px solid var(--bc-primary); padding-left:10px; }
+        code, pre { background:#1e1e1e; color:#d4d4d4; border-radius:6px; }
+        code { padding:2px 6px; font-size:13px; }
+        pre { padding:14px 16px; overflow:auto; font-size:13px; }
+        .card { background:#fff; border:1px solid var(--bc-border); border-radius:10px; padding:18px 20px; margin:16px 0; box-shadow:0 1px 3px rgba(0,0,0,.04); }
+        .badge { display:inline-block; background:var(--bc-primary); color:#fff; border-radius:20px; padding:2px 12px; font-size:12px; }
+        table { width:100%; border-collapse:collapse; margin:12px 0; }
+        th, td { border:1px solid var(--bc-border); padding:8px 10px; text-align:left; font-size:14px; }
+        th { background:#f0f1f3; }
+        .ok { color:#1a7f37; font-weight:600; }
+        .fix { background:#eafaf0; border-left:4px solid #1a7f37; padding:10px 14px; border-radius:6px; }
+        .bug { background:#fde8e8; border-left:4px solid #c0202e; padding:10px 14px; border-radius:6px; }
+        ul li { margin:4px 0; }
+    </style>
+</head>
+<body>
+<div class="wrap">
+    <span class="badge">BloodCenterOS v1.0</span>
+    <h1>Major Update — 2026-07-20 (Build 1)</h1>
+    <p><strong>Subject:</strong> CRUD verification &amp; bug fixes for Master modules — Devices, Fridges, Designations, Employees, SMS Templates, Email Templates, Newsletter Subscribers.</p>
+    <p><strong>Context:</strong> Following the Swagger 401 root-cause fix (see <code>major_update_20260717_1.html</code>), an end-to-end CRUD smoke test was run against the live API over HTTPS with a valid JWT. This surfaced a recurring class of PostgreSQL stored-procedure bugs that returned HTTP 500 on Create/Read.</p>
+
+    <h2>1. Symptom</h2>
+    <div class="card">
+        <ul>
+            <li><code>POST /api/devices</code> &rarr; <strong>500</strong> on create.</li>
+            <li><code>POST /api/employees</code> &rarr; <strong>500</strong> on create/update.</li>
+            <li><code>GET /api/newsletter</code> &rarr; <strong>500</strong> on read.</li>
+            <li>Other modules (Fridges, Designations, SMS/Email Templates) worked, but several shared the same latent defect.</li>
+        </ul>
+    </div>
+
+    <h2>2. Root Cause — Two Related PostgreSQL Defects</h2>
+
+    <div class="bug">
+        <h3>Defect A — 42883: function does not exist (DATE vs timestamp)</h3>
+        <p>Several <code>fn_*_create</code> / <code>fn_*_update</code> functions declared their date parameters as <code>DATE</code>:</p>
+        <pre><code>fn_device_create(..., p_purchase_date DATE, p_warranty_end DATE)
+fn_employee_create(..., p_join_date DATE, ...)</code></pre>
+        <p>The .NET repositories pass .NET <code>DateTime</code> values (e.g. <code>DateOnly.ToDateTime(TimeOnly.MinValue)</code>), which Npgsql serializes as <strong>timestamp without time zone</strong>. PostgreSQL does <strong>not</strong> auto-coerce <code>timestamp</code> &rarr; <code>date</code> during function overload resolution, so no matching function was found:</p>
+        <pre><code>SqlState: 42883
+function fn_device_create(bigint, text, text, text, timestamp without time zone, timestamp without time zone) does not exist</code></pre>
+    </div>
+
+    <div class="bug">
+        <h3>Defect B — 42804: structure of query does not match function result type (TIMESTAMP vs TIMESTAMPTZ)</h3>
+        <p>Several <code>fn_*_get_*</code> functions declared their audit/timestamp columns as <code>TIMESTAMP</code> (or <code>SubscribedAt TIMESTAMP</code>), while the underlying table columns are <code>TIMESTAMPTZ</code> (populated by <code>NOW()</code>, which returns <code>timestamptz</code>):</p>
+        <pre><code>fn_newsletter_get_by_center(...) RETURNS TABLE(..., SubscribedAt TIMESTAMP, ...)
+-- but NewsletterSubscription.SubscribedAt is timestamptz</code></pre>
+        <p>This raised:</p>
+        <pre><code>SqlState: 42804
+structure of query does not match function result type</code></pre>
+        <p>when Dapper executed <code>SELECT * FROM fn_...</code>.</p>
+    </div>
+
+    <p>The earlier 2026-07-17 session already fixed the same pattern in device/fridge <em>get</em> functions, hospital, and newsletter/email/sms <em>get</em> functions — but the <strong>create/update DATE-param</strong> variant and the <strong>newsletter SubscribedAt</strong> variant were still outstanding. This session closed those gaps.</p>
+
+    <h2>3. Fixes Applied</h2>
+
+    <div class="fix">
+        <h3>Fix 1 — <code>DB/OLD/fn_device_fridge.sql</code></h3>
+        <ul>
+            <li>Changed <code>fn_device_create</code> / <code>fn_device_update</code> date params <code>DATE</code> &rarr; <code>TIMESTAMP</code>, casting to <code>DATE</code> on INSERT/UPDATE (<code>p_purchase_date::DATE</code>).</li>
+            <li>Added <code>DROP FUNCTION IF EXISTS ...</code> guards so the parameter-type change actually takes effect (CREATE OR REPLACE cannot alter a parameter type).</li>
+            <li>Confirmed the <code>get_by_id</code> / <code>get_by_center</code> return types already use <code>TIMESTAMPTZ</code>.</li>
+        </ul>
+    </div>
+
+    <div class="fix">
+        <h3>Fix 2 — <code>DB/OLD/fn_branch_department_designation_employee.sql</code></h3>
+        <ul>
+            <li>Changed <code>fn_employee_create</code> / <code>fn_employee_update</code> <code>p_join_date DATE</code> &rarr; <code>TIMESTAMP</code> (cast to <code>DATE</code> on insert/update).</li>
+            <li>Added <code>DROP FUNCTION IF EXISTS</code> guards for both.</li>
+            <li>Verified employee <code>get_by_id</code> / <code>get_by_center</code> already return <code>TIMESTAMPTZ</code> correctly.</li>
+        </ul>
+    </div>
+
+    <div class="fix">
+        <h3>Fix 3 — <code>DB/OLD/fn_newsletter_sms_email.sql</code></h3>
+        <ul>
+            <li>Changed <code>fn_newsletter_get_by_center</code> and <code>fn_newsletter_get_by_id</code> return column <code>SubscribedAt TIMESTAMP</code> &rarr; <code>TIMESTAMPTZ</code>.</li>
+            <li>Added <code>DROP FUNCTION IF EXISTS</code> guards.</li>
+            <li>SMS/Email template <em>get</em> functions already returned <code>TIMESTAMPTZ</code> (fixed previously).</li>
+        </ul>
+    </div>
+
+    <p>All three SQL files were re-applied to the database (<code>bloodcenter</code>):</p>
+    <pre><code>psql -h localhost -p 5432 -U postgres -d bloodcenter -f DB/OLD/fn_device_fridge.sql
+psql -h localhost -p 5432 -U postgres -d bloodcenter -f DB/OLD/fn_branch_department_designation_employee.sql
+psql -h localhost -p 5432 -U postgres -d bloodcenter -f DB/OLD/fn_newsletter_sms_email.sql</code></pre>
+
+    <h2>4. Verification — Full CRUD (Create / Read / Update / Delete)</h2>
+    <div class="card">
+        <p>Each module tested over <code>https://localhost:5001</code> with a valid Bearer token obtained from <code>POST /api/auth/login</code> (admin / admin@123).</p>
+        <table>
+            <thead><tr><th>Module</th><th>Create</th><th>Read</th><th>Update</th><th>Delete</th></tr></thead>
+            <tbody>
+                <tr><td>Devices</td><td class="ok">✅</td><td class="ok">✅</td><td class="ok">✅</td><td class="ok">✅</td></tr>
+                <tr><td>Fridges</td><td class="ok">✅</td><td class="ok">✅</td><td class="ok">✅</td><td class="ok">✅</td></tr>
+                <tr><td>Designations</td><td class="ok">✅</td><td class="ok">✅</td><td class="ok">✅</td><td class="ok">✅</td></tr>
+                <tr><td>Employees</td><td class="ok">✅</td><td class="ok">✅</td><td class="ok">✅</td><td class="ok">✅</td></tr>
+                <tr><td>SMS Templates</td><td class="ok">✅</td><td class="ok">✅</td><td class="ok">✅</td><td class="ok">✅</td></tr>
+                <tr><td>Email Templates</td><td class="ok">✅</td><td class="ok">✅</td><td class="ok">✅</td><td class="ok">✅</td></tr>
+                <tr><td>Newsletter</td><td class="ok">✅</td><td class="ok">✅</td><td class="ok">✅</td><td class="ok">✅</td></tr>
+            </tbody>
+        </table>
+        <p>Sample results:</p>
+        <pre><code>Device   CREATE id=4 | READ count=4 | UPDATE "Device updated"   | DELETE "Device deleted"
+Employee CREATE id=1 | READ count=1 | UPDATE "Employee updated" | DELETE "Employee deleted"
+Newsletter CREATE id=1 | READ count=1 | UPDATE "Subscription updated" | DELETE "Subscription deleted"</code></pre>
+    </div>
+
+    <h2>5. Notes</h2>
+    <div class="card">
+        <ul>
+            <li><strong>Testing gotcha:</strong> a stale <code>dotnet</code> API process holding port 5001 caused "Host failed to start / address already in use", making tests hit a dead API. Always stop prior <code>dotnet</code> processes before re-running.</li>
+            <li><strong>Source file location:</strong> the <code>fn_*.sql</code> stored-procedure source files currently live under <code>DB/OLD/</code> (moved there in a prior cleanup). The database has all fixes applied. Consider relocating them back to <code>DB/</code> for cleaner source tracking.</li>
+            <li><strong>Consistent convention going forward:</strong> date parameters passed from .NET should be declared <code>TIMESTAMP</code> in SPs (cast to <code>DATE</code> only when writing to a <code>DATE</code> column), and all audit/timestamp return columns should be <code>TIMESTAMPTZ</code>.</li>
+        </ul>
+    </div>
+
+    <h2>6. Summary of Changed Files</h2>
+    <div class="card">
+        <table>
+            <thead><tr><th>File</th><th>Change</th></tr></thead>
+            <tbody>
+                <tr><td><code>DB/OLD/fn_device_fridge.sql</code></td><td>Device create/update date params &rarr; TIMESTAMP; DROP guards</td></tr>
+                <tr><td><code>DB/OLD/fn_branch_department_designation_employee.sql</code></td><td>Employee create/update <code>p_join_date</code> &rarr; TIMESTAMP; DROP guards</td></tr>
+                <tr><td><code>DB/OLD/fn_newsletter_sms_email.sql</code></td><td>Newsletter get functions <code>SubscribedAt</code> &rarr; TIMESTAMPTZ; DROP guards</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <p style="margin-top:40px; font-size:12px; color:#888;">
+        BloodCenterOS v1.0 — Developed &amp; Maintained by Sadu Consultancy Services, Pune, Maharashtra, India.
+    </p>
+</div>
+</body>
+</html>

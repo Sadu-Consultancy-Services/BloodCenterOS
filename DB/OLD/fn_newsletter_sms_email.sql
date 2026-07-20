@@ -24,16 +24,18 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+DROP FUNCTION IF EXISTS fn_newsletter_get_by_id(BIGINT);
 CREATE OR REPLACE FUNCTION fn_newsletter_get_by_id(p_subscription_id BIGINT)
-RETURNS TABLE(SubscriptionId BIGINT, CenterId BIGINT, Email VARCHAR, SubscribedAt TIMESTAMP, IsActive BOOLEAN) AS $$
+RETURNS TABLE(SubscriptionId BIGINT, CenterId BIGINT, Email VARCHAR, SubscribedAt TIMESTAMPTZ, IsActive BOOLEAN) AS $$
 BEGIN
     RETURN QUERY SELECT s.SubscriptionId, s.CenterId, s.Email, s.SubscribedAt, s.IsActive
     FROM NewsletterSubscription s WHERE s.SubscriptionId = p_subscription_id;
 END;
 $$ LANGUAGE plpgsql;
 
+DROP FUNCTION IF EXISTS fn_newsletter_get_by_center(BIGINT);
 CREATE OR REPLACE FUNCTION fn_newsletter_get_by_center(p_center_id BIGINT)
-RETURNS TABLE(SubscriptionId BIGINT, CenterId BIGINT, Email VARCHAR, SubscribedAt TIMESTAMP, IsActive BOOLEAN) AS $$
+RETURNS TABLE(SubscriptionId BIGINT, CenterId BIGINT, Email VARCHAR, SubscribedAt TIMESTAMPTZ, IsActive BOOLEAN) AS $$
 BEGIN
     RETURN QUERY SELECT s.SubscriptionId, s.CenterId, s.Email, s.SubscribedAt, s.IsActive
     FROM NewsletterSubscription s WHERE s.CenterId = p_center_id ORDER BY s.SubscribedAt DESC;

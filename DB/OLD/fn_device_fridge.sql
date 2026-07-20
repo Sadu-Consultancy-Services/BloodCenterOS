@@ -3,30 +3,32 @@
 -- ============================================================================
 
 -- ── DeviceMaster ──
+DROP FUNCTION IF EXISTS fn_device_create(BIGINT, VARCHAR, VARCHAR, VARCHAR, DATE, DATE);
 CREATE OR REPLACE FUNCTION fn_device_create(
     p_center_id BIGINT, p_name VARCHAR, p_type VARCHAR,
-    p_serial VARCHAR, p_purchase_date DATE, p_warranty_end DATE
+    p_serial VARCHAR, p_purchase_date TIMESTAMP, p_warranty_end TIMESTAMP
 ) RETURNS BIGINT AS $$
 DECLARE v_id BIGINT;
 BEGIN
     INSERT INTO DeviceMaster (CenterId, DeviceName, DeviceType, SerialNumber, PurchaseDate, WarrantyEndDate, CreatedAt)
-    VALUES (p_center_id, p_name, p_type, p_serial, p_purchase_date, p_warranty_end, NOW())
+    VALUES (p_center_id, p_name, p_type, p_serial, p_purchase_date::DATE, p_warranty_end::DATE, NOW())
     RETURNING DeviceId INTO v_id;
     RETURN v_id;
 END;
 $$ LANGUAGE plpgsql;
 
+DROP FUNCTION IF EXISTS fn_device_update(BIGINT, VARCHAR, VARCHAR, VARCHAR, DATE, DATE);
 CREATE OR REPLACE FUNCTION fn_device_update(
     p_device_id BIGINT, p_name VARCHAR, p_type VARCHAR,
-    p_serial VARCHAR, p_purchase_date DATE, p_warranty_end DATE
+    p_serial VARCHAR, p_purchase_date TIMESTAMP, p_warranty_end TIMESTAMP
 ) RETURNS VOID AS $$
 BEGIN
     UPDATE DeviceMaster SET
         DeviceName = COALESCE(p_name, DeviceName),
         DeviceType = COALESCE(p_type, DeviceType),
         SerialNumber = COALESCE(p_serial, SerialNumber),
-        PurchaseDate = COALESCE(p_purchase_date, PurchaseDate),
-        WarrantyEndDate = COALESCE(p_warranty_end, WarrantyEndDate)
+        PurchaseDate = COALESCE(p_purchase_date::DATE, PurchaseDate),
+        WarrantyEndDate = COALESCE(p_warranty_end::DATE, WarrantyEndDate)
     WHERE DeviceId = p_device_id;
 END;
 $$ LANGUAGE plpgsql;
@@ -60,6 +62,7 @@ END;
 $$ LANGUAGE plpgsql;
 
 -- ── FridgeStorageMaster ──
+DROP FUNCTION IF EXISTS fn_fridge_create(BIGINT, VARCHAR, VARCHAR, INT, VARCHAR, BOOLEAN);
 CREATE OR REPLACE FUNCTION fn_fridge_create(
     p_center_id BIGINT, p_code VARCHAR, p_name VARCHAR,
     p_capacity INT, p_location VARCHAR, p_temp_log BOOLEAN
@@ -73,6 +76,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+DROP FUNCTION IF EXISTS fn_fridge_update(BIGINT, VARCHAR, VARCHAR, INT, VARCHAR, BOOLEAN);
 CREATE OR REPLACE FUNCTION fn_fridge_update(
     p_fridge_id BIGINT, p_code VARCHAR, p_name VARCHAR,
     p_capacity INT, p_location VARCHAR, p_temp_log BOOLEAN

@@ -175,26 +175,28 @@ END;
 $$ LANGUAGE plpgsql;
 
 -- ── EmployeeMaster ──
+DROP FUNCTION IF EXISTS fn_employee_create(BIGINT, VARCHAR, VARCHAR, VARCHAR, VARCHAR, VARCHAR, VARCHAR, BIGINT, DATE, BIGINT);
 CREATE OR REPLACE FUNCTION fn_employee_create(
     p_center_id BIGINT, p_code VARCHAR, p_first_name VARCHAR, p_last_name VARCHAR,
     p_email VARCHAR, p_phone VARCHAR, p_designation VARCHAR, p_department_id BIGINT,
-    p_join_date DATE, p_created_by BIGINT
+    p_join_date TIMESTAMP, p_created_by BIGINT
 ) RETURNS BIGINT AS $$
 DECLARE v_id BIGINT;
 BEGIN
     INSERT INTO EmployeeMaster (CenterId, EmployeeCode, FirstName, LastName, Email,
         Phone, Designation, DepartmentId, JoinDate, IsActive, CreatedAt, CreatedBy)
     VALUES (p_center_id, p_code, p_first_name, p_last_name, p_email, p_phone,
-        p_designation, p_department_id, p_join_date, TRUE, NOW(), p_created_by)
+        p_designation, p_department_id, p_join_date::DATE, TRUE, NOW(), p_created_by)
     RETURNING EmployeeId INTO v_id;
     RETURN v_id;
 END;
 $$ LANGUAGE plpgsql;
 
+DROP FUNCTION IF EXISTS fn_employee_update(BIGINT, VARCHAR, VARCHAR, VARCHAR, VARCHAR, VARCHAR, VARCHAR, BIGINT, DATE);
 CREATE OR REPLACE FUNCTION fn_employee_update(
     p_employee_id BIGINT, p_code VARCHAR, p_first_name VARCHAR, p_last_name VARCHAR,
     p_email VARCHAR, p_phone VARCHAR, p_designation VARCHAR, p_department_id BIGINT,
-    p_join_date DATE
+    p_join_date TIMESTAMP
 ) RETURNS VOID AS $$
 BEGIN
     UPDATE EmployeeMaster SET
