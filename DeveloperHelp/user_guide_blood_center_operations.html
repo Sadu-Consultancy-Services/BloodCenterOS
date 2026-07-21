@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>BloodCenterOS — User Guide for Blood Centers</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
+    <style>
+        :root { --bc-primary:#c0202e; --bc-bg:#f7f8fa; --bc-border:#e3e6ea; --bc-text:#222; --bc-ok:#1a7f37; --bc-warn:#b8860b; }
+        * { box-sizing:border-box; }
+        body { font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif; background:var(--bc-bg); color:var(--bc-text); line-height:1.65; margin:0; }
+        .wrap { max-width:1000px; margin:0 auto; padding:32px 22px 80px; }
+        h1 { color:var(--bc-primary); border-bottom:3px solid var(--bc-primary); padding-bottom:12px; }
+        h2 { margin-top:42px; color:#333; border-left:5px solid var(--bc-primary); padding-left:12px; }
+        h3 { margin-top:26px; color:var(--bc-primary); }
+        code { background:#1e1e1e; color:#d4d4d4; border-radius:5px; padding:2px 6px; font-size:13px; }
+        pre { background:#1e1e1e; color:#d4d4d4; border-radius:8px; padding:14px 16px; overflow:auto; font-size:13px; }
+        .card { background:#fff; border:1px solid var(--bc-border); border-radius:12px; padding:20px 22px; margin:18px 0; box-shadow:0 1px 3px rgba(0,0,0,.05); }
+        .badge { display:inline-block; background:var(--bc-primary); color:#fff; border-radius:20px; padding:3px 14px; font-size:12px; }
+        .step { background:#fff; border:1px solid var(--bc-border); border-left:5px solid var(--bc-primary); border-radius:10px; padding:14px 18px; margin:12px 0; }
+        .step b.num { display:inline-block; width:26px; height:26px; line-height:26px; text-align:center; background:var(--bc-primary); color:#fff; border-radius:50%; margin-right:8px; font-size:13px; }
+        .nav-map { width:100%; border-collapse:collapse; margin:12px 0; }
+        .nav-map th, .nav-map td { border:1px solid var(--bc-border); padding:9px 12px; text-align:left; font-size:14px; vertical-align:top; }
+        .nav-map th { background:#f0f1f3; }
+        .nav-map td:first-child { white-space:nowrap; font-weight:600; color:var(--bc-primary); }
+        .ok { color:var(--bc-ok); font-weight:600; }
+        .warn { color:var(--bc-warn); font-weight:600; }
+        .tip { background:#eafaf0; border-left:4px solid var(--bc-ok); padding:10px 14px; border-radius:6px; margin:10px 0; }
+        .note { background:#fff8e6; border-left:4px solid var(--bc-warn); padding:10px 14px; border-radius:6px; margin:10px 0; }
+        ul { margin:8px 0; }
+        li { margin:5px 0; }
+        .flow { background:#fafbfc; border:1px dashed var(--bc-primary); border-radius:10px; padding:14px 18px; margin:14px 0; font-size:15px; }
+        .flow b { color:var(--bc-primary); }
+        .toc a { color:var(--bc-primary); text-decoration:none; }
+        .toc a:hover { text-decoration:underline; }
+    </style>
+</head>
+<body>
+<div class="wrap">
+    <span class="badge">BloodCenterOS v1.0 — User Guide</span>
+    <h1>How to Use BloodCenterOS at Your Blood Center</h1>
+    <p>This guide explains, step by step, how a blood center staff member uses BloodCenterOS to run <strong>day-to-day blood center operations</strong> — from donor registration through blood testing, component preparation, inventory, and issue to hospitals. It also shows <strong>where to find each option</strong> in the menu.</p>
+
+    <div class="card">
+        <h3 style="margin-top:0">In this guide</h3>
+        <div class="toc">
+            1. <a href="#login">First login &amp; the dashboard</a><br>
+            2. <a href="#nav">Where to find each option (menu map)</a><br>
+            3. <a href="#setup">Step 0 — One-time setup (masters)</a><br>
+            4. <a href="#flow">The blood center workflow, end-to-end</a><br>
+            5. <a href="#donor">Donors — register &amp; search</a><br>
+            6. <a href="#camp">Camps — plan &amp; run a donation camp</a><br>
+            7. <a href="#collection">Collection — record a blood bag</a><br>
+            8. <a href="#testing">Testing — enter lab results</a><br>
+            9. <a href="#components">Components — prepare &amp; stock</a><br>
+            10. <a href="#inventory">Inventory — monitor stock</a><br>
+            11. <a href="#issue">Issue — supply hospitals</a><br>
+            12. <a href="#billing">Billing &amp; Emergency</a><br>
+            13. <a href="#reports">Reports &amp; compliance</a><br>
+            14. <a href="#admin">Administration (users, roles, settings)</a><br>
+            15. <a href="#tips">Tips &amp; troubleshooting</a>
+        </div>
+    </div>
+
+    <h2 id="login">1. First Login &amp; the Dashboard</h2>
+    <div class="step"><b class="num">1</b><strong>Open the application</strong> in your browser (your administrator will give you the web address, e.g. <code>https://your-server:7180</code>).</div>
+    <div class="step"><b class="num">2</b><strong>Sign in</strong> on the Login screen with your <em>Username</em> and <em>Password</em>. The default administrator is <code>admin</code> / <code>admin@123</code> (change it after first login).</div>
+    <div class="step"><b class="num">3</b><strong>The Dashboard</strong> appears after login. It shows summary cards (donors, collections, tests, issues) — click any card to drill into that module. Use the <strong>“New Collection”</strong> button to jump straight into recording a blood bag, and <strong>“Refresh”</strong> to reload live numbers.</div>
+    <div class="note">Tip: the left <strong>sidebar</strong> is your main navigation. It is grouped into <em>Masters</em>, <em>Operations</em>, <em>Camps</em>, <em>Hospitals</em>, <em>Reports</em>, and <em>Administration</em>.</div>
+
+    <h2 id="nav">2. Where to Find Each Option (Menu Map)</h2>
+    <div class="card">
+        <table class="nav-map">
+            <thead><tr><th>Menu / Option</th><th>What it is for</th></tr></thead>
+            <tbody>
+                <tr><td>Dashboard</td><td>Home screen with live summary counts.</td></tr>
+                <tr><td>Branches</td><td>Your center and its branches (HQ + collection units).</td></tr>
+                <tr><td>Departments</td><td>Lab, Collection, Testing, Inventory, Issue, etc.</td></tr>
+                <tr><td>Devices</td><td>Centrifuges, meters, and other equipment.</td></tr>
+                <tr><td>Fridges</td><td>Cold-storage units where blood is kept.</td></tr>
+                <tr><td>Designations</td><td>Job titles (Technician, MO, etc.).</td></tr>
+                <tr><td>Employees</td><td>Staff records linked to designations &amp; departments.</td></tr>
+                <tr><td>Blood Groups</td><td>A/B/O/AB × Rh +/− reference list.</td></tr>
+                <tr><td>Component Types</td><td>RBC, Plasma, Platelets, Cryo definitions.</td></tr>
+                <tr><td>SMS Templates</td><td>Reusable text messages (OTP, reminders).</td></tr>
+                <tr><td>Email Templates</td><td>Reusable email content.</td></tr>
+                <tr><td>Newsletter Subs</td><td>Donors/hospitals subscribed to updates.</td></tr>
+                <tr><td><b>Donors</b></td><td>Register, search, and view donation history.</td></tr>
+                <tr><td><b>Collection</b></td><td>Record each blood bag collected.</td></tr>
+                <tr><td><b>Testing</b></td><td>Enter screening lab results.</td></tr>
+                <tr><td><b>Components</b></td><td>Prepare components from collected units.</td></tr>
+                <tr><td><b>Inventory</b></td><td>Stock of blood groups &amp; components.</td></tr>
+                <tr><td><b>Issue</b></td><td>Issue blood/components to hospitals.</td></tr>
+                <tr><td><b>Billing</b></td><td>Receipts &amp; charges for issued units.</td></tr>
+                <tr><td><b>Emergency</b></td><td>Emergency / urgent blood requests.</td></tr>
+                <tr><td>Camps ▸ Camps</td><td>Plan and track donation camps.</td></tr>
+                <tr><td>Camps ▸ Camp Inventory</td><td>Consumables/expenses stock for a camp.</td></tr>
+                <tr><td>Camps ▸ Camp Expenses</td><td>Track camp costs.</td></tr>
+                <tr><td>Hospitals</td><td>Hospitals that request blood.</td></tr>
+                <tr><td>Reports</td><td>Donor / Inventory / Camp summaries.</td></tr>
+                <tr><td>Administration ▸ Users</td><td>System login accounts.</td></tr>
+                <tr><td>Administration ▸ Roles</td><td>Permission roles (Admin, MO, Tech…).</td></tr>
+                <tr><td>Administration ▸ Settings</td><td>Center configuration.</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <h2 id="setup">3. Step 0 — One-Time Setup (Masters)</h2>
+    <p>Before daily operations, an administrator should configure the <strong>master data</strong>. These are found under the top section of the sidebar:</p>
+    <div class="step"><b class="num">1</b><strong>Branches</strong> — confirm your main center (HQ) and any branch/collection units. Each has a code (e.g. <code>HQ</code>, <code>PUN-MR</code>).</div>
+    <div class="step"><b class="num">2</b><strong>Departments</strong> — ensure Collection, Testing, Inventory, Issue exist.</div>
+    <div class="step"><b class="num">3</b><strong>Designations</strong> &amp; <strong>Employees</strong> — add staff so collections/tests are attributed to a person.</div>
+    <div class="step"><b class="num">4</b><strong>Blood Groups</strong> &amp; <strong>Component Types</strong> — these usually come pre-loaded; verify they are present.</div>
+    <div class="step"><b class="num">5</b><strong>Devices</strong> &amp; <strong>Fridges</strong> — register the equipment you will log against collections and storage.</div>
+    <div class="tip">Masters are the “lookup tables” everything else depends on. Get them right once; daily entry then becomes simple dropdowns.</div>
+
+    <h2 id="flow">4. The Blood Center Workflow, End-to-End</h2>
+    <div class="flow">
+        <b>Donor</b> → register / walk-in &nbsp;➜&nbsp;
+        <b>Collection</b> → draw &amp; bag the unit &nbsp;➜&nbsp;
+        <b>Testing</b> → screen (HIV, HBsAg, HCV, VDRL, Malaria) &nbsp;➜&nbsp;
+        <b>Components</b> → separate RBC/Plasma/Platelets &nbsp;➜&nbsp;
+        <b>Inventory</b> → store &amp; track &nbsp;➜&nbsp;
+        <b>Issue</b> → supply hospital &nbsp;➜&nbsp;
+        <b>Billing</b> → receipt
+    </div>
+    <p>Each step is a separate menu item. Follow them in order; the system carries the unit’s identity (via its bag/reference id) from one step to the next.</p>
+
+    <h2 id="donor">5. Donors — Register &amp; Search</h2>
+    <div class="step"><b class="num">1</b>Open <strong>Donors</strong> from the sidebar.</div>
+    <div class="step"><b class="num">2</b>Click <strong>“New Donor”</strong> (or “Register”) and fill in name, blood group, gender, contact (phone/email), and eligibility notes.</div>
+    <div class="step"><b class="num">3</b>To find an existing donor, use the <strong>search box</strong> (by name, blood group, gender) or look them up <strong>by phone</strong>. Repeat donors are matched so their <strong>donation history</strong> stays together.</div>
+    <div class="step"><b class="num">4</b>Open a donor’s profile to see past <strong>donations</strong> and send them <strong>reminders</strong> via SMS/Email (templates configured under Masters).</div>
+
+    <h2 id="camp">6. Camps — Plan &amp; Run a Donation Camp</h2>
+    <div class="step"><b class="num">1</b>Expand <strong>Camps ▸ Camps</strong> and click <strong>“New Camp”</strong>.</div>
+    <div class="step"><b class="num">2</b>Enter camp code, name, organizer, venue, city, date, and expected donors.</div>
+    <div class="step"><b class="num">3</b>On camp day, register donors (see §5) and record their collections (see §7) — the camp summary updates automatically.</div>
+    <div class="step"><b class="num">4</b>Use <strong>Camps ▸ Camp Inventory</strong> to track consumables and <strong>Camps ▸ Camp Expenses</strong> to log costs for that camp.</div>
+    <div class="step"><b class="num">5</b>View <strong>upcoming camps</strong> from the camps list to plan ahead.</div>
+
+    <h2 id="collection">7. Collection — Record a Blood Bag</h2>
+    <div class="step"><b class="num">1</b>Open <strong>Collection</strong> and click <strong>“New Collection”</strong> (also reachable from the Dashboard button).</div>
+    <div class="step"><b class="num">2</b>Link the <strong>donor</strong>, choose the <strong>camp</strong> (if any), the <strong>device</strong> used, and capture the <strong>barcode / bag id</strong>.</div>
+    <div class="step"><b class="num">3</b>Save — the unit is now in the system and ready for testing.</div>
+    <div class="tip">From a donor’s profile you can also launch <strong>“New Collection”</strong> directly, pre-filled with that donor.</div>
+
+    <h2 id="testing">8. Testing — Enter Lab Results</h2>
+    <div class="step"><b class="num">1</b>Open <strong>Testing</strong> (sidebar, blood-drop icon).</div>
+    <div class="step"><b class="num">2</b>Find the collected unit (from Collection) and enter screening results: <strong>HIV, HBsAg, HCV, VDRL, Malaria</strong>.</div>
+    <div class="step"><b class="num">3</b>Mark the unit <strong>Reactive</strong> or <strong>Non-Reactive</strong>. Reactive units are segregated and will not enter safe inventory.</div>
+    <div class="note">You can also start testing directly from a donor or collection record via the <strong>“Send for Testing”</strong> / <strong>“New Test”</strong> button (eyedropper icon).</div>
+
+    <h2 id="components">9. Components — Prepare &amp; Stock</h2>
+    <div class="step"><b class="num">1</b>Open <strong>Components</strong> for a tested, non-reactive unit.</div>
+    <div class="step"><b class="num">2</b>Prepare components — <strong>RBC, Plasma, Platelets, Cryo</strong> — as configured under Component Types.</div>
+    <div class="step"><b class="num">3</b>Each prepared component becomes a separate stock line tracked in Inventory.</div>
+
+    <h2 id="inventory">10. Inventory — Monitor Stock</h2>
+    <div class="step"><b class="num">1</b>Open <strong>Inventory</strong> to see the live dashboard of <strong>blood groups &amp; components</strong> by available / reserved / quarantined quantity.</div>
+    <div class="step"><b class="num">2</b>Watch <strong>expiry</strong> and <strong>quarantine</strong> statuses; record <strong>discard/destruction</strong> when units expire or fail.</div>
+    <div class="step"><b class="num">3</b>Use <strong>inter-center transfers</strong> if your setup spans multiple branches.</div>
+
+    <h2 id="issue">11. Issue — Supply Hospitals</h2>
+    <div class="step"><b class="num">1</b>Open <strong>Hospitals</strong> and confirm the requesting hospital is registered.</div>
+    <div class="step"><b class="num">2</b>Open <strong>Issue</strong> and create a request: pick hospital, required blood group/component, and run <strong>crossmatch / compatibility</strong> validation.</div>
+    <div class="step"><b class="num">3</b>Issue the unit; handle <strong>returns</strong> and <strong>replacements</strong> as needed. The issued quantity leaves Inventory automatically.</div>
+
+    <h2 id="billing">12. Billing &amp; Emergency</h2>
+    <div class="step"><b class="num">1</b><strong>Billing</strong> — generate the <strong>receipt</strong> / charges for issued units.</div>
+    <div class="step"><b class="num">2</b><strong>Emergency</strong> — log <strong>urgent blood requests</strong> so staff can prioritize matching and issue quickly.</div>
+
+    <h2 id="reports">13. Reports &amp; Compliance</h2>
+    <div class="step"><b class="num">1</b>Open <strong>Reports</strong> for <strong>Donor</strong>, <strong>Inventory</strong>, and <strong>Camp</strong> summaries.</div>
+    <div class="step"><b class="num">2</b>Export to <strong>Excel / PDF</strong> for regulatory submission (NBTC/NACO alignment is in progress).</div>
+    <div class="note">Audit trails are maintained automatically on key actions to support traceability and accountability.</div>
+
+    <h2 id="admin">14. Administration</h2>
+    <div class="step"><b class="num">1</b><strong>Administration ▸ Users</strong> — create login accounts for staff.</div>
+    <div class="step"><b class="num">2</b><strong>Administration ▸ Roles</strong> — assign permissions (Super Admin, Center Admin, Medical Officer, Technician, Camp Coordinator, Data Entry, Hospital User).</div>
+    <div class="step"><b class="num">3</b><strong>Administration ▸ Settings</strong> — center configuration and reference data.</div>
+    <div class="step"><b class="num">4</b><strong>Audit Logs</strong> — review who did what, for accountability.</div>
+
+    <h2 id="tips">15. Tips &amp; Troubleshooting</h2>
+    <div class="card">
+        <ul>
+            <li><span class="ok">Always use HTTPS.</span> Open the app over <code>https://</code>; using <code>http://</code> can drop your session and show a login prompt again.</li>
+            <li><span class="warn">First-time admin:</span> change the default <code>admin@123</code> password promptly.</li>
+            <li><strong>Lost a step?</strong> The unit flows forward by its bag/reference id — if Testing can’t find a unit, check it was saved in <strong>Collection</strong> first.</li>
+            <li><strong>Reactive units:</strong> never issue them; they are auto-segregated after <strong>Testing</strong>.</li>
+            <li><strong>Reports for government portals:</strong> use <strong>Reports</strong> → export Excel/PDF; NBTC/NACO compliance workflows are being aligned.</li>
+            <li><strong>Need help?</strong> Contact Sadu Consultancy Services — <code>bloodcenteros@saducs.com</code> or WhatsApp from the login screen footer.</li>
+        </ul>
+    </div>
+
+    <div class="note" style="margin-top:30px">
+        <strong>Quick start checklist for day one:</strong>
+        <ol>
+            <li>Log in (admin / admin@123) → change password.</li>
+            <li>Verify Masters: Branches, Departments, Designations, Employees, Blood Groups, Component Types, Devices, Fridges.</li>
+            <li>Register a Donor → New Collection → Testing → Components → check Inventory → Issue to a Hospital → Billing.</li>
+            <li>Run a Report and export to confirm your data is complete.</li>
+        </ol>
+    </div>
+
+    <p style="margin-top:40px; font-size:12px; color:#888;">
+        BloodCenterOS v1.0 — Developed &amp; Maintained by <strong>Sadu Consultancy Services</strong>, Pune, Maharashtra, India.
+        Open-source under the Apache License 2.0.
+    </p>
+</div>
+</body>
+</html>
