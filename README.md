@@ -18,7 +18,7 @@ Developed using **.NET 9**, **PostgreSQL**, and **Stored Procedures** (without E
 
 A step-by-step guide for blood center staff — how to use each module, where to find every menu option, and how to complete daily operations end-to-end:
 
-👉 [**BloodCenterOS User Guide — Blood Center Operations**](DeveloperHelp/user_guide_blood_center_operations.html)
+👉 [**BloodCenterOS User Guide — Blood Center Operations**](DeveloperHelp/user_guide_blood_center_operations.md)
 
 ---
 
