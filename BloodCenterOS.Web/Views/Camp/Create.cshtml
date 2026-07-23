@@ -34,14 +34,13 @@
           <label class="form-label">Organizer</label>
           <select name="OrganizerId" class="form-select">
             <option value="">Select Organizer</option>
-            <option value="1" selected="@(Model.OrganizerId == 1)">Rotary Club</option>
-            <option value="2" selected="@(Model.OrganizerId == 2)">Lions Club</option>
-            <option value="3" selected="@(Model.OrganizerId == 3)">Corporate Partner</option>
-            <option value="4" selected="@(Model.OrganizerId == 4)">Educational Institution</option>
-            <option value="5" selected="@(Model.OrganizerId == 5)">NGO</option>
-            <option value="6" selected="@(Model.OrganizerId == 6)">Religious Organization</option>
-            <option value="7" selected="@(Model.OrganizerId == 7)">Government</option>
-            <option value="8" selected="@(Model.OrganizerId == 8)">Other</option>
+            @if (ViewBag.Organizers is List<CampOrganizer> orgs)
+            {
+              @foreach (var o in orgs)
+              {
+                <option value="@o.OrganizerId" selected="@(Model.OrganizerId == o.OrganizerId)">@o.OrganizerName</option>
+              }
+            }
           </select>
         </div>
       </div>

@@ -139,6 +139,18 @@ public class ApiClient
     public Task<ApiResponse<List<Camp>>?> GetUpcomingCampsAsync() =>
         GetAsync<List<Camp>>("/api/camps/upcoming");
 
+    // ── Camp Organizers ──
+    public Task<ApiResponse<List<CampOrganizer>>?> GetCampOrganizersAsync() =>
+        GetAsync<List<CampOrganizer>>("/api/camp-organizers");
+    public Task<ApiResponse<CampOrganizer>?> GetCampOrganizerAsync(long id) =>
+        GetAsync<CampOrganizer>($"/api/camp-organizers/{id}");
+    public Task<ApiResponse<long>?> CreateCampOrganizerAsync(object body) =>
+        PostAsync<long>("/api/camp-organizers", body);
+    public Task<ApiResponse<object>?> UpdateCampOrganizerAsync(long id, object body) =>
+        PutAsync<object>($"/api/camp-organizers/{id}", body);
+    public Task<ApiResponse<object>?> DeleteCampOrganizerAsync(long id) =>
+        DeleteAsync<object>($"/api/camp-organizers/{id}");
+
     // ── Hospitals ──
     public Task<ApiResponse<List<Hospital>>?> GetHospitalsAsync() =>
         GetAsync<List<Hospital>>("/api/hospitals");

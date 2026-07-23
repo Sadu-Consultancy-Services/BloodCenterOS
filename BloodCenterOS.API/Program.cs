@@ -84,6 +84,7 @@ builder.Services.AddScoped<IFridgeRepository, FridgeRepository>();
 builder.Services.AddScoped<ICampInventoryRepository, CampInventoryRepository>();
 builder.Services.AddScoped<ICampExpenseRepository, CampExpenseRepository>();
 builder.Services.AddScoped<IComponentTypeRepository, ComponentTypeRepository>();
+builder.Services.AddScoped<ICampOrganizerRepository, CampOrganizerRepository>();
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();

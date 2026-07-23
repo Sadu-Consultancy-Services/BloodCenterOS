@@ -1,0 +1,17 @@
+@model CampOrganizer
+@{ ViewBag.Title = "Edit Camp Organizer"; ViewBag.ActiveMenu = "CampOrganizers"; }
+<div class="page-header"><div><h1 class="page-title">Edit Camp Organizer</h1></div></div>
+@if (ViewData.ModelState.ErrorCount > 0) { <div class="alert alert-danger py-2 px-3 mb-3">@Html.ValidationSummary(false)</div> }
+<div class="card">
+  <div class="card-body">
+    <form method="post">
+      <div class="mb-3"><label class="form-label">Organizer Name *</label><input asp-for="OrganizerName" class="form-control" required /></div>
+      <div class="mb-3"><label class="form-label">Contact Person</label><input asp-for="ContactPerson" class="form-control" /></div>
+      <div class="mb-3"><label class="form-label">Phone</label><input asp-for="Phone" class="form-control" /></div>
+      <div class="mb-3"><label class="form-label">Email</label><input asp-for="Email" class="form-control" type="email" /></div>
+      <div class="mb-3"><label class="form-label">Address</label><textarea asp-for="Address" class="form-control" rows="3"></textarea></div>
+      <button type="submit" class="btn btn-primary"><i class="bi bi-check"></i> Update</button>
+      <a href="@Url.Action("Index")" class="btn btn-outline-secondary">Cancel</a>
+    </form>
+  </div>
+</div>

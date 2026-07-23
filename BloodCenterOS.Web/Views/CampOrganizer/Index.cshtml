@@ -1,0 +1,30 @@
+@model List<CampOrganizer>
+@{ ViewBag.Title = "Camp Organizers"; ViewBag.ActiveMenu = "CampOrganizers"; }
+<div class="page-header">
+  <div><h1 class="page-title">Camp Organizers <small>Manage organizers</small></h1></div>
+  <a href="@Url.Action("Create")" class="btn btn-primary"><i class="bi bi-plus"></i> Add Organizer</a>
+</div>
+@if (TempData["Success"] is string s) { <div class="alert alert-success py-2 px-3 mb-3">@s</div> }
+@if (TempData["Error"] is string e) { <div class="alert alert-danger py-2 px-3 mb-3">@e</div> }
+<div class="card">
+  <div class="card-body p-0">
+    <table class="table mb-0">
+      <thead><tr><th>Name</th><th>Contact Person</th><th>Phone</th><th>Email</th><th></th></tr></thead>
+      <tbody>
+        @if (!Model.Any()) { <tr><td colspan="5" class="text-center text-muted py-3">No organizers found.</td></tr> }
+        @foreach (var item in Model)
+        {
+          <tr>
+            <td>@item.OrganizerName</td><td>@item.ContactPerson</td><td>@item.Phone</td><td>@item.Email</td>
+            <td class="text-end">
+              <a href="@Url.Action("Edit", new { id = item.OrganizerId })" class="btn btn-sm btn-outline-primary"><i class="bi bi-pencil"></i></a>
+              <form method="post" action="@Url.Action("Delete", new { id = item.OrganizerId })" style="display:inline" onsubmit="return confirm('Delete this organizer?')">
+                <button type="submit" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
+              </form>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+</div>

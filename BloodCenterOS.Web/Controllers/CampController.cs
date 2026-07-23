@@ -52,11 +52,20 @@ public class CampController : Controller
         return View(model);
     }
 
-    public IActionResult Create()
+    public async Task<IActionResult> Create()
     {
         if (!_auth.IsAuthenticated) return RedirectToAction("Login", "Account");
         ViewBag.Title = "Create Camp";
         ViewBag.ActiveMenu = "Camps";
+        try
+        {
+            var orgResp = await _api.GetCampOrganizersAsync();
+            ViewBag.Organizers = orgResp?.Data ?? new List<CampOrganizer>();
+        }
+        catch
+        {
+            ViewBag.Organizers = new List<CampOrganizer>();
+        }
         return View(new Camp());
     }
 
@@ -66,6 +75,16 @@ public class CampController : Controller
         if (!_auth.IsAuthenticated) return RedirectToAction("Login", "Account");
         ViewBag.Title = "Create Camp";
         ViewBag.ActiveMenu = "Camps";
+
+        try
+        {
+            var orgResp = await _api.GetCampOrganizersAsync();
+            ViewBag.Organizers = orgResp?.Data ?? new List<CampOrganizer>();
+        }
+        catch
+        {
+            ViewBag.Organizers = new List<CampOrganizer>();
+        }
 
         if (string.IsNullOrWhiteSpace(camp.CampName))
         {

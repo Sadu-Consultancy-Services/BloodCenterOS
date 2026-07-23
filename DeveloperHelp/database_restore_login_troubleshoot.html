@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>BloodCenterOS — Database Restore &amp; Login Troubleshooting</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
+    <style>
+        :root { --bc-primary:#c0202e; --bc-bg:#f7f8fa; --bc-text:#222; }
+        body { font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif; background:var(--bc-bg); color:var(--bc-text); line-height:1.65; margin:0; }
+        .wrap { max-width:960px; margin:0 auto; padding:32px 20px 80px; }
+        h1 { color:var(--bc-primary); border-bottom:3px solid var(--bc-primary); padding-bottom:12px; }
+        h2 { margin-top:40px; color:#333; border-left:5px solid var(--bc-primary); padding-left:12px; }
+        h3 { margin-top:28px; color:var(--bc-primary); }
+        code, pre { background:#1e1e1e; color:#d4d4d4; border-radius:5px; }
+        code { padding:2px 6px; font-size:13px; }
+        pre { padding:14px 16px; overflow:auto; font-size:13px; line-height:1.5; }
+        .card { background:#fff; border:1px solid var(--bc-primary); border-radius:10px; padding:18px 20px; margin:16px 0; }
+        .bug { background:#fde8e8; border-left:5px solid var(--bc-primary); padding:14px 18px; border-radius:8px; margin:14px 0; }
+        .fix { background:#eafaf0; border-left:5px solid #1a7f37; padding:14px 18px; border-radius:8px; margin:14px 0; }
+        .warn { background:#fff8e6; border-left:5px solid #b8860b; padding:14px 18px; border-radius:8px; margin:14px 0; }
+        table { width:100%; border-collapse:collapse; margin:12px 0; }
+        th, td { border:1px solid #ddd; padding:8px 10px; text-align:left; font-size:14px; }
+        th { background:#f0f1f3; }
+        .cmd { background:#f4f4f4; border-left:4px solid #666; padding:10px 14px; border-radius:6px; font-family:monospace; margin:8px 0; }
+        .ok { color:#1a7f37; font-weight:600; }
+        .err { color:var(--bc-primary); font-weight:600; }
+    </style>
+</head>
+<body>
+<div class="wrap">
+    <h1>Database Restore &amp; Login Troubleshooting</h1>
+    <p>This guide covers the two most common issues reported by users:</p>
+    <ol>
+        <li><strong>Cannot restore the PostgreSQL database</strong> — the dump files are in a binary format that requires <code>pg_restore</code>, not <code>psql -f</code>.</li>
+        <li><strong>Cannot login (invalid user id or password)</strong> — causes and step-by-step fixes, including verifying the seed user, checking the BCrypt hash, and resetting from the database.</li>
+    </ol>
+
+    <hr />
+
+    <!-- ──────── PART 1: DB RESTORE ──────── -->
+    <h2>Part 1 — Database Restore</h2>
+
+    <div class="bug">
+        <h3>The Problem</h3>
+        <p>The database dump files in <code>DB/</code> (e.g. <code>bloodcenter_20260722_1.sql</code>) appear to be <code>.sql</code> files, but they are actually <strong>pg_dump custom-format backups</strong> (binary format, header bytes <code>PGDMP</code>). If you run:</p>
+        <div class="cmd">psql -U postgres -d bloodcenter -f bloodcenter_20260722_1.sql</div>
+        <p>you will see garbage/binary errors or "invalid command" because <code>psql</code> expects plain-text SQL, not the custom binary format.</p>
+    </div>
+
+    <div class="fix">
+        <h3>The Fix — Use pg_restore</h3>
+        <p>Both <code>.sql</code> and <code>.backup</code> files in <code>DB/</code> are custom-format dumps. Use <strong><code>pg_restore</code></strong> to restore them:</p>
+
+        <h4>Option A: Restore directly into a database (recommended)</h4>
+        <div class="cmd">pg_restore -U postgres -h localhost -p 5432 -d bloodcenter --clean --if-exists "DB\bloodcenter_20260722_1.sql"</div>
+        <ul>
+            <li><code>--clean</code> — drops existing objects before restoring (handy for re-import).</li>
+            <li><code>--if-exists</code> — avoids errors if an object does not exist.</li>
+            <li><code>-d bloodcenter</code> — target database name. The dump includes <code>CREATE DATABASE</code> so you can also use <code>-C</code> (create database) instead of <code>-d</code>.</li>
+        </ul>
+
+        <h4>Option B: Convert to plain SQL first (for inspection)</h4>
+        <div class="cmd">pg_restore -U postgres -f restore_output.sql "DB\bloodcenter_20260722_1.sql"</div>
+        <p>This produces a plain-text <code>restore_output.sql</code> that you can read or feed to <code>psql -f</code>:</p>
+        <div class="cmd">psql -U postgres -d bloodcenter -f restore_output.sql</div>
+
+        <h4>Option C: Using the .backup file</h4>
+        <div class="cmd">pg_restore -U postgres -h localhost -p 5432 -d bloodcenter --clean --if-exists "DB\bloodcenter_20260722_1.backup"</div>
+    </div>
+
+    <div class="warn">
+        <h3>Prerequisites Check</h3>
+        <ul>
+            <li><strong>PostgreSQL must be installed.</strong> BloodCenterOS targets PostgreSQL 18.x. Download from <a href="https://www.postgresql.org/download/" target="_blank">postgresql.org</a>.</li>
+            <li><strong><code>pg_restore</code> must be on your PATH</strong> (it ships with PostgreSQL). Verify: <code>pg_restore --version</code>.</li>
+            <li><strong>Create an empty database first</strong> if the dump doesn't include <code>CREATE DATABASE</code>:</li>
+        </ul>
+        <div class="cmd">createdb -U postgres bloodcenter</div>
+    </div>
+
+    <div class="bug" style="margin-top:20px">
+        <h3>Alternative Approach — Individual SQL files (for devs)</h3>
+        <p>If pg_restore is not available or you prefer running individual scripts, you can rebuild the database from source:</p>
+        <div class="cmd">
+            psql -U postgres -d bloodcenter -f "DB\OLD\BloodCenterOS_DB_v3.1_PostgreSQL.sql"<br />
+            psql -U postgres -d bloodcenter -f "DB\OLD\seed_admin.sql"<br />
+            psql -U postgres -d bloodcenter -f "DB\OLD\seed_reference_data.sql"<br />
+            :: Then apply all fn_*.sql files in OLD/<br />
+            for %f in (DB\OLD\fn_*.sql) do psql -U postgres -d bloodcenter -f "%f"
+        </div>
+        <p>This builds the schema, seed data, and stored procedures from scratch.</p>
+    </div>
+
+    <hr />
+
+    <!-- ──────── PART 2: LOGIN ISSUES ──────── -->
+    <h2>Part 2 — Login Troubleshooting ("Invalid user id or password")</h2>
+
+    <div class="bug">
+        <h3>The Symptom</h3>
+        <p>After restoring the database and starting the API, logging in with <code>admin</code> / <code>admin@123</code> returns:</p>
+        <pre>{ "success": false, "message": "Invalid credentials" }</pre>
+    </div>
+
+    <h3>Possible Causes</h3>
+    <table>
+        <tr><th>Cause</th><th>Why</th><th>Fix</th></tr>
+        <tr>
+            <td><strong>1. Database restore failed</strong></td>
+            <td>The seed admin user never got inserted because the dump wasn't restored correctly (see Part 1).</td>
+            <td>Verify <code>pg_restore</code> completed without errors. Check if the <code>Users</code> table has data:</td>
+        </tr>
+        <tr>
+            <td><strong>2. No admin user in the table</strong></td>
+            <td>The <code>Users</code> table is empty or the admin account was not seeded.</td>
+            <td>
+                <div class="cmd">psql -U postgres -d bloodcenter -c "SELECT UserId, Username, IsActive FROM Users;"</div>
+                <p>If empty, run the seed script:</p>
+                <div class="cmd">psql -U postgres -d bloodcenter -f "DB\OLD\seed_admin.sql"</div>
+            </td>
+        </tr>
+        <tr>
+            <td><strong>3. Wrong username or password</strong></td>
+            <td>The default credentials are case-sensitive. The username is <code>admin</code> (lowercase). The password is <code>admin@123</code>.</td>
+            <td>Try typing the password manually (not copy-paste) to avoid hidden characters. Default credentials: <code>admin</code> / <code>admin@123</code>.</td>
+        </tr>
+        <tr>
+            <td><strong>4. BCrypt hash version mismatch</strong></td>
+            <td>The seed SQL uses <code>$2a$</code> BCrypt prefix, but BCrypt.Net on .NET 9 may expect <code>$2b$</code>. In most cases BCrypt.Net handles <code>$2a$</code> fine, but there are edge cases with certain builds.</td>
+            <td>
+                Generate a fresh BCrypt hash for <code>admin@123</code> and update the admin record:
+                <div class="cmd">
+                    psql -U postgres -d bloodcenter -c "UPDATE Users SET PasswordHash = '\$2b\$11\$EDuMXQ8JdPSZXOahB17Ln.rSagzAC54LhwFOhKQW1bguBo.DmzZ5i' WHERE Username = 'admin';"
+                </div>
+                <p>Or generate a new hash using an online BCrypt tool and update with that.</p>
+            </td>
+        </tr>
+        <tr>
+            <td><strong>5. Application not reading the correct database</strong></td>
+            <td>The API's <code>appsettings.json</code> might point to a different database (e.g. a test DB) or have wrong credentials.</td>
+            <td>
+                Check <code>BloodCenterOS.API/appsettings.json</code>:
+                <pre>"ConnectionStrings": {
+  "BloodCenterOS": "Host=localhost;Port=5432;Database=bloodcenter;Username=postgres;Password=postgres;..."
+}</pre>
+                <p>Ensure <code>Database=bloodcenter</code> points to the database you restored into.</p>
+            </td>
+        </tr>
+        <tr>
+            <td><strong>6. User account is inactive</strong></td>
+            <td>The <code>IsActive</code> column on the <code>Users</code> table is <code>false</code> or <code>0</code>.</td>
+            <td>
+                <div class="cmd">psql -U postgres -d bloodcenter -c "UPDATE Users SET IsActive = TRUE WHERE Username = 'admin';"</div>
+            </td>
+        </tr>
+        <tr>
+            <td><strong>7. API talking to HTTP (redirect drops auth)</strong></td>
+            <td>If the API uses <code>UseHttpsRedirection</code> and you call <code>http://localhost:5000</code>, the Bearer token is lost on the HTTPS redirect (documented in <code>major_update_20260717_1.html</code>).</td>
+            <td>Access the API over <code>https://localhost:5001</code> (HTTPS). The Web app should use <code>Api:BaseUrl: https://localhost:5001</code>.</td>
+        </tr>
+    </table>
+
+    <div class="fix">
+        <h3>Step-by-Step Login Recovery</h3>
+        <ol>
+            <li><strong>Verify the database connection.</strong> Make sure PostgreSQL is running and the API config points to the right database.</li>
+            <li><strong>Check if the admin user exists:</strong>
+                <div class="cmd">psql -U postgres -d bloodcenter -c "SELECT UserId, Username, IsActive FROM Users WHERE Username = 'admin';"</div>
+                If no rows returned, seed the admin:
+                <div class="cmd">psql -U postgres -d bloodcenter -f "DB\OLD\seed_admin.sql"</div>
+            </li>
+            <li><strong>Test the BCrypt password hash.</strong> Temporarily update the password with a known-good hash:
+                <div class="cmd">psql -U postgres -d bloodcenter -c "UPDATE Users SET PasswordHash = '\$2a\$11\$EDuMXQ8JdPSZXOahB17Ln.rSagzAC54LhwFOhKQW1bguBo.DmzZ5i' WHERE Username = 'admin';"</div>
+            </li>
+            <li><strong>Make sure the user is active:</strong>
+                <div class="cmd">psql -U postgres -d bloodcenter -c "UPDATE Users SET IsActive = TRUE WHERE Username = 'admin';"</div>
+            </li>
+            <li><strong>Restart the API</strong> and try logging in again with <code>admin</code> / <code>admin@123</code>.</li>
+            <li><strong>Still not working?</strong> Check the API logs for the specific error. Start the API and watch the console output during a login attempt — it will show the Npgsql or BCrypt exception.</li>
+        </ol>
+    </div>
+
+    <div class="warn">
+        <h3>Creating a New Admin User from Scratch (Last Resort)</h3>
+        <p>If the seed script doesn't work or the BCrypt hash is problematic, drop into the <code>psql</code> shell and create a user with a freshly generated hash:</p>
+        <pre>
+-- 1. Find a role id (e.g. Administrator = 1)
+SELECT RoleId, RoleName FROM Roles;
+
+-- 2. Find a center id
+SELECT CenterId, CenterName FROM BranchMaster;
+
+-- 3. Insert a new admin user
+--    Replace '&lt;bcrypt_hash&gt;' with a hash of your chosen password
+INSERT INTO Users (CenterId, Username, PasswordHash, PasswordSalt, Email, RoleId, IsActive, CreatedAt)
+VALUES (1, 'admin', '&lt;bcrypt_hash&gt;', '', 'admin@bloodcenteros.com', 1, TRUE, NOW());
+        </pre>
+        <p>To generate a <code>bcrypt_hash</code> on the command line (requires Python):</p>
+        <div class="cmd">pip install bcrypt && python -c "import bcrypt; print(bcrypt.hashpw(b'admin@123', bcrypt.gensalt(11)).decode())"</div>
+        <p>Or use any online BCrypt generator (cost factor 11).</p>
+    </div>
+
+    <hr />
+
+    <h2>Need Further Help?</h2>
+    <div class="card">
+        <ul>
+            <li>Check the <a href="user_guide_blood_center_operations.html">BloodCenterOS User Guide</a> for general operations.</li>
+            <li>Review <a href="major_update_20260717_1.html">Major Update 2026-07-17</a> for the HTTP/HTTPS redirect issue.</li>
+            <li>Contact <strong>Sadu Consultancy Services</strong>: <code>bloodcenteros@saducs.com</code></li>
+        </ul>
+    </div>
+
+    <p style="margin-top:40px; font-size:12px; color:#888;">
+        BloodCenterOS v1.0 — Developed &amp; Maintained by Sadu Consultancy Services, Pune, Maharashtra, India.
+    </p>
+</div>
+</body>
+</html>
