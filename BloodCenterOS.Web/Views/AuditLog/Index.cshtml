@@ -1,0 +1,48 @@
+@model List<AuditLog>
+@{ ViewBag.Title = "Audit Logs"; ViewBag.ActiveMenu = "AuditLogs"; }
+<div class="page-header">
+  <div><h1 class="page-title">Audit Logs <small>Track all data changes</small></h1></div>
+</div>
+<div class="card">
+  <div class="card-body">
+    <form method="get" class="row g-2 align-items-end mb-3">
+      <div class="col-auto">
+        <label class="form-label">Table</label>
+        <input type="text" name="tableName" class="form-control" placeholder="e.g. Device" value="@ViewBag.SelectedTable" />
+      </div>
+      <div class="col-auto">
+        <label class="form-label">Limit</label>
+        <input type="number" name="limit" class="form-control" style="width:100px" value="@ViewBag.Limit" />
+      </div>
+      <div class="col-auto">
+        <button type="submit" class="btn btn-primary"><i class="bi bi-search"></i> Filter</button>
+        <a href="@Url.Action("Index")" class="btn btn-outline-secondary">Clear</a>
+      </div>
+    </form>
+  </div>
+  <div class="card-body p-0">
+    <table class="table table-striped mb-0">
+      <thead><tr><th>#</th><th>Table</th><th>Action</th><th>Record</th><th>User</th><th>Details</th><th>IP</th><th>Time</th></tr></thead>
+      <tbody>
+        @if (!Model.Any()) { <tr><td colspan="8" class="text-center text-muted py-3">No audit entries found.</td></tr> }
+        @foreach (var item in Model)
+        {
+          <tr>
+            <td>@item.AuditLogId</td>
+            <td><span class="badge bg-secondary">@item.TableName</span></td>
+            <td>
+              <span class="badge bg-@(item.Action == "INSERT" ? "success" : item.Action == "UPDATE" ? "warning" : "danger")">
+                @item.Action
+              </span>
+            </td>
+            <td>@item.RecordId</td>
+            <td>@item.UserId</td>
+            <td style="max-width:300px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="@item.ActionDetails">@item.ActionDetails</td>
+            <td>@item.IpAddress</td>
+            <td>@item.CreatedAt.ToString("yyyy-MM-dd HH:mm")</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+</div>

@@ -1,5 +1,6 @@
 using System.Text;
 using BloodCenterOS.API.Data;
+using BloodCenterOS.API.Filters;
 using BloodCenterOS.API.Repositories;
 using BloodCenterOS.API.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -85,8 +86,14 @@ builder.Services.AddScoped<ICampInventoryRepository, CampInventoryRepository>();
 builder.Services.AddScoped<ICampExpenseRepository, CampExpenseRepository>();
 builder.Services.AddScoped<IComponentTypeRepository, ComponentTypeRepository>();
 builder.Services.AddScoped<ICampOrganizerRepository, CampOrganizerRepository>();
+builder.Services.AddScoped<IAuditService, AuditService>();
+builder.Services.AddScoped<AuditLogFilter>();
+builder.Services.AddHttpContextAccessor();
 
-builder.Services.AddControllers();
+builder.Services.AddControllers(options =>
+{
+    options.Filters.AddService<AuditLogFilter>();
+});
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {

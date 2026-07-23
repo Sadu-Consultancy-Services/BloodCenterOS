@@ -19,4 +19,11 @@ public class AuditLogController : ControllerBase
         var data = await _repo.GetAsync(userId, tableName, limit);
         return Ok(ApiResponse<IEnumerable<AuditLog>>.Ok(data));
     }
+
+    [HttpPost]
+    public async Task<IActionResult> Create([FromBody] AuditLog entry)
+    {
+        await _repo.CreateAsync(entry);
+        return Ok(ApiResponse<object>.Ok(new { }, "Audit log created"));
+    }
 }

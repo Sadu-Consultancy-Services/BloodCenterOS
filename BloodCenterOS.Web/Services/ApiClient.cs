@@ -485,4 +485,13 @@ public class ApiClient
 
     public Task<ApiResponse<object>?> DeleteComponentTypeAsync(long id) =>
         DeleteAsync<object>($"/api/component-types/{id}");
+
+    // ── Audit Logs ──
+    public Task<ApiResponse<List<AuditLog>>?> GetAuditLogsAsync(long? userId = null, string? tableName = null, int limit = 100)
+    {
+        var q = $"/api/audit-logs?limit={limit}";
+        if (userId.HasValue) q += $"&userId={userId}";
+        if (!string.IsNullOrEmpty(tableName)) q += $"&tableName={Uri.EscapeDataString(tableName)}";
+        return GetAsync<List<AuditLog>>(q);
+    }
 }
