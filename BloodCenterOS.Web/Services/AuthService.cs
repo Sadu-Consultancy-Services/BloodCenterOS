@@ -6,7 +6,7 @@ namespace BloodCenterOS.Web.Services;
 public interface IWebAuthService
 {
     Task<bool> LoginAsync(string username, string password);
-    void Logout();
+    Task LogoutAsync();
     bool IsAuthenticated { get; }
     string? DisplayName { get; }
     string? Role { get; }
@@ -32,14 +32,18 @@ public class WebAuthService : IWebAuthService
         var result = await _api.LoginAsync(new LoginRequest { UserName = username, Password = password });
         if (result is { Success: true, Data: not null })
         {
-            _tokenStore.Set(result.Data.Token, result.Data.DisplayName, result.Data.UserId, result.Data.Role);
+            _tokenStore.Set(result.Data.Token, result.Data.DisplayName, result.Data.UserId, result.Data.Role, result.Data.LoginHistoryId);
             return true;
         }
         return false;
     }
 
-    public void Logout()
+    public async Task LogoutAsync()
     {
+        if (_tokenStore.LoginHistoryId > 0)
+        {
+            try { await _api.LogoutAsync(_tokenStore.LoginHistoryId); } catch { }
+        }
         _tokenStore.Clear();
     }
 }

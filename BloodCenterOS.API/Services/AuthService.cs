@@ -1,5 +1,6 @@
 using System.Data;
 using BloodCenterOS.API.Data;
+using BloodCenterOS.API.Repositories;
 using BloodCenterOS.Core.Models;
 using Dapper;
 
@@ -14,11 +15,16 @@ public class AuthService : IAuthService
 {
     private readonly IDbConnectionFactory _db;
     private readonly IJwtService _jwt;
+    private readonly ILoginHistoryRepository _loginHistory;
+    private readonly IHttpContextAccessor _http;
 
-    public AuthService(IDbConnectionFactory db, IJwtService jwt)
+    public AuthService(IDbConnectionFactory db, IJwtService jwt,
+        ILoginHistoryRepository loginHistory, IHttpContextAccessor http)
     {
         _db = db;
         _jwt = jwt;
+        _loginHistory = loginHistory;
+        _http = http;
     }
 
     public async Task<LoginResponse?> LoginAsync(LoginRequest request)
@@ -43,6 +49,21 @@ public class AuthService : IAuthService
             "SELECT fn_user_update_login(@p_user_id)",
             new { p_user_id = (long)user.userid });
 
+        var ctx = _http.HttpContext;
+        var ip = ctx?.Connection.RemoteIpAddress;
+        var ipStr = ip != null
+            ? (ip.AddressFamily == System.Net.Sockets.AddressFamily.InterNetworkV6
+                ? (ip.IsIPv4MappedToIPv6 ? ip.MapToIPv4().ToString()
+                    : ip.Equals(System.Net.IPAddress.IPv6Loopback) ? "127.0.0.1" : ip.ToString())
+                : ip.ToString())
+            : null;
+
+        var loginId = await _loginHistory.CreateAsync(
+            (long)user.userid,
+            user.centerid as long?,
+            ipStr,
+            ctx?.Request.Headers.UserAgent.ToString());
+
         return new LoginResponse
         {
             Token = _jwt.GenerateToken(
@@ -52,7 +73,8 @@ public class AuthService : IAuthService
                 user.centerid as long? ?? 0),
             DisplayName = (string)user.displayname,
             UserId = (long)user.userid,
-            Role = role ?? "User"
+            Role = role ?? "User",
+            LoginHistoryId = loginId
         };
     }
 }

@@ -1,3 +1,5 @@
+using System.Net;
+using System.Net.Sockets;
 using System.Security.Claims;
 using BloodCenterOS.API.Repositories;
 using BloodCenterOS.Core.Models;
@@ -33,11 +35,24 @@ public class AuditService : IAuditService
             ActionDetails = details,
             OldValue = oldValue,
             NewValue = newValue,
-            IpAddress = ctx.Connection.RemoteIpAddress?.ToString(),
+            IpAddress = NormalizeIp(ctx.Connection.RemoteIpAddress),
             UserAgent = ctx.Request.Headers.UserAgent.ToString(),
             CreatedAt = DateTime.UtcNow
         };
 
         await _repo.CreateAsync(entry);
+    }
+
+    private static string? NormalizeIp(IPAddress? address)
+    {
+        if (address == null) return null;
+        if (address.AddressFamily == AddressFamily.InterNetworkV6)
+        {
+            if (address.IsIPv4MappedToIPv6)
+                address = address.MapToIPv4();
+            else if (address.Equals(IPAddress.IPv6Loopback))
+                address = IPAddress.Loopback;
+        }
+        return address.ToString();
     }
 }

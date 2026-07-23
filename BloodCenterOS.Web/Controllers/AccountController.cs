@@ -48,9 +48,9 @@ public class AccountController : Controller
         return View();
     }
 
-    public IActionResult Logout()
+    public async Task<IActionResult> Logout()
     {
-        _authService.Logout();
+        await _authService.LogoutAsync();
         foreach (var key in new[] { "bc_token", "bc_name", "bc_userid", "bc_role" })
             Response.Cookies.Delete(key);
         return RedirectToAction("Login");

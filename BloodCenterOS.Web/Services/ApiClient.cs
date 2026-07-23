@@ -103,6 +103,9 @@ public class ApiClient
     public Task<ApiResponse<LoginResponse>?> LoginAsync(LoginRequest req) =>
         PostAsync<LoginResponse>("/api/auth/login", req);
 
+    public Task<ApiResponse<object>?> LogoutAsync(long loginId) =>
+        PostAsync<object>($"/api/login-history/{loginId}/logout");
+
     // ── Donors ──
     public Task<ApiResponse<Donor>?> CreateDonorAsync(Donor donor) =>
         PostAsync<Donor>("/api/donors", donor);
@@ -155,8 +158,17 @@ public class ApiClient
     public Task<ApiResponse<List<Hospital>>?> GetHospitalsAsync() =>
         GetAsync<List<Hospital>>("/api/hospitals");
 
+    public Task<ApiResponse<Hospital>?> GetHospitalAsync(long id) =>
+        GetAsync<Hospital>($"/api/hospitals/{id}");
+
     public Task<ApiResponse<Hospital>?> CreateHospitalAsync(Hospital hospital) =>
         PostAsync<Hospital>("/api/hospitals", hospital);
+
+    public Task<ApiResponse<object>?> UpdateHospitalAsync(long id, object body) =>
+        PutAsync<object>($"/api/hospitals/{id}", body);
+
+    public Task<ApiResponse<object>?> DeleteHospitalAsync(long id) =>
+        DeleteAsync<object>($"/api/hospitals/{id}");
 
     // ── Collections ──
     public Task<ApiResponse<List<Collection>>?> GetCollectionsAsync() =>
@@ -493,5 +505,15 @@ public class ApiClient
         if (userId.HasValue) q += $"&userId={userId}";
         if (!string.IsNullOrEmpty(tableName)) q += $"&tableName={Uri.EscapeDataString(tableName)}";
         return GetAsync<List<AuditLog>>(q);
+    }
+
+    // ── Login History ──
+    public Task<ApiResponse<List<LoginHistory>>?> GetLoginHistoryAsync(long? userId = null, DateTime? fromDate = null, DateTime? toDate = null, int limit = 200)
+    {
+        var q = $"/api/login-history?limit={limit}";
+        if (userId.HasValue) q += $"&userId={userId}";
+        if (fromDate.HasValue) q += $"&fromDate={fromDate:yyyy-MM-ddTHH:mm:ss}";
+        if (toDate.HasValue) q += $"&toDate={toDate:yyyy-MM-ddTHH:mm:ss}";
+        return GetAsync<List<LoginHistory>>(q);
     }
 }

@@ -114,6 +114,7 @@
           <li class="nav-item"><a class="nav-link @(ViewBag.ActiveMenu == "Users" ? "active" : "")" href="@Url.Action("Index","Users")"><span class="nav-text">Users</span></a></li>
           <li class="nav-item"><a class="nav-link @(ViewBag.ActiveMenu == "Roles" ? "active" : "")" href="@Url.Action("Index","Roles")"><span class="nav-text">Roles</span></a></li>
           <li class="nav-item"><a class="nav-link @(ViewBag.ActiveMenu == "AuditLogs" ? "active" : "")" href="@Url.Action("Index","AuditLog")"><span class="nav-text">Audit Logs</span></a></li>
+          <li class="nav-item"><a class="nav-link @(ViewBag.ActiveMenu == "LoginHistory" ? "active" : "")" href="@Url.Action("Index","LoginHistory")"><span class="nav-text">Login History</span></a></li>
           <li class="nav-item"><a class="nav-link" href="@Url.Action("Settings","Home")"><span class="nav-text">Settings</span></a></li>
         </ul>
       </li>

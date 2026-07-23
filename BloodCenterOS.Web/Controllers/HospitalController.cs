@@ -1,3 +1,4 @@
+using System.Text;
 using BloodCenterOS.Core.Models;
 using BloodCenterOS.Web.Models;
 using BloodCenterOS.Web.Services;
@@ -30,20 +31,26 @@ public class HospitalController : Controller
             if (result?.Success == true && result.Data != null)
                 items = result.Data;
         }
-        catch { /* fall back */ }
-
-        if (!items.Any())
-        {
-            items = new List<Hospital>
-            {
-                new() { HospitalId = 1, HospitalName = "City General Hospital", Address = "123 MG Road, Mumbai", ContactPerson = "Dr. Sharma", Phone = "022-24567890", Email = "contact@citygen.in" },
-                new() { HospitalId = 2, HospitalName = "Apex Medical Center", Address = "45 Park Avenue, Delhi", ContactPerson = "Dr. Verma", Phone = "011-23456789", Email = "info@apexmed.in" },
-                new() { HospitalId = 3, HospitalName = "Sunrise Hospital & Research", Address = "88 Lake View Road, Bangalore", ContactPerson = "Dr. Nair", Phone = "080-34567890", Email = "admin@sunrise.in" },
-                new() { HospitalId = 4, HospitalName = "Lifeline Super Speciality", Address = "12 Civil Lines, Pune", ContactPerson = "Dr. Joshi", Phone = "020-45678901", Email = "contact@lifeline.in" },
-            };
-        }
+        catch { /* fall back to empty */ }
 
         return View(items);
+    }
+
+    public async Task<IActionResult> Details(long id)
+    {
+        if (!_auth.IsAuthenticated) return RedirectToAction("Login", "Account");
+        ViewBag.ActiveMenu = "Hospitals";
+
+        try
+        {
+            var result = await _api.GetHospitalAsync(id);
+            if (result?.Success == true && result.Data != null)
+                return View(result.Data);
+        }
+        catch { }
+
+        TempData["Error"] = "Hospital not found";
+        return RedirectToAction("Index");
     }
 
     public IActionResult Create()
@@ -84,4 +91,100 @@ public class HospitalController : Controller
 
         return View(hospital);
     }
+
+    public async Task<IActionResult> Edit(long id)
+    {
+        if (!_auth.IsAuthenticated) return RedirectToAction("Login", "Account");
+        ViewBag.Title = "Edit Hospital";
+        ViewBag.ActiveMenu = "Hospitals";
+
+        try
+        {
+            var result = await _api.GetHospitalAsync(id);
+            if (result?.Success == true && result.Data != null)
+                return View(result.Data);
+        }
+        catch { }
+
+        TempData["Error"] = "Hospital not found";
+        return RedirectToAction("Index");
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> Edit(long id, Hospital hospital)
+    {
+        if (!_auth.IsAuthenticated) return RedirectToAction("Login", "Account");
+        ViewBag.Title = "Edit Hospital";
+        ViewBag.ActiveMenu = "Hospitals";
+
+        if (string.IsNullOrWhiteSpace(hospital.HospitalName))
+        {
+            ModelState.AddModelError("HospitalName", "Hospital name is required");
+            return View(hospital);
+        }
+
+        try
+        {
+            var result = await _api.UpdateHospitalAsync(id, hospital);
+            if (result?.Success == true)
+            {
+                TempData["Success"] = "Hospital updated successfully";
+                return RedirectToAction("Index");
+            }
+            ModelState.AddModelError("", result?.Message ?? "Failed to update hospital");
+        }
+        catch
+        {
+            ModelState.AddModelError("", "API unavailable. Unable to update hospital.");
+        }
+
+        return View(hospital);
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> Delete(long id)
+    {
+        if (!_auth.IsAuthenticated) return RedirectToAction("Login", "Account");
+
+        try
+        {
+            var result = await _api.DeleteHospitalAsync(id);
+            if (result?.Success == true)
+                TempData["Success"] = "Hospital deleted successfully";
+            else
+                TempData["Error"] = result?.Message ?? "Failed to delete hospital";
+        }
+        catch
+        {
+            TempData["Error"] = "API unavailable. Unable to delete hospital.";
+        }
+
+        return RedirectToAction("Index");
+    }
+
+    public async Task<IActionResult> Export()
+    {
+        if (!_auth.IsAuthenticated) return RedirectToAction("Login", "Account");
+
+        var items = new List<Hospital>();
+        try
+        {
+            var result = await _api.GetHospitalsAsync();
+            if (result?.Success == true && result.Data != null)
+                items = result.Data;
+        }
+        catch { }
+
+        var sb = new StringBuilder();
+        sb.AppendLine("HospitalId,HospitalName,HospitalCode,Address,ContactPerson,Phone,Email,CreatedAt");
+        foreach (var h in items)
+        {
+            sb.AppendLine($"{h.HospitalId},{EscapeCsv(h.HospitalName)},{EscapeCsv(h.HospitalCode)},{EscapeCsv(h.Address)},{EscapeCsv(h.ContactPerson)},{EscapeCsv(h.Phone)},{EscapeCsv(h.Email)},{h.CreatedAt:yyyy-MM-dd HH:mm}");
+        }
+
+        return File(Encoding.UTF8.GetBytes(sb.ToString()), "text/csv", $"hospitals_{DateTime.Now:yyyyMMdd}.csv");
+    }
+
+    private static string EscapeCsv(string? value) =>
+        string.IsNullOrEmpty(value) ? "" : $"\"{value.Replace("\"", "\"\"")}\"";
 }

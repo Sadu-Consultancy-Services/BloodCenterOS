@@ -13,6 +13,15 @@ public class LoginHistoryController : ControllerBase
     private readonly ILoginHistoryRepository _repo;
     public LoginHistoryController(ILoginHistoryRepository repo) => _repo = repo;
 
+    [HttpGet]
+    public async Task<IActionResult> GetFiltered(
+        [FromQuery] long? userId, [FromQuery] DateTime? fromDate,
+        [FromQuery] DateTime? toDate, [FromQuery] int limit = 200)
+    {
+        var data = await _repo.GetFilteredAsync(userId, fromDate, toDate, limit);
+        return Ok(ApiResponse<IEnumerable<LoginHistory>>.Ok(data));
+    }
+
     [HttpPost("{loginId}/logout")]
     public async Task<IActionResult> Logout(long loginId)
     {

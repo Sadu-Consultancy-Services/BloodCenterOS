@@ -12,4 +12,5 @@ public class LoginResponse
     public string DisplayName { get; set; } = string.Empty;
     public long UserId { get; set; }
     public string Role { get; set; } = string.Empty;
+    public long LoginHistoryId { get; set; }
 }

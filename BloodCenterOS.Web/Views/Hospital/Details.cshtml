@@ -1,0 +1,29 @@
+@model Hospital
+@{ ViewBag.Title = "Hospital Details"; ViewBag.ActiveMenu = "Hospitals"; }
+<div class="page-header">
+  <div><h1 class="page-title">@Model.HospitalName <small>Hospital details</small></h1></div>
+  <div class="d-flex gap-2">
+    <a href="@Url.Action("Edit", new { id = Model.HospitalId })" class="btn btn-primary"><i class="bi bi-pencil"></i> Edit</a>
+    <a href="@Url.Action("Index")" class="btn btn-outline-secondary"><i class="bi bi-arrow-left"></i> Back</a>
+  </div>
+</div>
+<div class="row g-3">
+  <div class="col-md-6">
+    <div class="card"><div class="card-header"><h6>General Info</h6></div>
+      <div class="card-body">
+        <div class="mb-2"><label class="text-muted small">Hospital Code</label><div>@(Model.HospitalCode ?? "—")</div></div>
+        <div class="mb-2"><label class="text-muted small">Address</label><div>@(Model.Address ?? "—")</div></div>
+        <div class="mb-0"><label class="text-muted small">Registered On</label><div>@Model.CreatedAt.ToString("dd-MMM-yyyy HH:mm")</div></div>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-6">
+    <div class="card"><div class="card-header"><h6>Contact</h6></div>
+      <div class="card-body">
+        <div class="mb-2"><label class="text-muted small">Contact Person</label><div>@(Model.ContactPerson ?? "—")</div></div>
+        <div class="mb-2"><label class="text-muted small">Phone</label><div>@(Model.Phone ?? "—")</div></div>
+        <div class="mb-0"><label class="text-muted small">Email</label><div>@(Model.Email ?? "—")</div></div>
+      </div>
+    </div>
+  </div>
+</div>

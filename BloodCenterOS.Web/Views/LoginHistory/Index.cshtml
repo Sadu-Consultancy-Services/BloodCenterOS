@@ -1,0 +1,62 @@
+@model List<LoginHistory>
+@{ ViewBag.Title = "Login History"; ViewBag.ActiveMenu = "LoginHistory"; }
+<div class="page-header">
+  <div><h1 class="page-title">Login History <small>Track user sessions</small></h1></div>
+</div>
+<div class="card">
+  <div class="card-body">
+    <form method="get" class="row g-2 align-items-end">
+      <div class="col-auto">
+        <label class="form-label">User ID</label>
+        <input type="number" name="userId" class="form-control" placeholder="User ID" style="width:110px" value="@ViewBag.FilterUserId" />
+      </div>
+      <div class="col-auto">
+        <label class="form-label">From</label>
+        <input type="date" name="fromDate" class="form-control" value="@(ViewBag.FromDate?.ToString("yyyy-MM-dd"))" />
+      </div>
+      <div class="col-auto">
+        <label class="form-label">To</label>
+        <input type="date" name="toDate" class="form-control" value="@(ViewBag.ToDate?.ToString("yyyy-MM-dd"))" />
+      </div>
+      <div class="col-auto">
+        <label class="form-label">Limit</label>
+        <input type="number" name="limit" class="form-control" style="width:90px" value="@ViewBag.Limit" />
+      </div>
+      <div class="col-auto">
+        <button type="submit" class="btn btn-primary"><i class="bi bi-search"></i> Filter</button>
+        <a href="@Url.Action("Index")" class="btn btn-outline-secondary">Clear</a>
+      </div>
+    </form>
+  </div>
+  <div class="card-body p-0">
+    <table class="table table-striped mb-0">
+      <thead><tr><th>#</th><th>User</th><th>Display Name</th><th>Login At</th><th>Logout At</th><th>Duration</th><th>IP Address</th><th>Device / Browser</th></tr></thead>
+      <tbody>
+        @if (!Model.Any()) { <tr><td colspan="8" class="text-center text-muted py-3">No login records found.</td></tr> }
+        @foreach (var item in Model)
+        {
+          <tr>
+            <td>@item.LoginHistoryId</td>
+            <td>@item.UserName <span class="text-muted">(#@item.UserId)</span></td>
+            <td>@item.DisplayName</td>
+            <td>@item.LoginAt.ToString("yyyy-MM-dd HH:mm:ss")</td>
+            <td>@(item.LogoutAt?.ToString("yyyy-MM-dd HH:mm:ss") ?? "—")</td>
+            <td>
+              @if (item.LogoutAt.HasValue)
+              {
+                var d = item.LogoutAt.Value - item.LoginAt;
+                <span>@(d.Days > 0 ? $"{d.Days}d " : "")@d.Hours.ToString("00"):@d.Minutes.ToString("00"):@d.Seconds.ToString("00")</span>
+              }
+              else
+              {
+                <span class="badge bg-success">Active</span>
+              }
+            </td>
+            <td>@item.IpAddress</td>
+            <td style="max-width:250px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="@item.UserAgent">@(item.UserAgent ?? "—")</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+</div>
