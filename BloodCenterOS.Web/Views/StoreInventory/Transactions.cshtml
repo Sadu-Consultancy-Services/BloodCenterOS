@@ -1,0 +1,59 @@
+@model List<InvTransaction>
+
+@{
+    ViewData["Title"] = "Inventory Transactions";
+    var items = ViewBag.Items as List<InvItem> ?? new();
+}
+
+<div class="container-fluid px-4">
+    <h1 class="mt-4">Inventory Transactions</h1>
+
+    <form method="get" class="row g-3 mb-3">
+        <div class="col-auto">
+            <select name="itemId" class="form-select">
+                @foreach (var item in items)
+                {
+                    <option value="@item.ItemId" selected="@(ViewBag.SelectedItemId == item.ItemId)">@item.ItemName</option>
+                }
+            </select>
+        </div>
+        <div class="col-auto"><input type="date" name="from" class="form-control" value="@ViewBag.From?.ToString("yyyy-MM-dd")" /></div>
+        <div class="col-auto"><input type="date" name="to" class="form-control" value="@ViewBag.To?.ToString("yyyy-MM-dd")" /></div>
+        <div class="col-auto"><button type="submit" class="btn btn-primary">Filter</button></div>
+    </form>
+
+    <div class="card mb-4">
+        <div class="card-header"><i class="fas fa-exchange-alt me-1"></i> Transaction Log</div>
+        <div class="card-body">
+            <table class="table table-bordered table-hover">
+                <thead><tr>
+                    <th>#</th>
+                    <th>Item</th>
+                    <th>Type</th>
+                    <th>Qty</th>
+                    <th>Date</th>
+                    <th>Description</th>
+                </tr></thead>
+                <tbody>
+                    @foreach (var t in Model)
+                    {
+                        <tr>
+                            <td>@t.TransId</td>
+                            <td>@t.ItemName</td>
+                            <td>
+                                @if (t.TransTyp == "I") { <span class="badge bg-success">Inward</span> }
+                                else { <span class="badge bg-danger">Outward</span> }
+                            </td>
+                            <td class="fw-bold @(t.TransQty > 0 ? "text-success" : "text-danger")">@(t.TransQty > 0 ? "+" : "")@t.TransQty</td>
+                            <td>@t.TransDate.ToString("dd/MM/yyyy HH:mm")</td>
+                            <td>@t.TransDesc</td>
+                        </tr>
+                    }
+                    @if (!Model.Any()) { <tr><td colspan="6" class="text-center">No transactions</td></tr> }
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <a asp-action="Index" class="btn btn-secondary">Back</a>
+</div>

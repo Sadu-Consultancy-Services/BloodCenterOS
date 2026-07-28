@@ -1,0 +1,46 @@
+@model List<DiscardRecord>
+
+@{
+    ViewData["Title"] = "Autoclave Register";
+}
+
+<div class="container-fluid px-4">
+    <h1 class="mt-4">Autoclave Register</h1>
+
+    @if (TempData["Success"] is string s) { <div class="alert alert-success">@s</div> }
+    @if (TempData["Error"] is string e) { <div class="alert alert-danger">@e</div> }
+
+    <div class="card mb-4">
+        <div class="card-header"><i class="fas fa-thermometer-half me-1"></i> Sterilization Records</div>
+        <div class="card-body">
+            <table class="table table-bordered table-hover">
+                <thead><tr>
+                    <th>#</th>
+                    <th>Component</th>
+                    <th>Type</th>
+                    <th>Bag #</th>
+                    <th>Discard Date</th>
+                    <th>Start Time</th>
+                    <th>End Time</th>
+                </tr></thead>
+                <tbody>
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <td>@item.DiscardId</td>
+                            <td>@item.ComponentCode</td>
+                            <td>@item.ComponentType</td>
+                            <td>@item.BagNo</td>
+                            <td>@item.DiscardedAt.ToString("dd/MM/yyyy")</td>
+                            <td>@item.AutoClaveStartTime?.ToString("dd/MM/yyyy HH:mm")</td>
+                            <td>@item.AutoClaveEndTime?.ToString("dd/MM/yyyy HH:mm")</td>
+                        </tr>
+                    }
+                    @if (!Model.Any()) { <tr><td colspan="7" class="text-center">No autoclave records found</td></tr> }
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <a asp-action="Index" class="btn btn-secondary">Back to Discard Register</a>
+</div>

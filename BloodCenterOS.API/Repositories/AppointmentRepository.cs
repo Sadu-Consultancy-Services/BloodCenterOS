@@ -1,4 +1,5 @@
 using BloodCenterOS.API.Data;
+using BloodCenterOS.Core.Models;
 using Dapper;
 
 namespace BloodCenterOS.API.Repositories;
@@ -20,5 +21,13 @@ public class AppointmentRepository : IAppointmentRepository
     {
         using var conn = _db.CreateConnection();
         await conn.ExecuteAsync("SELECT * FROM fn_appointment_update_status(@p_id, @p_status)", new { p_id = id, p_status = status });
+    }
+
+    public async Task<IEnumerable<DonorAppointment>> GetAllAsync(long centerId, long? donorId)
+    {
+        using var conn = _db.CreateConnection();
+        return await conn.QueryAsync<DonorAppointment>(
+            "SELECT * FROM fn_appointment_get_all(@p_center_id, @p_donor_id)",
+            new { p_center_id = centerId, p_donor_id = donorId });
     }
 }

@@ -1,0 +1,70 @@
+@model List<CrossMatchEntry>
+
+@{
+    ViewData["Title"] = "Cross Match Register";
+}
+
+<div class="container-fluid px-4">
+    <h1 class="mt-4">Cross Match Register</h1>
+
+    <form method="get" class="row g-3 mb-3">
+        <div class="col-auto">
+            <select name="status" class="form-select">
+                <option value="">All Status</option>
+                <option value="Pending" selected="@(ViewBag.Status == "Pending")">Pending</option>
+                <option value="Pass" selected="@(ViewBag.Status == "Pass")">Pass</option>
+                <option value="Reject" selected="@(ViewBag.Status == "Reject")">Reject</option>
+            </select>
+        </div>
+        <div class="col-auto">
+            <input type="date" name="from" class="form-control" value="@ViewBag.From?.ToString("yyyy-MM-dd")" />
+        </div>
+        <div class="col-auto">
+            <input type="date" name="to" class="form-control" value="@ViewBag.To?.ToString("yyyy-MM-dd")" />
+        </div>
+        <div class="col-auto">
+            <button type="submit" class="btn btn-primary">Filter</button>
+        </div>
+        <div class="col-auto">
+            <a asp-action="Create" class="btn btn-success">Start Cross Match</a>
+        </div>
+    </form>
+
+    <div class="card mb-4">
+        <div class="card-header"><i class="fas fa-vials me-1"></i> Cross Match Records</div>
+        <div class="card-body">
+            <table class="table table-bordered table-hover">
+                <thead><tr>
+                    <th>#</th>
+                    <th>Patient</th>
+                    <th>Blood Group</th>
+                    <th>Component</th>
+                    <th>Units</th>
+                    <th>Result</th>
+                    <th>Performed At</th>
+                    <th></th>
+                </tr></thead>
+                <tbody>
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <td>@item.CrossMatchEntryId</td>
+                            <td>@item.PatientName</td>
+                            <td>@item.RequiredBloodGroup</td>
+                            <td>@item.ComponentType</td>
+                            <td>@item.UnitsReserved</td>
+                            <td>
+                                @if (item.OverallResult == "Pass") { <span class="badge bg-success">Pass</span> }
+                                else if (item.OverallResult == "Reject") { <span class="badge bg-danger">Reject</span> }
+                                else { <span class="badge bg-warning">@item.OverallResult</span> }
+                            </td>
+                            <td>@item.PerformedAt?.ToString("dd/MM/yyyy HH:mm")</td>
+                            <td><a asp-action="Details" asp-route-id="@item.CrossMatchEntryId" class="btn btn-sm btn-info">Details</a></td>
+                        </tr>
+                    }
+                    @if (!Model.Any()) { <tr><td colspan="8" class="text-center">No cross-match records found</td></tr> }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,26 @@
+@model List<ReplacementDonor>
+@{ ViewBag.Title = "Replacement Donors"; ViewBag.ActiveMenu = "ReplacementDonors"; }
+<div class="page-header">
+  <div><h1 class="page-title">Replacement Donors <small>Track patient-requested donations</small></h1></div>
+  <a href="@Url.Action("Create")" class="btn btn-primary"><i class="bi bi-plus"></i> Register Donor</a>
+</div>
+@if (TempData["Success"] is string s) { <div class="alert alert-success py-2 px-3 mb-3">@s</div> }
+@if (TempData["Error"] is string e) { <div class="alert alert-danger py-2 px-3 mb-3">@e</div> }
+<div class="card">
+  <div class="card-body p-0">
+    <table class="table mb-0">
+      <thead><tr><th>Request ID</th><th>Donor ID</th><th>Donated At</th></tr></thead>
+      <tbody>
+        @if (!Model.Any()) { <tr><td colspan="3" class="text-center text-muted py-3">No replacement donors.</td></tr> }
+        @foreach (var item in Model)
+        {
+          <tr>
+            <td>@item.PatientRequestId</td>
+            <td>@item.DonorId</td>
+            <td>@item.DonatedAt?.ToString("yyyy-MM-dd HH:mm")</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+</div>

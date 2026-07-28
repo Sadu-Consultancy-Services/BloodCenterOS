@@ -17,6 +17,13 @@ public class AppointmentController : ControllerBase
     private long CenterId => long.TryParse(User.FindFirst("CenterId")?.Value, out var id) ? id : 0;
     private long UserId => long.TryParse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value, out var id) ? id : 0;
 
+    [HttpGet]
+    public async Task<IActionResult> GetAll([FromQuery] long? donorId)
+    {
+        var data = await _repo.GetAllAsync(CenterId, donorId);
+        return Ok(ApiResponse<IEnumerable<DonorAppointment>>.Ok(data));
+    }
+
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] CreateAppointmentRequest request)
     {

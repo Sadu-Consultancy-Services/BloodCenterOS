@@ -1,61 +1,74 @@
 @model List<Billing>
+
 @{
-  ViewBag.Title = "Billing";
-  ViewBag.ActiveMenu = "Billing";
-  var total = Model.Sum(b => b.TotalAmount ?? 0);
-  var paid = Model.Where(b => b.PaymentStatus == "Paid").Sum(b => b.TotalAmount ?? 0);
-  var outstanding = Model.Where(b => b.PaymentStatus != "Paid").Sum(b => b.TotalAmount ?? 0);
+    ViewData["Title"] = "Billing";
+    var total = Model.Sum(b => b.TotalAmount ?? 0);
+    var paid = Model.Where(b => b.PaymentStatus == "Paid").Sum(b => b.TotalAmount ?? 0);
+    var outstanding = Model.Where(b => b.PaymentStatus != "Paid").Sum(b => b.TotalAmount ?? 0);
 }
 
-<div class="page-header">
-  <div>
-    <h1 class="page-title">Billing <small>Invoice &amp; payment management</small></h1>
-  </div>
-  <div class="d-flex gap-2">
-    <a href="@Url.Action("Create")" class="btn btn-primary"><i class="bi bi-plus-lg"></i> New Invoice</a>
-  </div>
-</div>
+<div class="container-fluid px-4">
+    <h1 class="mt-4">Invoicing &amp; Payments</h1>
 
-@if (TempData["Success"] is string s) { <div class="alert alert-success d-flex align-items-center gap-2 mb-3 py-2 px-3"><i class="bi bi-check-circle-fill"></i><span>@s</span></div> }
-@if (TempData["Error"] is string e) { <div class="alert alert-danger d-flex align-items-center gap-2 mb-3 py-2 px-3"><i class="bi bi-exclamation-triangle-fill"></i><span>@e</span></div> }
+    @if (TempData["Success"] is string s) { <div class="alert alert-success">@s</div> }
+    @if (TempData["Error"] is string e) { <div class="alert alert-danger">@e</div> }
 
-<div class="row g-2 mb-3">
-  <div class="col-4"><div class="card stat-card"><div class="stat-icon" style="background:#dcfce7;color:#16a34a"><i class="bi bi-currency-rupee"></i></div><div><div class="stat-value">₹@total.ToString("N0")</div><div class="stat-label">Total Invoiced</div></div></div></div>
-  <div class="col-4"><div class="card stat-card"><div class="stat-icon" style="background:#dbeafe;color:#0284c7"><i class="bi bi-check-circle"></i></div><div><div class="stat-value">₹@paid.ToString("N0")</div><div class="stat-label">Collected</div></div></div></div>
-  <div class="col-4"><div class="card stat-card"><div class="stat-icon" style="background:#fee2e2;color:#dc2626"><i class="bi bi-exclamation-triangle"></i></div><div><div class="stat-value">₹@outstanding.ToString("N0")</div><div class="stat-label">Outstanding</div></div></div></div>
-</div>
-
-<div class="card">
-  <div class="card-header"><h6>@Model.Count invoices</h6></div>
-  <div class="card-body p-0">
-    <div class="table-container">
-      <table class="table mb-0">
-        <thead><tr><th>Invoice #</th><th>Patient ID</th><th>Amount</th><th>Tax</th><th>Discount</th><th>Net</th><th>Status</th><th>Mode</th><th>Date</th><th style="width:80px">Actions</th></tr></thead>
-        <tbody>
-          @foreach (var b in Model)
-          {
-            var net = (b.TotalAmount ?? 0) + (b.TaxAmount ?? 0) - (b.Discount ?? 0);
-            <tr>
-              <td><span class="badge badge-secondary">@b.InvoiceNumber</span></td>
-              <td>#@b.PatientId</td>
-              <td>₹@(b.TotalAmount?.ToString("N0"))</td>
-              <td>₹@(b.TaxAmount?.ToString("N0"))</td>
-              <td>₹@(b.Discount?.ToString("N0"))</td>
-              <td class="fw-semibold">₹@net.ToString("N0")</td>
-              <td><span class="badge @(b.PaymentStatus == "Paid" ? "badge-success" : b.PaymentStatus == "Partial" ? "badge-warning" : "badge-danger")">@b.PaymentStatus</span></td>
-              <td style="font-size:11px">@(string.IsNullOrEmpty(b.PaymentMode) ? "—" : b.PaymentMode)</td>
-              <td style="font-size:11px">@b.InvoiceDate.ToString("dd MMM yyyy")</td>
-              <td>
-                @if (b.PaymentStatus != "Paid")
-                {
-                  <a href="@Url.Action("Payment",new{id=b.BillingTransactionId})" class="btn btn-sm btn-primary">Pay</a>
-                }
-              </td>
-            </tr>
-          }
-          @if (!Model.Any()) { <tr><td colspan="10"><div class="empty-state"><div class="empty-icon"><i class="bi bi-receipt"></i></div><div class="empty-title">No invoices</div></div></td></tr> }
-        </tbody>
-      </table>
+    <div class="row g-2 mb-3">
+        <div class="col-md-4"><div class="card p-3 text-center bg-light"><h5>Total Invoiced</h5><h3>₹@total.ToString("N0")</h3></div></div>
+        <div class="col-md-4"><div class="card p-3 text-center bg-success text-white"><h5>Collected</h5><h3>₹@paid.ToString("N0")</h3></div></div>
+        <div class="col-md-4"><div class="card p-3 text-center bg-danger text-white"><h5>Outstanding</h5><h3>₹@outstanding.ToString("N0")</h3></div></div>
     </div>
-  </div>
+
+    <div class="d-flex gap-2 mb-3">
+        <a asp-action="Create" class="btn btn-primary">New Invoice</a>
+        <a asp-action="Dues" class="btn btn-warning">Dues Register</a>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-header"><i class="fas fa-file-invoice me-1"></i> Invoices (@Model.Count)</div>
+        <div class="card-body">
+            <table class="table table-bordered table-hover">
+                <thead><tr>
+                    <th>Invoice #</th>
+                    <th>Amount</th>
+                    <th>Tax</th>
+                    <th>Discount</th>
+                    <th>Net</th>
+                    <th>Status</th>
+                    <th>Mode</th>
+                    <th>Date</th>
+                    <th></th>
+                </tr></thead>
+                <tbody>
+                    @foreach (var b in Model)
+                    {
+                        var net = (b.TotalAmount ?? 0) + (b.TaxAmount ?? 0) - (b.Discount ?? 0);
+                        <tr>
+                            <td><span class="badge bg-secondary">@b.InvoiceNumber</span></td>
+                            <td>₹@(b.TotalAmount?.ToString("N0"))</td>
+                            <td>₹@(b.TaxAmount?.ToString("N0"))</td>
+                            <td>₹@(b.Discount?.ToString("N0"))</td>
+                            <td class="fw-bold">₹@net.ToString("N0")</td>
+                            <td>
+                                @if (b.PaymentStatus == "Paid") { <span class="badge bg-success">Paid</span> }
+                                else if (b.PaymentStatus == "Partial") { <span class="badge bg-warning">Partial</span> }
+                                else { <span class="badge bg-danger">@b.PaymentStatus</span> }
+                            </td>
+                            <td>@(string.IsNullOrEmpty(b.PaymentMode) ? "—" : b.PaymentMode)</td>
+                            <td>@b.InvoiceDate.ToString("dd/MM/yyyy")</td>
+                            <td>
+                                <a asp-action="Details" asp-route-id="@b.BillingTransactionId" class="btn btn-sm btn-info">View</a>
+                                @if (b.PaymentStatus != "Paid")
+                                {
+                                    <a asp-action="Payment" asp-route-id="@b.BillingTransactionId" class="btn btn-sm btn-primary">Pay</a>
+                                    <a asp-action="CreditNote" asp-route-originalInvoiceId="@b.BillingTransactionId" class="btn btn-sm btn-outline-danger">Credit</a>
+                                }
+                            </td>
+                        </tr>
+                    }
+                    @if (!Model.Any()) { <tr><td colspan="9" class="text-center">No invoices</td></tr> }
+                </tbody>
+            </table>
+        </div>
+    </div>
 </div>

@@ -1,0 +1,65 @@
+@model List<DuesRegisterItem>
+
+@{
+    ViewData["Title"] = "Dues Register";
+}
+
+<div class="container-fluid px-4">
+    <h1 class="mt-4">Dues Register — Credit Collection</h1>
+
+    @if (TempData["Success"] is string s) { <div class="alert alert-success">@s</div> }
+
+    <form method="get" class="row g-3 mb-3">
+        <div class="col-auto">
+            <input type="text" name="keyword" class="form-control" placeholder="Search invoice #..." value="@ViewBag.Keyword" />
+        </div>
+        <div class="col-auto">
+            <button type="submit" class="btn btn-primary">Search</button>
+            <a asp-action="Dues" class="btn btn-secondary">Clear</a>
+        </div>
+    </form>
+
+    <div class="card mb-4">
+        <div class="card-header"><i class="fas fa-hand-holding-usd me-1"></i> Outstanding Invoices</div>
+        <div class="card-body">
+            <table class="table table-bordered table-hover">
+                <thead><tr>
+                    <th>Invoice #</th>
+                    <th>Patient</th>
+                    <th>Total</th>
+                    <th>Paid</th>
+                    <th>Balance</th>
+                    <th>Date</th>
+                    <th>Status</th>
+                    <th></th>
+                </tr></thead>
+                <tbody>
+                    @foreach (var d in Model)
+                    {
+                        <tr>
+                            <td>@d.InvoiceNumber</td>
+                            <td>@d.PatientName</td>
+                            <td>₹@d.TotalAmount.ToString("N0")</td>
+                            <td>₹@d.PaidAmount.ToString("N0")</td>
+                            <td class="fw-bold text-danger">₹@d.Balance.ToString("N0")</td>
+                            <td>@d.InvoiceDate.ToString("dd/MM/yyyy")</td>
+                            <td><span class="badge bg-warning">@d.PaymentStatus</span></td>
+                            <td>
+                                <a asp-action="Payment" asp-route-id="@d.BillingTransactionId" class="btn btn-sm btn-success">Collect</a>
+                                <a asp-action="Details" asp-route-id="@d.BillingTransactionId" class="btn btn-sm btn-info">View</a>
+                            </td>
+                        </tr>
+                    }
+                    @if (!Model.Any())
+                    {
+                        <tr><td colspan="8" class="text-center text-success fw-bold">All invoices are paid!</td></tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="mb-3">
+        <a asp-action="Index" class="btn btn-secondary">Back to Invoices</a>
+    </div>
+</div>

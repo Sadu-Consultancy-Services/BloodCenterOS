@@ -1,48 +1,60 @@
 @{
-  ViewBag.Title = "Add Payment";
-  ViewBag.ActiveMenu = "Billing";
-  var billingId = ViewBag.BillingId as long?;
+    ViewData["Title"] = "Add Payment";
+    var inv = ViewBag.Invoice as InvoiceWithDetails;
+    var billingId = inv?.Invoice.BillingTransactionId ?? 0;
+    var outstanding = (inv?.Invoice.TotalAmount ?? 0) - (inv?.Invoice.TaxAmount ?? 0) - (inv?.Invoice.Discount ?? 0);
 }
 
-<div class="page-header">
-  <div>
-    <h1 class="page-title">Add Payment <small>Invoice #@billingId</small></h1>
-  </div>
-  <a href="@Url.Action("Index")" class="btn btn-outline-secondary"><i class="bi bi-arrow-left"></i> Back</a>
+<div class="container-fluid px-4">
+    <h1 class="mt-4">Add Payment</h1>
+
+    @if (inv != null)
+    {
+        <div class="card mb-3">
+            <div class="card-header">Invoice @inv.Invoice.InvoiceNumber</div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4"><strong>Total:</strong> ₹@(inv.Invoice.TotalAmount?.ToString("N0"))</div>
+                    <div class="col-md-4"><strong>Outstanding:</strong> ₹@outstanding.ToString("N0")</div>
+                    <div class="col-md-4"><strong>Status:</strong> @inv.Invoice.PaymentStatus</div>
+                </div>
+            </div>
+        </div>
+    }
+
+    @if (TempData["Error"] is string e) { <div class="alert alert-danger">@e</div> }
+
+    <form asp-action="Payment" method="post">
+        <input type="hidden" name="id" value="@billingId" />
+        <div class="card mb-3">
+            <div class="card-header">Payment Entry</div>
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <label class="form-label">Amount (₹) *</label>
+                        <input type="number" step="0.01" name="amount" class="form-control" required max="@outstanding" />
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Payment Mode *</label>
+                        <select name="mode" class="form-select" required>
+                            <option value="">Select</option>
+                            <option value="Cash">Cash</option>
+                            <option value="Card">Card</option>
+                            <option value="UPI">UPI</option>
+                            <option value="Cheque">Cheque</option>
+                            <option value="Insurance">Insurance</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Reference</label>
+                        <input type="text" name="reference" class="form-control" placeholder="Transaction ref" />
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="d-flex gap-2 justify-content-end">
+            <a asp-action="Index" class="btn btn-secondary">Cancel</a>
+            <button type="submit" class="btn btn-success">Record Payment</button>
+        </div>
+    </form>
 </div>
-
-@if (TempData["Error"] is string e) { <div class="alert alert-danger d-flex align-items-center gap-2 mb-3 py-2 px-3"><i class="bi bi-exclamation-triangle-fill"></i><span>@e</span></div> }
-
-<form method="post" action="@Url.Action("Payment",new{id=billingId})">
-  <div class="card mb-3">
-    <div class="card-header"><h6>Payment Entry</h6></div>
-    <div class="card-body">
-      <div class="row g-2">
-        <div class="col-md-4">
-          <label class="form-label">Amount (₹) <span class="text-danger">*</span></label>
-          <input type="number" step="0.01" name="amount" class="form-control" required />
-        </div>
-        <div class="col-md-4">
-          <label class="form-label">Payment Mode <span class="text-danger">*</span></label>
-          <select name="mode" class="form-select" required>
-            <option value="">Select</option>
-            <option value="Cash">Cash</option>
-            <option value="Card">Card</option>
-            <option value="UPI">UPI</option>
-            <option value="Cheque">Cheque</option>
-            <option value="Insurance">Insurance</option>
-          </select>
-        </div>
-        <div class="col-md-4">
-          <label class="form-label">Reference</label>
-          <input type="text" name="reference" class="form-control" placeholder="Transaction ref" />
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <div class="d-flex gap-2 justify-content-end">
-    <a href="@Url.Action("Index")" class="btn btn-outline-secondary">Cancel</a>
-    <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg"></i> Record Payment</button>
-  </div>
-</form>

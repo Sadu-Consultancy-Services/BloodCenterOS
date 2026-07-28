@@ -1,0 +1,92 @@
+@model BulkDiscardRequest
+
+@{
+    ViewData["Title"] = "Discard Blood";
+    var components = ViewBag.AvailableComponents as List<AvailableComponentForDiscard> ?? new();
+    var reasons = new[] { "EXPIRED", "CLOTTED", "BAG_DAMAGED", "CONTAMINATED", "TEST_POSITIVE", "SHORT_BLEED" };
+}
+
+<div class="container-fluid px-4">
+    <h1 class="mt-4">Discard Blood Components</h1>
+
+    <form asp-action="Create" method="post">
+        <div class="card mb-3">
+            <div class="card-header">
+                Select Components to Discard
+                <span class="text-muted ms-2">(@components.Count available)</span>
+            </div>
+            <div class="card-body">
+                @if (components.Any())
+                {
+                    <table class="table table-bordered table-hover">
+                        <thead><tr>
+                            <th><input type="checkbox" id="selectAll" /></th>
+                            <th>Component Code</th>
+                            <th>Type</th>
+                            <th>Blood Group</th>
+                            <th>Volume (ml)</th>
+                            <th>Expiry</th>
+                            <th>Bag #</th>
+                            <th>Donor</th>
+                        </tr></thead>
+                        <tbody>
+                            @for (int i = 0; i < components.Count; i++)
+                            {
+                                var c = components[i];
+                                <tr>
+                                    <td><input type="checkbox" name="ComponentIds" value="@c.ComponentId" class="comp-check" /></td>
+                                    <td>@c.ComponentCode</td>
+                                    <td>@c.ComponentType</td>
+                                    <td>@c.BloodGroup</td>
+                                    <td>@c.VolumeMl</td>
+                                    <td>@c.ExpiryDate?.ToString("dd/MM/yyyy")</td>
+                                    <td>@c.BagNo</td>
+                                    <td>@c.DonorName</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                }
+                else
+                {
+                    <p class="text-muted mb-0">No available components to discard.</p>
+                }
+            </div>
+        </div>
+
+        <div class="card mb-3">
+            <div class="card-header">Discard Details</div>
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <label class="form-label">Reason *</label>
+                        <select name="Reason" class="form-select" required>
+                            <option value="">Select reason</option>
+                            @foreach (var r in reasons)
+                            {
+                                <option value="@r">@r</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="col-md-8">
+                        <label class="form-label">Notes</label>
+                        <textarea name="Notes" class="form-control" rows="2" placeholder="Optional notes"></textarea>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="d-flex gap-2 justify-content-end">
+            <a asp-action="Index" class="btn btn-secondary">Cancel</a>
+            <button type="submit" class="btn btn-danger" onclick="return confirm('Discard selected components?')">Discard Selected</button>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+<script>
+    document.getElementById('selectAll')?.addEventListener('change', function() {
+        document.querySelectorAll('.comp-check').forEach(cb => cb.checked = this.checked);
+    });
+</script>
+}

@@ -33,9 +33,45 @@
         </ul>
       </li>
       <li class="nav-item">
+        <a class="nav-link @(ViewBag.ActiveMenu == "BloodReception" ? "active" : "")" href="@Url.Action("Index","BloodReception")">
+          <i class="bi bi-inboxes-fill nav-icon"></i>
+          <span class="nav-text">Blood Reception</span>
+        </a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link @(ViewBag.ActiveMenu == "BloodBags" ? "active" : "")" href="@Url.Action("Index","BloodBag")">
+          <i class="bi bi-upc-scan nav-icon"></i>
+          <span class="nav-text">Blood Bags</span>
+        </a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link @(ViewBag.ActiveMenu == "Procurement" ? "active" : "")" href="@Url.Action("Index","Procurement")">
+          <i class="bi bi-journal-text nav-icon"></i>
+          <span class="nav-text">Procurement Register</span>
+        </a>
+      </li>
+      <li class="nav-item">
         <a class="nav-link @(ViewBag.ActiveMenu == "Donors" ? "active" : "")" href="@Url.Action("Index","Donor")">
           <i class="bi bi-people-fill nav-icon"></i>
           <span class="nav-text">Donors</span>
+        </a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link @(ViewBag.ActiveMenu == "DonorHealth" ? "active" : "")" href="@Url.Action("Index","DonorHealth")">
+          <i class="bi bi-heart-pulse nav-icon"></i>
+          <span class="nav-text">Donor Health</span>
+        </a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link @(ViewBag.ActiveMenu == "Appointments" ? "active" : "")" href="@Url.Action("Index","Appointment")">
+          <i class="bi bi-calendar-check nav-icon"></i>
+          <span class="nav-text">Appointments</span>
+        </a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link @(ViewBag.ActiveMenu == "Deferrals" ? "active" : "")" href="@Url.Action("Index","Deferral")">
+          <i class="bi bi-ban nav-icon"></i>
+          <span class="nav-text">Deferrals</span>
         </a>
       </li>
       <li class="nav-item">
@@ -57,9 +93,45 @@
         </a>
       </li>
       <li class="nav-item">
+        <a class="nav-link @(ViewBag.ActiveMenu == "ComponentLog" ? "active" : "")" href="@Url.Action("Index","ComponentLog")">
+          <i class="bi bi-arrow-left-right nav-icon"></i>
+          <span class="nav-text">Component Log</span>
+        </a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link @(ViewBag.ActiveMenu == "QualityControl" ? "active" : "")" href="@Url.Action("Index","QualityControl")">
+          <i class="bi bi-ui-checks nav-icon"></i>
+          <span class="nav-text">QC</span>
+        </a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link @(ViewBag.ActiveMenu == "Reservations" ? "active" : "")" href="@Url.Action("Index","Reservation")">
+          <i class="bi bi-clipboard-check nav-icon"></i>
+          <span class="nav-text">Reservations</span>
+        </a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link @(ViewBag.ActiveMenu == "CrossMatch" ? "active" : "")" href="@Url.Action("Index","CrossMatch")">
+          <i class="bi bi-activity nav-icon"></i>
+          <span class="nav-text">Cross Matching</span>
+        </a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link @(ViewBag.ActiveMenu == "Rates" ? "active" : "")" href="@Url.Action("Index","Rate")">
+          <i class="bi bi-currency-rupee nav-icon"></i>
+          <span class="nav-text">Rate Management</span>
+        </a>
+      </li>
+      <li class="nav-item">
         <a class="nav-link @(ViewBag.ActiveMenu == "Inventory" ? "active" : "")" href="@Url.Action("Index","Inventory")">
           <i class="bi bi-archive-fill nav-icon"></i>
           <span class="nav-text">Inventory</span>
+        </a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link @(ViewBag.ActiveMenu == "Discard" ? "active" : "")" href="@Url.Action("Index","Discard")">
+          <i class="bi bi-trash-fill nav-icon"></i>
+          <span class="nav-text">Discard</span>
         </a>
       </li>
       <li class="nav-item">
@@ -69,9 +141,21 @@
         </a>
       </li>
       <li class="nav-item">
+        <a class="nav-link @(ViewBag.ActiveMenu == "Returns" ? "active" : "")" href="@Url.Action("Index","Return")">
+          <i class="bi bi-arrow-return-left nav-icon"></i>
+          <span class="nav-text">Blood Returns</span>
+        </a>
+      </li>
+      <li class="nav-item">
         <a class="nav-link @(ViewBag.ActiveMenu == "Billing" ? "active" : "")" href="@Url.Action("Index","Billing")">
           <i class="bi bi-receipt nav-icon"></i>
           <span class="nav-text">Billing</span>
+        </a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link @(ViewBag.ActiveMenu == "MbbBills" ? "active" : "")" href="@Url.Action("Index","MbbBill")">
+          <i class="bi bi-building nav-icon"></i>
+          <span class="nav-text">MBB Billing</span>
         </a>
       </li>
       <li class="nav-item">
@@ -91,6 +175,54 @@
           <li class="nav-item"><a class="nav-link @(ViewBag.ActiveMenu == "CampInventory" ? "active" : "")" href="@Url.Action("Index","CampInventory")"><span class="nav-text">Camp Inventory</span></a></li>
           <li class="nav-item"><a class="nav-link @(ViewBag.ActiveMenu == "CampExpenses" ? "active" : "")" href="@Url.Action("Index","CampExpense")"><span class="nav-text">Camp Expenses</span></a></li>
         </ul>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link @(ViewBag.ActiveMenu == "IssueStorage" ? "active" : "")" href="@Url.Action("Index","IssueStorage")">
+          <i class="bi bi-send-plus nav-icon"></i>
+          <span class="nav-text">Issue to Storage</span>
+        </a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link @(ViewBag.ActiveMenu == "Storages" ? "active" : "")" href="@Url.Action("Index","Storage")">
+          <i class="bi bi-hdd-rack-fill nav-icon"></i>
+          <span class="nav-text">Storage Units</span>
+        </a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link @(ViewBag.ActiveMenu == "StoreInventory" ? "active" : "")" href="@Url.Action("Index","StoreInventory")">
+          <i class="bi bi-box-seam nav-icon"></i>
+          <span class="nav-text">Store Inventory</span>
+        </a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link @(ViewBag.ActiveMenu == "PatientRequests" ? "active" : "")" href="@Url.Action("Index","PatientRequest")">
+          <i class="bi bi-file-medical nav-icon"></i>
+          <span class="nav-text">Patient Requests</span>
+        </a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link @(ViewBag.ActiveMenu == "ReplacementDonors" ? "active" : "")" href="@Url.Action("Index","ReplacementDonor")">
+          <i class="bi bi-people nav-icon"></i>
+          <span class="nav-text">Replacement Donors</span>
+        </a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link @(ViewBag.ActiveMenu == "Expenses" ? "active" : "")" href="@Url.Action("Index","Expense")">
+          <i class="bi bi-cash-stack nav-icon"></i>
+          <span class="nav-text">Expenses</span>
+        </a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link @(ViewBag.ActiveMenu == "TestKits" ? "active" : "")" href="@Url.Action("Index","TestKit")">
+          <i class="bi bi-eyedropper nav-icon"></i>
+          <span class="nav-text">Test Kits</span>
+        </a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link @(ViewBag.ActiveMenu == "Notifications" ? "active" : "")" href="@Url.Action("Index","Notification")">
+          <i class="bi bi-bell nav-icon"></i>
+          <span class="nav-text">Notifications</span>
+        </a>
       </li>
       <li class="nav-item">
         <a class="nav-link @(ViewBag.ActiveMenu == "Hospitals" ? "active" : "")" href="@Url.Action("Index","Hospital")">

@@ -1,0 +1,95 @@
+@model List<IssueStorageRecord>
+
+@{
+    ViewData["Title"] = "Issue to Storage";
+    var invoices = ViewBag.Invoices as List<IssueStorageInvoice> ?? new();
+    var storages = ViewBag.Storages as List<StorageMaster> ?? new();
+}
+
+<div class="container-fluid px-4">
+    <h1 class="mt-4">Issue to Blood Storage Units</h1>
+
+    @if (TempData["Success"] is string s) { <div class="alert alert-success">@s</div> }
+    @if (TempData["Error"] is string e) { <div class="alert alert-danger">@e</div> }
+
+    <div class="mb-3">
+        <a asp-action="Create" class="btn btn-primary">New Issue to Storage</a>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-header"><i class="fas fa-file-invoice me-1"></i> Storage Invoices</div>
+        <div class="card-body">
+            <form method="get" class="row g-3 mb-3">
+                <div class="col-auto">
+                    <select name="storageId" class="form-select">
+                        <option value="">All Storages</option>
+                        @foreach (var st in storages.Where(s => s.IsActive))
+                        {
+                            <option value="@st.StorageId" selected="@(ViewBag.StorageId == st.StorageId)">@st.StorageName</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-auto"><input type="date" name="from" class="form-control" value="@ViewBag.From?.ToString("yyyy-MM-dd")" /></div>
+                <div class="col-auto"><input type="date" name="to" class="form-control" value="@ViewBag.To?.ToString("yyyy-MM-dd")" /></div>
+                <div class="col-auto"><button type="submit" class="btn btn-primary">Filter</button></div>
+            </form>
+
+            <table class="table table-bordered table-hover">
+                <thead><tr>
+                    <th>Invoice #</th>
+                    <th>Storage</th>
+                    <th>Date</th>
+                    <th>Components</th>
+                    <th>Amount</th>
+                    <th>Status</th>
+                </tr></thead>
+                <tbody>
+                    @foreach (var inv in invoices)
+                    {
+                        <tr>
+                            <td>@inv.InvoiceNumber</td>
+                            <td>@inv.StorageName</td>
+                            <td>@inv.IssueDateTime.ToString("dd/MM/yyyy HH:mm")</td>
+                            <td>@inv.ComponentCount</td>
+                            <td>₹@(inv.TotalAmount?.ToString("N0"))</td>
+                            <td><span class="badge @(inv.PaymentStatus == "Paid" ? "bg-success" : "bg-warning")">@inv.PaymentStatus</span></td>
+                        </tr>
+                    }
+                    @if (!invoices.Any()) { <tr><td colspan="6" class="text-center">No storage invoices</td></tr> }
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-header"><i class="fas fa-list me-1"></i> Issue Records</div>
+        <div class="card-body">
+            <table class="table table-bordered table-hover">
+                <thead><tr>
+                    <th>Component</th>
+                    <th>Type</th>
+                    <th>Blood Group</th>
+                    <th>Bag #</th>
+                    <th>Storage</th>
+                    <th>Rate</th>
+                    <th>Date</th>
+                </tr></thead>
+                <tbody>
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <td>@item.ComponentCode</td>
+                            <td>@item.ComponentType</td>
+                            <td>@item.BloodGroup</td>
+                            <td>@item.BagNo</td>
+                            <td>@item.StorageName</td>
+                            <td>₹@item.Rate.ToString("N0")</td>
+                            <td>@item.IssueDateTime.ToString("dd/MM/yyyy HH:mm")</td>
+                        </tr>
+                    }
+                    @if (!Model.Any()) { <tr><td colspan="7" class="text-center">No issue records</td></tr> }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

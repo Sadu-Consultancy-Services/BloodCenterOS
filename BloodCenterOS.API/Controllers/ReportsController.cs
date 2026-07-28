@@ -224,4 +224,119 @@ public class ReportsController : ControllerBase
         ms.Seek(0, SeekOrigin.Begin);
         return File(ms.ToArray(), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", $"camp_report_{fromDate:yyyyMMdd}_{toDate:yyyyMMdd}.xlsx");
     }
+
+    // ── Phase 9: Report endpoints ──
+
+    [HttpGet("blood-stock")]
+    public async Task<IActionResult> GetBloodStock()
+    {
+        var data = await _reportRepo.GetBloodStockAsync(CenterId);
+        return Ok(ApiResponse<IEnumerable<BloodStockRow>>.Ok(data));
+    }
+
+    [HttpGet("procurement-summary")]
+    public async Task<IActionResult> GetProcurementSummary([FromQuery] DateTime fromDate, [FromQuery] DateTime toDate)
+    {
+        var data = await _reportRepo.GetProcurementSummaryAsync(CenterId, fromDate, toDate);
+        return Ok(ApiResponse<IEnumerable<ProcurementSummaryRow>>.Ok(data));
+    }
+
+    [HttpGet("donor-list")]
+    public async Task<IActionResult> GetDonorList([FromQuery] DateTime fromDate, [FromQuery] DateTime toDate, [FromQuery] bool showContact = true)
+    {
+        var data = await _reportRepo.GetDonorListAsync(CenterId, fromDate, toDate, showContact);
+        return Ok(ApiResponse<IEnumerable<DonorListRow>>.Ok(data));
+    }
+
+    [HttpGet("cm-income")]
+    public async Task<IActionResult> GetCmIncome([FromQuery] DateTime fromDate, [FromQuery] DateTime toDate)
+    {
+        var data = await _reportRepo.GetCmIncomeAsync(CenterId, fromDate, toDate);
+        return Ok(ApiResponse<IEnumerable<CmIncomeRow>>.Ok(data));
+    }
+
+    [HttpGet("discount-details")]
+    public async Task<IActionResult> GetDiscountDetails([FromQuery] DateTime fromDate, [FromQuery] DateTime toDate)
+    {
+        var data = await _reportRepo.GetDiscountDetailsAsync(CenterId, fromDate, toDate);
+        return Ok(ApiResponse<IEnumerable<DiscountDetailRow>>.Ok(data));
+    }
+
+    [HttpGet("daily-issues")]
+    public async Task<IActionResult> GetDailyIssues([FromQuery] DateTime fromDate, [FromQuery] DateTime toDate)
+    {
+        var data = await _reportRepo.GetDailyIssuesAsync(CenterId, fromDate, toDate);
+        return Ok(ApiResponse<IEnumerable<DailyIssueRow>>.Ok(data));
+    }
+
+    [HttpGet("mbb-inward")]
+    public async Task<IActionResult> GetMbbInward([FromQuery] DateTime fromDate, [FromQuery] DateTime toDate, [FromQuery] string? supplier)
+    {
+        var data = await _reportRepo.GetMbbInwardAsync(CenterId, fromDate, toDate, supplier);
+        return Ok(ApiResponse<IEnumerable<MbbInwardRow>>.Ok(data));
+    }
+
+    [HttpGet("qc-daily")]
+    public async Task<IActionResult> GetQcDaily([FromQuery] DateTime date)
+    {
+        var data = await _reportRepo.GetQcDailyAsync(CenterId, date);
+        return Ok(ApiResponse<IEnumerable<QcDailyRow>>.Ok(data));
+    }
+
+    [HttpGet("inv-stock")]
+    public async Task<IActionResult> GetInvStock()
+    {
+        var data = await _reportRepo.GetInvStockAsync(CenterId);
+        return Ok(ApiResponse<IEnumerable<InvStockRow>>.Ok(data));
+    }
+
+    [HttpGet("inv-inout")]
+    public async Task<IActionResult> GetInvInOut([FromQuery] DateTime fromDate, [FromQuery] DateTime toDate, [FromQuery] string? type, [FromQuery] string? itemIds)
+    {
+        long[]? ids = itemIds?.Split(',', StringSplitOptions.RemoveEmptyEntries).Select(long.Parse).ToArray();
+        var data = await _reportRepo.GetInvInOutAsync(CenterId, fromDate, toDate, type, ids);
+        return Ok(ApiResponse<IEnumerable<InvInOutRow>>.Ok(data));
+    }
+
+    [HttpGet("invoice-detail/{invoiceId}")]
+    public async Task<IActionResult> GetInvoiceDetail(long invoiceId)
+    {
+        var data = await _reportRepo.GetInvoiceDetailAsync(CenterId, invoiceId);
+        return Ok(ApiResponse<IEnumerable<InvoiceDetailRow>>.Ok(data));
+    }
+
+    [HttpGet("bs-invoice-detail/{invoiceId}")]
+    public async Task<IActionResult> GetBsInvoiceDetail(long invoiceId)
+    {
+        var data = await _reportRepo.GetBsInvoiceDetailAsync(CenterId, invoiceId);
+        return Ok(ApiResponse<IEnumerable<BsInvoiceDetailRow>>.Ok(data));
+    }
+
+    [HttpGet("crossmatch-report/{invoiceId}")]
+    public async Task<IActionResult> GetCrossMatchReport(long invoiceId)
+    {
+        var data = await _reportRepo.GetCrossMatchReportAsync(CenterId, invoiceId);
+        return Ok(ApiResponse<IEnumerable<CrossMatchReportRow>>.Ok(data));
+    }
+
+    [HttpGet("discard-register")]
+    public async Task<IActionResult> GetDiscardRegister([FromQuery] DateTime fromDate, [FromQuery] DateTime toDate, [FromQuery] string? reason)
+    {
+        var data = await _reportRepo.GetDiscardRegisterAsync(CenterId, fromDate, toDate, reason);
+        return Ok(ApiResponse<IEnumerable<DiscardRegisterRow>>.Ok(data));
+    }
+
+    [HttpGet("dues-register")]
+    public async Task<IActionResult> GetDuesRegister([FromQuery] DateTime? asOnDate)
+    {
+        var data = await _reportRepo.GetDuesRegisterAsync(CenterId, asOnDate);
+        return Ok(ApiResponse<IEnumerable<DuesRegisterRow>>.Ok(data));
+    }
+
+    [HttpGet("autoclave-register")]
+    public async Task<IActionResult> GetAutoclaveRegister([FromQuery] DateTime fromDate, [FromQuery] DateTime toDate)
+    {
+        var data = await _reportRepo.GetAutoclaveRegisterAsync(CenterId, fromDate, toDate);
+        return Ok(ApiResponse<IEnumerable<DiscardRegisterRow>>.Ok(data));
+    }
 }

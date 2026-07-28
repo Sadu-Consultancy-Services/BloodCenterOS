@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>BloodCenterOS — Phase 2 Developer Help</title>
+    <style>
+        :root { --primary: #c0392b; --bg: #fdfdfd; --card-bg: #fff; --border: #dcdcdc; --text: #2c3e50; --success: #27ae60; --info: #2980b9; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); line-height: 1.7; padding: 20px; }
+        .header { background: linear-gradient(135deg, var(--primary), #96281b); color: #fff; padding: 30px 40px; border-radius: 10px; margin-bottom: 28px; }
+        .header h1 { font-size: 1.8em; }
+        .section { background: var(--card-bg); border: 1px solid var(--border); border-radius: 10px; padding: 24px 28px; margin-bottom: 24px; }
+        .section h2 { color: var(--primary); margin-bottom: 12px; border-bottom: 2px solid var(--primary); padding-bottom: 6px; display: inline-block; }
+        .section h3 { margin: 16px 0 8px; border-left: 3px solid var(--primary); padding-left: 10px; }
+        table { width: 100%; border-collapse: collapse; margin: 10px 0; font-size: 0.9em; }
+        th { background: var(--text); color: #fff; padding: 8px 12px; text-align: left; }
+        td { padding: 7px 12px; border-bottom: 1px solid var(--border); }
+        code { background: #f4f4f4; padding: 2px 6px; border-radius: 4px; font-size: 0.88em; color: var(--primary); }
+        pre { background: #1e1e1e; color: #d4d4d4; padding: 14px 18px; border-radius: 8px; overflow-x: auto; font-size: 0.85em; }
+        .tag { display: inline-block; padding: 2px 10px; border-radius: 12px; font-size: 0.78em; font-weight: 600; }
+        .tag-green { background: #e8f8f0; color: var(--success); }
+        .tag-blue { background: #e8f0fd; color: var(--info); }
+        .tag-red { background: #fde8e8; color: var(--primary); }
+        .tag-orange { background: #fef3e2; color: #f39c12; }
+        ul { margin: 8px 0 8px 20px; }
+        li { margin-bottom: 4px; font-size: 0.93em; }
+    </style>
+</head>
+<body>
+<div class="header">
+    <h1>BloodCenterOS — Phase 2 Developer Help</h1>
+    <p>Rate Management + Patient Reservation (FIFO)</p>
+</div>
+
+<div class="section">
+    <h2>Overview</h2>
+    <p>Phase 2 covers:
+    <strong>Rate Management</strong> (per blood group × component pricing)
+    and <strong>Patient Reservation</strong> (FIFO-based blood allocation with optional invoicing).</p>
+    <p>Reference: BloodCenter24 forms <code>Rates.cs</code> + <code>Res.cs</code> / <code>Res_Only.cs</code>.</p>
+</div>
+
+<div class="section">
+    <h2>Database Changes</h2>
+    <p>Patch file: <code>DB/patch_20260724_007_rates_reservation.sql</code></p>
+
+    <h3>New Tables</h3>
+    <table>
+        <tr><th>Table</th><th>Purpose</th></tr>
+        <tr><td><code>RateMaster</code></td><td>Blood component unit rates and reservation charges per blood group × component type. Unique on (CenterId, BloodGroup, ComponentType).</td></tr>
+        <tr><td><code>PatientReservation</code></td><td>Reservation header: patient info, requested blood group, component, units, status (Active/Cancelled/Issued), linked InvoiceId.</td></tr>
+        <tr><td><code>ReservationDetail</code></td><td>Allocated components for a reservation: ComponentId, rates at time of reservation, status (Reserved/Released/Issued).</td></tr>
+    </table>
+
+    <h3>Stored Procedures (9 total)</h3>
+    <table>
+        <tr><th>SP</th><th>Purpose</th></tr>
+        <tr><td><code>fn_rate_upsert</code></td><td>Insert or update rate per blood group + component type. Uses INSERT ON CONFLICT DO UPDATE.</td></tr>
+        <tr><td><code>fn_rate_get_by_center</code></td><td>List all rates for a center.</td></tr>
+        <tr><td><code>fn_rate_get_by_id</code></td><td>Get single rate by ID.</td></tr>
+        <tr><td><code>fn_rate_delete</code></td><td>Soft delete (sets IsActive = FALSE).</td></tr>
+        <tr><td><code>fn_rate_get_default</code></td><td>Get the matching rate for a blood group + component type (used by reservation).</td></tr>
+        <tr><td><code>fn_reservation_get_available_components</code></td><td>FIFO-ordered list of Available components matching blood group + component type, with rates from RateMaster. LIMIT p_units.</td></tr>
+        <tr><td><code>fn_reservation_create</code></td><td>Transactional: creates reservation header, FIFO-allocates components (sets ComponentMaster.status = 'Reserved'), creates details with rates, optionally creates invoice + invoice details.</td></tr>
+        <tr><td><code>fn_reservation_get_by_center</code></td><td>List reservations with filters (status, date range, keyword).</td></tr>
+        <tr><td><code>fn_reservation_get_by_id</code></td><td>Get single reservation header.</td></tr>
+        <tr><td><code>fn_reservation_get_details</code></td><td>Get allocated components for a reservation.</td></tr>
+        <tr><td><code>fn_reservation_cancel</code></td><td>Release all Reserved components back to Available, update detail statuses to Released, set reservation Status = 'Cancelled'.</td></tr>
+        <tr><td><code>fn_reservation_get_pending</code></td><td>Get active reservations ready for cross-match/issue.</td></tr>
+    </table>
+</div>
+
+<div class="section">
+    <h2>Rate Management</h2>
+    <p>Admin module for configuring blood component pricing:</p>
+    <ul>
+        <li><strong>UnitRate</strong> — Price per unit of blood component</li>
+        <li><strong>ReservationRate</strong> — Service charge for reservation processing</li>
+        <li>Unique per (BloodGroup, ComponentType) combination</li>
+        <li>Soft delete (deactivate) instead of hard delete</li>
+    </ul>
+    <p>Blood groups: A+, A-, B+, B-, AB+, AB-, O+, O- (8). Components: WB, PCV, FFP, PC (4).</p>
+
+    <h3>API</h3>
+    <table>
+        <tr><th>Method</th><th>Route</th><th>Description</th></tr>
+        <tr><td>GET</td><td><code>/api/rates</code></td><td>List all rates</td></tr>
+        <tr><td>GET</td><td><code>/api/rates/{id}</code></td><td>Get rate by ID</td></tr>
+        <tr><td>POST</td><td><code>/api/rates</code></td><td>Upsert rate (create or update)</td></tr>
+        <tr><td>DELETE</td><td><code>/api/rates/{id}</code></td><td>Deactivate rate</td></tr>
+    </table>
+</div>
+
+<div class="section">
+    <h2>Patient Reservation</h2>
+    <p>Core workflow for allocating blood components to patients using FIFO (oldest expiry first):</p>
+    <ol>
+        <li>User enters patient details + blood requirement (blood group, component type, units)</li>
+        <li>System queries <code>fn_reservation_get_available_components</code> — FIFO-orders by ExpiryDate</li>
+        <li>Components are locked: <code>ComponentMaster.currentstatus</code> → 'Reserved'</li>
+        <li>Reservation record + detail records created</li>
+        <li>Optional: Invoice created in <code>BillingTransaction</code> + <code>InvoiceDetail</code></li>
+        <li>User can cancel → components released back to 'Available'</li>
+    </ol>
+
+    <h3>API</h3>
+    <table>
+        <tr><th>Method</th><th>Route</th><th>Description</th></tr>
+        <tr><td>GET</td><td><code>/api/reservations?status=&amp;fromDate=&amp;toDate=&amp;keyword=</code></td><td>List reservations</td></tr>
+        <tr><td>GET</td><td><code>/api/reservations/pending</code></td><td>Active reservations for cross-match</td></tr>
+        <tr><td>GET</td><td><code>/api/reservations/available-components?bloodGroup=&amp;componentType=&amp;units=</code></td><td>Preview FIFO-available components</td></tr>
+        <tr><td>GET</td><td><code>/api/reservations/{id}</code></td><td>Get reservation + details</td></tr>
+        <tr><td>POST</td><td><code>/api/reservations</code></td><td>Create reservation (FIFO allocate)</td></tr>
+        <tr><td>POST</td><td><code>/api/reservations/{id}/cancel</code></td><td>Cancel + release components</td></tr>
+    </table>
+
+    <h3>POST /api/reservations — Request Body</h3>
+    <pre>{
+  "patientName": "John Doe",
+  "patientAddress": "123 Main St",
+  "patientContactNo": "9876543210",
+  "patientBloodGroup": "A+",
+  "requiredBloodGroup": "A+",
+  "hospitalName": "City Hospital",
+  "ward": "Ward 3",
+  "componentType": "PCV",
+  "units": 2,
+  "createInvoice": true,
+  "notes": "Urgent"
+}</pre>
+</div>
+
+<div class="section">
+    <h2>Files Created/Modified</h2>
+    <table>
+        <tr><th>Layer</th><th>File</th><th>Action</th></tr>
+        <tr><td>DB</td><td><code>DB/patch_20260724_007_rates_reservation.sql</code></td><td>NEW — 3 tables + 12 SPs</td></tr>
+        <tr><td>Core</td><td><code>Core/Models/RateMaster.cs</code></td><td>NEW — RateMaster + RateUpsertRequest</td></tr>
+        <tr><td>Core</td><td><code>Core/Models/PatientReservation.cs</code></td><td>NEW — PatientReservation + detail + request + AvailableComponentItem</td></tr>
+        <tr><td>API</td><td><code>API/Repositories/{I,}RateRepository.cs</code></td><td>NEW</td></tr>
+        <tr><td>API</td><td><code>API/Repositories/{I,}ReservationRepository.cs</code></td><td>NEW</td></tr>
+        <tr><td>API</td><td><code>API/Controllers/RateController.cs</code></td><td>NEW</td></tr>
+        <tr><td>API</td><td><code>API/Controllers/ReservationController.cs</code></td><td>NEW</td></tr>
+        <tr><td>API</td><td><code>API/Program.cs</code></td><td>MODIFIED — DI registrations</td></tr>
+        <tr><td>Web</td><td><code>Web/Services/ApiClient.cs</code></td><td>MODIFIED — Added Rate + Reservation methods</td></tr>
+        <tr><td>Web</td><td><code>Web/Controllers/RateController.cs</code></td><td>NEW</td></tr>
+        <tr><td>Web</td><td><code>Web/Controllers/ReservationController.cs</code></td><td>NEW</td></tr>
+        <tr><td>Web</td><td><code>Web/Views/Rate/{Index,Create}.cshtml</code></td><td>NEW</td></tr>
+        <tr><td>Web</td><td><code>Web/Views/Reservation/{Index,Create,Details}.cshtml</code></td><td>NEW</td></tr>
+        <tr><td>Web</td><td><code>Web/Views/Shared/_Sidebar.cshtml</code></td><td>MODIFIED — Added Reservations + Rate Management nav</td></tr>
+    </table>
+</div>
+</body>
+</html>

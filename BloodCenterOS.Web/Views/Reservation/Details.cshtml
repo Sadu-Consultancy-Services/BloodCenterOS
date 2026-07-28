@@ -1,0 +1,73 @@
+@model PatientReservation
+@{ ViewBag.Title = "Reservation Details"; ViewBag.ActiveMenu = "Reservations"; }
+<div class="page-header">
+  <div><h1 class="page-title">Reservation Details</h1></div>
+  <a href="@Url.Action("Index")" class="btn btn-outline-secondary"><i class="bi bi-arrow-left"></i> Back</a>
+</div>
+
+<div class="card mb-3">
+  <div class="card-header d-flex justify-content-between align-items-center">
+    <strong>Reservation Info</strong>
+    @if (Model.Status == "Active")
+    {
+      <form method="post" action="@Url.Action("Cancel", new { id = Model.ReservationId })" style="display:inline" onsubmit="return confirm('Cancel? Components will be released.')">
+        <button type="submit" class="btn btn-sm btn-outline-warning"><i class="bi bi-x-circle"></i> Cancel</button>
+      </form>
+    }
+  </div>
+  <div class="card-body">
+    <div class="row g-3">
+      <div class="col-md-3"><strong>Patient:</strong> @Model.PatientName</div>
+      <div class="col-md-2"><strong>BG (Patient):</strong> <span class="badge bg-secondary">@Model.PatientBloodGroup</span></div>
+      <div class="col-md-2"><strong>BG (Required):</strong> <span class="badge bg-danger">@Model.RequiredBloodGroup</span></div>
+      <div class="col-md-2"><strong>Component:</strong> @Model.ComponentType</div>
+      <div class="col-md-1"><strong>Units:</strong> @Model.UnitsReserved/@Model.UnitsRequested</div>
+      <div class="col-md-2">
+        <strong>Status:</strong>
+        @if (Model.Status == "Active") { <span class="badge bg-success">Active</span> }
+        else if (Model.Status == "Cancelled") { <span class="badge bg-secondary">Cancelled</span> }
+        else if (Model.Status == "Issued") { <span class="badge bg-info">Issued</span> }
+      </div>
+      @if (!string.IsNullOrEmpty(Model.HospitalName))
+      { <div class="col-md-3"><strong>Hospital:</strong> @Model.HospitalName @(!string.IsNullOrEmpty(Model.Ward) ? "/ " + Model.Ward : "")</div> }
+      @if (!string.IsNullOrEmpty(Model.PatientContactNo))
+      { <div class="col-md-3"><strong>Contact:</strong> @Model.PatientContactNo</div> }
+      @if (Model.InvoiceId.HasValue)
+      { <div class="col-md-2"><strong>Invoice #:</strong> @Model.InvoiceId</div> }
+      @if (!string.IsNullOrEmpty(Model.Notes))
+      { <div class="col-12"><strong>Notes:</strong> @Model.Notes</div> }
+    </div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header"><strong>Allocated Components</strong></div>
+  <div class="card-body p-0">
+    <table class="table mb-0">
+      <thead><tr><th>#</th><th>Component Code</th><th>Type</th><th>Blood Group</th><th>Volume</th><th>Expiry</th><th>Unit Rate</th><th>Res. Rate</th><th>Status</th></tr></thead>
+      <tbody>
+        @if (Model.Details == null || !Model.Details.Any())
+        { <tr><td colspan="9" class="text-center text-muted py-3">No components allocated.</td></tr> }
+        @for (int i = 0; i < (Model.Details?.Count ?? 0); i++)
+        {
+          var d = Model.Details![i];
+          <tr>
+            <td>@(i + 1)</td>
+            <td><code>@d.ComponentCode</code></td>
+            <td>@d.ComponentType</td>
+            <td><span class="badge bg-danger">@d.BloodGroup</span></td>
+            <td>@d.VolumeMl ml</td>
+            <td>@d.ExpiryDate?.ToString("dd/MM/yyyy")</td>
+            <td>@d.UnitRate.ToString("N2")</td>
+            <td>@d.ReservationRate.ToString("N2")</td>
+            <td>
+              @if (d.Status == "Reserved") { <span class="badge bg-warning text-dark">Reserved</span> }
+              else if (d.Status == "Released") { <span class="badge bg-secondary">Released</span> }
+              else if (d.Status == "Issued") { <span class="badge bg-info">Issued</span> }
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+</div>

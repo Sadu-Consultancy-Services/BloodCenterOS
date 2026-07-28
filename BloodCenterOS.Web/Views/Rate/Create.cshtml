@@ -1,0 +1,49 @@
+@model RateUpsertRequest
+@{
+    ViewBag.Title = "Add Rate";
+    ViewBag.ActiveMenu = "Rates";
+    var bloodGroups = ViewBag.BloodGroups as string[] ?? new[] { "A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-" };
+    var compTypes = ViewBag.ComponentTypes as string[] ?? new[] { "WB", "PCV", "FFP", "PC" };
+}
+<div class="page-header">
+  <div><h1 class="page-title">Add Rate</h1></div>
+  <a href="@Url.Action("Index")" class="btn btn-outline-secondary"><i class="bi bi-arrow-left"></i> Back</a>
+</div>
+@if (!ViewData.ModelState.IsValid)
+{
+    <div class="alert alert-danger py-2 px-3 mb-3">
+        @foreach (var err in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+        { <div>@err.ErrorMessage</div> }
+    </div>
+}
+
+<form method="post" class="row g-3">
+    <div class="col-md-4">
+        <label class="form-label">Blood Group *</label>
+        <select name="BloodGroup" class="form-select" required>
+            <option value="">-- Select --</option>
+            @foreach (var bg in bloodGroups)
+            { <option value="@bg">@bg</option> }
+        </select>
+    </div>
+    <div class="col-md-4">
+        <label class="form-label">Component Type *</label>
+        <select name="ComponentType" class="form-select" required>
+            <option value="">-- Select --</option>
+            @foreach (var ct in compTypes)
+            { <option value="@ct">@ct</option> }
+        </select>
+    </div>
+    <div class="col-md-2">
+        <label class="form-label">Unit Rate *</label>
+        <input type="number" name="UnitRate" class="form-control" required step="0.01" min="0" />
+    </div>
+    <div class="col-md-2">
+        <label class="form-label">Reservation Rate</label>
+        <input type="number" name="ReservationRate" class="form-control" step="0.01" min="0" value="0" />
+    </div>
+    <div class="col-12">
+        <button type="submit" class="btn btn-primary"><i class="bi bi-save"></i> Save Rate</button>
+        <a href="@Url.Action("Index")" class="btn btn-outline-secondary">Cancel</a>
+    </div>
+</form>

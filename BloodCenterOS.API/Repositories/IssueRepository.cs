@@ -1,74 +1,53 @@
-using BloodCenterOS.API.Data;
-using BloodCenterOS.Core.Models;
 using Dapper;
+using BloodCenterOS.Core.Models;
+using Npgsql;
 
 namespace BloodCenterOS.API.Repositories;
 
+public interface IIssueRepository
+{
+    Task<long> IssueFromReservationAsync(long centerId, long reservationId, string? paymentMode, long? userId, string? notes);
+    Task<IEnumerable<IssueRecord>> GetByCenterAsync(long centerId);
+    Task<IEnumerable<IssueRecord>> GetByReservationAsync(long reservationId);
+    Task<IEnumerable<ReservationReadyForIssue>> GetReadyForIssueAsync(long centerId);
+}
+
 public class IssueRepository : IIssueRepository
 {
-    private readonly IDbConnectionFactory _db;
+    private readonly string _conn;
+    public IssueRepository(IConfiguration config) => _conn = config.GetConnectionString("DefaultConnection")!;
 
-    public IssueRepository(IDbConnectionFactory db)
+    public async Task<long> IssueFromReservationAsync(long centerId, long reservationId, string? paymentMode, long? userId, string? notes)
     {
-        _db = db;
-    }
-
-    public async Task<long> CreateIssueAsync(IssueRecord issue)
-    {
-        using var conn = _db.CreateConnection();
-        return await conn.QueryFirstOrDefaultAsync<long>(
-            "SELECT * FROM fn_issue_create(@p_center_id, @p_component_id, @p_bag_id, @p_patient_name, @p_hospital_id, @p_issued_by, @p_issue_type, @p_slip_no, @p_notes)",
-            new
-            {
-                p_center_id = issue.CenterId,
-                p_component_id = issue.ComponentId,
-                p_bag_id = issue.BagId,
-                p_patient_name = issue.PatientName,
-                p_hospital_id = issue.HospitalId,
-                p_issued_by = issue.IssuedByUserId,
-                p_issue_type = issue.IssueType,
-                p_slip_no = issue.IssueSlipNumber,
-                p_notes = issue.Notes
-            });
+        using var db = new NpgsqlConnection(_conn);
+        return await db.ExecuteScalarAsync<long>(
+            "SELECT fn_issue_from_reservation(@p_center_id, @p_reservation_id, 'Patient', @p_payment_mode, @p_issued_by, @p_notes)",
+            new { p_center_id = centerId, p_reservation_id = reservationId, p_payment_mode = paymentMode, p_issued_by = userId, p_notes = notes });
     }
 
     public async Task<IEnumerable<IssueRecord>> GetByCenterAsync(long centerId)
     {
-        using var conn = _db.CreateConnection();
-        var rows = await conn.QueryAsync<dynamic>(
-            "SELECT * FROM fn_issue_get_by_center(@p_center_id)",
-            new { p_center_id = centerId });
-        return rows.Select(r => new IssueRecord
-        {
-            IssueRecordId = (long)r.issuerecordid,
-            CenterId = (long?)r.centerid,
-            ComponentId = (long?)r.componentid,
-            BagId = (long?)r.bagid,
-            PatientName = (string?)r.patientname,
-            HospitalId = (long?)r.hospitalid,
-            IssueDate = (DateTime)r.issuedate,
-            IssuedByUserId = (long?)r.issuedbyuserid,
-            IssueType = (string?)r.issuetype,
-            IssueSlipNumber = (string?)r.issueslipnumber,
-            Notes = (string?)r.notes
-        });
+        using var db = new NpgsqlConnection(_conn);
+        return await db.QueryAsync<IssueRecord>(
+            "SELECT i.*, cm.componentcode, cm.componenttype FROM IssueRecord i " +
+            "JOIN ComponentMaster cm ON cm.componentid = i.ComponentId " +
+            "WHERE i.CenterId = @cid ORDER BY i.IssueDate DESC",
+            new { cid = centerId });
     }
 
-    public async Task<IEnumerable<PatientRequest>> GetPendingRequestsAsync(long centerId)
+    public async Task<IEnumerable<IssueRecord>> GetByReservationAsync(long reservationId)
     {
-        using var conn = _db.CreateConnection();
-        var rows = await conn.QueryAsync<dynamic>(
-            "SELECT * FROM fn_patient_request_get_pending(@p_center_id)",
+        using var db = new NpgsqlConnection(_conn);
+        return await db.QueryAsync<IssueRecord>(
+            "SELECT * FROM fn_issue_get_by_reservation(@p_reservation_id)",
+            new { p_reservation_id = reservationId });
+    }
+
+    public async Task<IEnumerable<ReservationReadyForIssue>> GetReadyForIssueAsync(long centerId)
+    {
+        using var db = new NpgsqlConnection(_conn);
+        return await db.QueryAsync<ReservationReadyForIssue>(
+            "SELECT * FROM fn_issue_get_ready_for_issue(@p_center_id)",
             new { p_center_id = centerId });
-        return rows.Select(r => new PatientRequest
-        {
-            RequestId = (long)r.requestid,
-            PatientName = (string?)r.patientname,
-            BloodGroup = (string?)r.bloodgroup,
-            ComponentType = (string?)r.componenttype,
-            UnitsRequested = (int?)r.unitsrequested,
-            RequestUrgency = (string?)r.requesturgency,
-            RequestDate = (DateTime)r.requestdate
-        });
     }
 }

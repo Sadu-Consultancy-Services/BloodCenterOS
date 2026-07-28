@@ -1,0 +1,27 @@
+@model List<DonorAppointment>
+@{ ViewBag.Title = "Appointments"; ViewBag.ActiveMenu = "Appointments"; }
+<div class="page-header">
+  <div><h1 class="page-title">Appointments <small>Manage donor appointments</small></h1></div>
+  <a href="@Url.Action("Create")" class="btn btn-primary"><i class="bi bi-plus"></i> New Appointment</a>
+</div>
+@if (TempData["Success"] is string s) { <div class="alert alert-success py-2 px-3 mb-3">@s</div> }
+@if (TempData["Error"] is string e) { <div class="alert alert-danger py-2 px-3 mb-3">@e</div> }
+<div class="card">
+  <div class="card-body p-0">
+    <table class="table mb-0">
+      <thead><tr><th>Donor Name</th><th>Date</th><th>Slot</th><th>Status</th></tr></thead>
+      <tbody>
+        @if (!Model.Any()) { <tr><td colspan="4" class="text-center text-muted py-3">No appointments found.</td></tr> }
+        @foreach (var item in Model)
+        {
+          <tr>
+            <td>@item.DonorId</td>
+            <td>@item.AppointmentDate.ToString("yyyy-MM-dd")</td>
+            <td>@item.Slot</td>
+            <td>@item.Status</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+</div>

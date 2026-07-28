@@ -1,0 +1,23 @@
+@model Expense
+@{ ViewBag.Title = "Add Expense"; ViewBag.ActiveMenu = "Expenses"; }
+<div class="page-header">
+  <div><h1 class="page-title">Add Expense <small>Record a new expense</small></h1></div>
+  <a href="@Url.Action("Index")" class="btn btn-outline-secondary"><i class="bi bi-arrow-left"></i> Back</a>
+</div>
+<form method="post">
+  <div class="card mb-3">
+    <div class="card-header"><h6>Expense Details</h6></div>
+    <div class="card-body">
+      <div class="row g-2">
+        <div class="col-md-4"><label class="form-label">Category <span class="text-danger">*</span></label><input type="text" name="Category" class="form-control" value="@Model.Category" required /></div>
+        <div class="col-md-4"><label class="form-label">Amount <span class="text-danger">*</span></label><input type="number" name="Amount" class="form-control" value="@Model.Amount" step="0.01" required /></div>
+        <div class="col-md-4"><label class="form-label">Date</label><input type="date" name="ExpenseDate" class="form-control" value="@Model.ExpenseDate.ToString("yyyy-MM-dd")" /></div>
+        <div class="col-12"><label class="form-label">Notes</label><textarea name="Notes" class="form-control" rows="3">@Model.Notes</textarea></div>
+      </div>
+    </div>
+  </div>
+  <div class="d-flex gap-2 justify-content-end">
+    <a href="@Url.Action("Index")" class="btn btn-outline-secondary">Cancel</a>
+    <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg"></i> Save</button>
+  </div>
+</form>

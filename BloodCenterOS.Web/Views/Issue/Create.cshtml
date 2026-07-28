@@ -1,61 +1,93 @@
-@model IssueRecord
 @{
-  ViewBag.Title = "New Blood Issue";
-  ViewBag.ActiveMenu = "Issue";
+    ViewData["Title"] = "Issue Blood";
+    var ready = ViewBag.ReadyForIssue as List<ReservationReadyForIssue> ?? new();
+    var selected = ViewBag.Selected as ReservationReadyForIssue;
 }
 
-<div class="page-header">
-  <div>
-    <h1 class="page-title">New Blood Issue <small>Cross-match &amp; issue to patient</small></h1>
-  </div>
-  <a href="@Url.Action("Index")" class="btn btn-outline-secondary"><i class="bi bi-arrow-left"></i> Back</a>
+<div class="container-fluid px-4">
+    <h1 class="mt-4">Issue Blood to Patient</h1>
+
+    @if (selected != null)
+    {
+        <div class="card mb-4">
+            <div class="card-header">Reservation Summary</div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3"><strong>Patient:</strong> @selected.PatientName</div>
+                    <div class="col-md-2"><strong>Blood Group:</strong> @selected.RequiredBloodGroup</div>
+                    <div class="col-md-2"><strong>Component:</strong> @selected.ComponentType</div>
+                    <div class="col-md-1"><strong>Units:</strong> @selected.UnitsReserved</div>
+                    <div class="col-md-2"><strong>Hospital:</strong> @selected.HospitalName</div>
+                    <div class="col-md-2"><strong>CM #:</strong> @selected.CrossMatchEntryId</div>
+                </div>
+            </div>
+        </div>
+
+        <form asp-action="Create" method="post">
+            <input type="hidden" name="reservationId" value="@selected.ReservationId" />
+
+            <div class="card mb-4">
+                <div class="card-header">Issue Details</div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Payment Mode</label>
+                            <select name="paymentMode" class="form-select">
+                                <option value="">No Invoice (Free/Donation)</option>
+                                <option value="Cash" selected>Cash</option>
+                                <option value="Credit">Credit</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Notes</label>
+                            <textarea name="notes" class="form-control" rows="2" placeholder="Optional notes"></textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="d-flex gap-2 justify-content-end">
+                <a asp-action="Index" class="btn btn-secondary">Cancel</a>
+                <button type="submit" class="btn btn-success">Confirm Issue</button>
+            </div>
+        </form>
+    }
+    else
+    {
+        <div class="card mb-4">
+            <div class="card-header">Select a Reservation</div>
+            <div class="card-body">
+                @if (ready.Any())
+                {
+                    <table class="table table-bordered">
+                        <thead><tr>
+                            <th>Reservation #</th>
+                            <th>Patient</th>
+                            <th>Blood Group</th>
+                            <th>Component</th>
+                            <th>Units</th>
+                            <th></th>
+                        </tr></thead>
+                        <tbody>
+                            @foreach (var r in ready)
+                            {
+                                <tr>
+                                    <td>@r.ReservationId</td>
+                                    <td>@r.PatientName</td>
+                                    <td>@r.RequiredBloodGroup</td>
+                                    <td>@r.ComponentType</td>
+                                    <td>@r.UnitsReserved</td>
+                                    <td><a asp-action="Create" asp-route-reservationId="@r.ReservationId" class="btn btn-primary btn-sm">Select</a></td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                }
+                else
+                {
+                    <p class="text-muted mb-0">No completed cross-matches ready for issue.</p>
+                }
+            </div>
+        </div>
+    }
 </div>
-
-@if (!ViewData.ModelState.IsValid) { <div class="alert alert-danger d-flex flex-column gap-1 mb-3 py-2 px-3">@foreach(var err in ViewData.ModelState.Values.SelectMany(v=>v.Errors)){<div class="d-flex align-items-center gap-2"><i class="bi bi-exclamation-circle"></i><span>@err.ErrorMessage</span></div>}</div> }
-
-<form method="post" action="@Url.Action("Create")">
-  <div class="card mb-3">
-    <div class="card-header"><h6>Issue Details</h6></div>
-    <div class="card-body">
-      <div class="row g-2">
-        <div class="col-md-6">
-          <label class="form-label">Patient Name <span class="text-danger">*</span></label>
-          <input type="text" name="PatientName" class="form-control" value="@Model.PatientName" required />
-        </div>
-        <div class="col-md-3">
-          <label class="form-label">Issue Type</label>
-          <select name="IssueType" class="form-select">
-            <option value="Cross-match" selected="@(Model.IssueType == "Cross-match")">Cross-match</option>
-            <option value="Emergency" selected="@(Model.IssueType == "Emergency")">Emergency</option>
-            <option value="Regular" selected="@(Model.IssueType == "Regular")">Regular</option>
-          </select>
-        </div>
-        <div class="col-md-3">
-          <label class="form-label">Issue Slip #</label>
-          <input type="text" name="IssueSlipNumber" class="form-control" value="@Model.IssueSlipNumber" placeholder="Auto" />
-        </div>
-        <div class="col-md-4">
-          <label class="form-label">Component ID</label>
-          <input type="number" name="ComponentId" class="form-control" value="@Model.ComponentId" />
-        </div>
-        <div class="col-md-4">
-          <label class="form-label">Bag ID</label>
-          <input type="number" name="BagId" class="form-control" value="@Model.BagId" />
-        </div>
-        <div class="col-md-4">
-          <label class="form-label">Hospital ID</label>
-          <input type="number" name="HospitalId" class="form-control" value="@Model.HospitalId" />
-        </div>
-        <div class="col-12">
-          <label class="form-label">Notes</label>
-          <textarea name="Notes" class="form-control" rows="2">@Model.Notes</textarea>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <div class="d-flex gap-2 justify-content-end">
-    <a href="@Url.Action("Index")" class="btn btn-outline-secondary">Cancel</a>
-    <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg"></i> Create Issue</button>
-  </div>
-</form>

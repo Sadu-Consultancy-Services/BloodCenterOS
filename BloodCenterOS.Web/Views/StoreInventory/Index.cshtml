@@ -1,0 +1,88 @@
+@model List<InvItem>
+
+@{
+    ViewData["Title"] = "Store Inventory";
+    var summary = ViewBag.Summary as List<InvStockSummary> ?? new();
+}
+
+<div class="container-fluid px-4">
+    <h1 class="mt-4">Store Inventory</h1>
+
+    @if (TempData["Success"] is string succMsg) { <div class="alert alert-success">@succMsg</div> }
+    @if (TempData["Error"] is string errMsg) { <div class="alert alert-danger">@errMsg</div> }
+
+    <div class="d-flex gap-2 mb-3">
+        <a asp-action="CreateItem" class="btn btn-primary">New Item</a>
+        <a asp-action="Inward" class="btn btn-success">Stock Inward</a>
+        <a asp-action="Outward" class="btn btn-warning">Stock Outward</a>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-header"><i class="fas fa-boxes me-1"></i> Stock Summary</div>
+        <div class="card-body">
+            <table class="table table-bordered table-hover table-sm">
+                <thead><tr>
+                    <th>Item</th>
+                    <th>Unit</th>
+                    <th>Min Order</th>
+                    <th>Inward</th>
+                    <th>Outward</th>
+                    <th>Current Stock</th>
+                    <th></th>
+                </tr></thead>
+                <tbody>
+                    @foreach (var s in summary)
+                    {
+                        <tr class="@(s.CurrentStock <= s.MinOrderQty ? "table-warning" : "")">
+                            <td>@s.ItemName</td>
+                            <td>@s.ItemUnit</td>
+                            <td>@s.MinOrderQty</td>
+                            <td>@s.InwardQty</td>
+                            <td>@s.OutwardQty</td>
+                            <td class="fw-bold @(s.CurrentStock <= s.MinOrderQty ? "text-danger" : "")">@s.CurrentStock</td>
+                            <td><a asp-action="Transactions" asp-route-itemId="@s.ItemId" class="btn btn-sm btn-info">Txns</a></td>
+                        </tr>
+                    }
+                    @if (!summary.Any()) { <tr><td colspan="7" class="text-center">No items</td></tr> }
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-header"><i class="fas fa-list me-1"></i> All Items</div>
+        <div class="card-body">
+            <table class="table table-bordered table-hover">
+                <thead><tr>
+                    <th>Name</th>
+                    <th>Unit</th>
+                    <th>Min Order Qty</th>
+                    <th>Active</th>
+                    <th></th>
+                </tr></thead>
+                <tbody>
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <td>@item.ItemName</td>
+                            <td>@item.ItemUnit</td>
+                            <td>@item.MinOrderQty</td>
+                            <td>@(item.IsActive ? "Yes" : "No")</td>
+                            <td>
+                                <a asp-action="EditItem" asp-route-id="@item.ItemId" class="btn btn-sm btn-info">Edit</a>
+                                @if (item.IsActive)
+                                {
+                                    <form asp-action="DeleteItem" method="post" style="display:inline" onsubmit="return confirm('Deactivate this item?')">
+                                        <input type="hidden" name="id" value="@item.ItemId" />
+                                        <button type="submit" class="btn btn-sm btn-outline-danger">Deactivate</button>
+                                    </form>
+                                }
+                            </td>
+                        </tr>
+                    }
+                    @if (!Model.Any()) { <tr><td colspan="5" class="text-center">No items</td></tr> }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>BloodCenterOS — Phase 3 Developer Help</title>
+    <style>
+        :root { --primary: #c0392b; --bg: #fdfdfd; --card-bg: #fff; --border: #dcdcdc; --text: #2c3e50; --success: #27ae60; --info: #2980b9; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); line-height: 1.7; padding: 20px; }
+        .header { background: linear-gradient(135deg, var(--primary), #96281b); color: #fff; padding: 30px 40px; border-radius: 10px; margin-bottom: 28px; }
+        .header h1 { font-size: 1.8em; }
+        .section { background: var(--card-bg); border: 1px solid var(--border); border-radius: 10px; padding: 24px 28px; margin-bottom: 24px; }
+        .section h2 { color: var(--primary); margin-bottom: 12px; border-bottom: 2px solid var(--primary); padding-bottom: 6px; display: inline-block; }
+        .section h3 { margin: 16px 0 8px; border-left: 3px solid var(--primary); padding-left: 10px; }
+        table { width: 100%; border-collapse: collapse; margin: 10px 0; font-size: 0.9em; }
+        th { background: var(--text); color: #fff; padding: 8px 12px; text-align: left; }
+        td { padding: 7px 12px; border-bottom: 1px solid var(--border); }
+        code { background: #f4f4f4; padding: 2px 6px; border-radius: 4px; font-size: 0.88em; color: var(--primary); }
+        pre { background: #1e1e1e; color: #d4d4d4; padding: 14px 18px; border-radius: 8px; overflow-x: auto; font-size: 0.85em; }
+        .tag { display: inline-block; padding: 2px 10px; border-radius: 12px; font-size: 0.78em; font-weight: 600; }
+        .tag-green { background: #e8f8f0; color: var(--success); }
+        .tag-blue { background: #e8f0fd; color: var(--info); }
+        .tag-red { background: #fde8e8; color: var(--primary); }
+        .tag-orange { background: #fef3e2; color: #f39c12; }
+        ul { margin: 8px 0 8px 20px; }
+        li { margin-bottom: 4px; font-size: 0.93em; }
+    </style>
+</head>
+<body>
+<div class="header">
+    <h1>BloodCenterOS — Phase 3 Developer Help</h1>
+    <p>Cross Matching (Saline / Bovine / Coombs) + Blood Issuing with Payment</p>
+</div>
+
+<div class="section">
+    <h2>Overview</h2>
+    <p>Phase 3 covers <strong>Cross Matching</strong> (3-test workflow: Saline, Bovine, Coombs)
+    and <strong>Blood Issuing</strong> to patients (reservation-based with payment processing).
+    Reference: BloodCenter24 forms <code>CrossMatchEntry.cs</code> + <code>IssueToPatient.cs</code>.</p>
+</div>
+
+<div class="section">
+    <h2>Database Changes</h2>
+    <p>Patch file: <code>DB/patch_20260724_008_crossmatch_issue.sql</code></p>
+
+    <h3>New Tables</h3>
+    <table>
+        <tr><th>Table</th><th>Purpose</th></tr>
+        <tr><td><code>CrossMatchEntry</code></td><td>Header per reservation undergoing cross matching</td></tr>
+        <tr><td><code>CrossMatchTestResult</code></td><td>Individual test results (Saline, Bovine, Coombs) per reserved component</td></tr>
+    </table>
+
+    <h3>Cross Match Stored Procedures</h3>
+    <table>
+        <tr><th>SP</th><th>Description</th></tr>
+        <tr><td><code>fn_crossmatch_start</code></td><td>Create entry + 3 test rows per reserved component</td></tr>
+        <tr><td><code>fn_crossmatch_set_result</code></td><td>Update a test result and recalc overall (Pass if all Pass, Reject if any Reject)</td></tr>
+        <tr><td><code>fn_crossmatch_reject_component</code></td><td>Reject all 3 tests for a component + release back to Available</td></tr>
+        <tr><td><code>fn_crossmatch_get_pending_reservations</code></td><td>Active reservations without a completed cross-match</td></tr>
+        <tr><td><code>fn_crossmatch_get_by_center</code></td><td>Filtered list (status, date range)</td></tr>
+        <tr><td><code>fn_crossmatch_get_by_id</code></td><td>Single entry detail</td></tr>
+        <tr><td><code>fn_crossmatch_get_tests</code></td><td>All test results for an entry (joined with ReservationDetail)</td></tr>
+    </table>
+
+    <h3>Blood Issue Stored Procedures</h3>
+    <table>
+        <tr><th>SP</th><th>Description</th></tr>
+        <tr><td><code>fn_issue_from_reservation</code></td><td>Issue all cross-matched components from a reservation. Creates IssueRecord rows, updates ComponentMaster.status='Issued', ReservationDetail.Status='Issued', PatientReservation.Status='Issued'. Optionally creates BillingTransaction + InvoiceDetail for Cash/Credit.</td></tr>
+        <tr><td><code>fn_issue_get_by_reservation</code></td><td>Get issue records for a reservation</td></tr>
+        <tr><td><code>fn_issue_get_ready_for_issue</code></td><td>Active reservations with Pass cross-match result</td></tr>
+    </table>
+</div>
+
+<div class="section">
+    <h2>Data Flow</h2>
+    <pre>Reservation (Active) → Start Cross Match → 3 tests per component (Saline, Bovine, Coombs)
+    → Auto pass/reject logic:
+      • All Pass → OverallResult = 'Pass' → Ready for Issue
+      • Any Reject → OverallResult = 'Reject' → Component released back
+
+Ready for Issue → Select Payment Mode (Cash/Credit/None) → Issue
+    → ComponentMaster.status = 'Issued'
+    → ReservationDetail.Status = 'Issued'
+    → PatientReservation.Status = 'Issued'
+    → BillingTransaction + InvoiceDetail (if payment mode)</pre>
+</div>
+
+<div class="section">
+    <h2>Core Models</h2>
+    <table>
+        <tr><th>File</th><th>Classes</th></tr>
+        <tr><td><code>Core/Models/CrossMatchEntry.cs</code></td><td><code>CrossMatchEntry</code>, <code>CrossMatchTestResult</code>, <code>CrossMatchWithTests</code>, <code>StartCrossMatchRequest</code>, <code>SetTestResultRequest</code></td></tr>
+        <tr><td><code>Core/Models/IssueRecord.cs</code></td><td><code>IssueRecord</code>, <code>IssueFromReservationRequest</code>, <code>ReservationReadyForIssue</code></td></tr>
+    </table>
+</div>
+
+<div class="section">
+    <h2>API Endpoints</h2>
+    <h3>Cross Match API (<code>/api/crossmatches</code>)</h3>
+    <table>
+        <tr><th>Method</th><th>Path</th><th>Description</th></tr>
+        <tr><td>GET</td><td><code>/api/crossmatches</code></td><td>List with optional status/from/to filters</td></tr>
+        <tr><td>GET</td><td><code>/api/crossmatches/{id}</code></td><td>Entry + all test results</td></tr>
+        <tr><td>POST</td><td><code>/api/crossmatches/start</code></td><td>Start cross-match for a reservation</td></tr>
+        <tr><td>PUT</td><td><code>/api/crossmatches/set-result</code></td><td>Set Pass/Reject on a single test</td></tr>
+        <tr><td>POST</td><td><code>/api/crossmatches/reject-component/{testResultId}</code></td><td>Reject all 3 tests for a component</td></tr>
+        <tr><td>GET</td><td><code>/api/crossmatches/pending-reservations</code></td><td>Reservations awaiting cross-match</td></tr>
+    </table>
+
+    <h3>Issue API (<code>/api/issues</code>)</h3>
+    <table>
+        <tr><th>Method</th><th>Path</th><th>Description</th></tr>
+        <tr><td>GET</td><td><code>/api/issues</code></td><td>All issue records</td></tr>
+        <tr><td>POST</td><td><code>/api/issues/from-reservation</code></td><td>Issue all components from a completed cross-match</td></tr>
+        <tr><td>GET</td><td><code>/api/issues/ready-for-issue</code></td><td>Reservations with Pass cross-match</td></tr>
+        <tr><td>GET</td><td><code>/api/issues/by-reservation/{reservationId}</code></td><td>Issue records for a specific reservation</td></tr>
+    </table>
+</div>
+
+<div class="section">
+    <h2>Controllers &amp; Repositories</h2>
+    <table>
+        <tr><th>Layer</th><th>File</th></tr>
+        <tr><td>API Repository</td><td><code>API/Repositories/CrossMatchRepository.cs</code></td></tr>
+        <tr><td>API Repository</td><td><code>API/Repositories/IssueRepository.cs</code></td></tr>
+        <tr><td>API Controller</td><td><code>API/Controllers/CrossMatchController.cs</code></td></tr>
+        <tr><td>API Controller</td><td><code>API/Controllers/IssueController.cs</code></td></tr>
+        <tr><td>Web Controller</td><td><code>Web/Controllers/CrossMatchController.cs</code></td></tr>
+        <tr><td>Web Controller</td><td><code>Web/Controllers/IssueController.cs</code></td></tr>
+        <tr><td>Web Views</td><td><code>Web/Views/CrossMatch/{Index,Create,Details}.cshtml</code></td></tr>
+        <tr><td>Web Views</td><td><code>Web/Views/Issue/{Index,Create,Details}.cshtml</code></td></tr>
+    </table>
+</div>
+
+<div class="section">
+    <h2>Web Views</h2>
+    <h3>Cross Matching</h3>
+    <ul>
+        <li><strong>Index:</strong> Filter by status/date, browse all cross-match records with result badges</li>
+        <li><strong>Create:</strong> List of pending reservations; click "Start CM" to begin</li>
+        <li><strong>Details:</strong> Per-component table with Pass/Reject buttons for each of 3 test types; auto-computes overall result; "Release" button to reject component</li>
+    </ul>
+    <h3>Blood Issuing</h3>
+    <ul>
+        <li><strong>Index:</strong> "Ready for Issue" section (cross-matched Pass reservations) + issue history</li>
+        <li><strong>Create:</strong> Select reservation → choose Payment Mode (Cash/Credit/None) → confirm issue</li>
+        <li><strong>Details:</strong> List of issued components for a reservation</li>
+    </ul>
+</div>
+
+<div class="section">
+    <h2>Sidebar</h2>
+    <p>New entry <strong>Cross Matching</strong> added between Reservations and Rate Management.</p>
+    <p><strong>Blood Issue</strong> entry was already present.</p>
+</div>
+</body>
+</html>

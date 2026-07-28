@@ -1,0 +1,93 @@
+@model List<QualityControl>
+
+@{
+    ViewData["Title"] = "Quality Control";
+    var types = ViewBag.QcTypes as string[] ?? Array.Empty<string>();
+    var selected = ViewBag.SelectedType as string;
+}
+
+<div class="container-fluid px-4">
+    <h1 class="mt-4">Quality Control Register</h1>
+
+    @if (TempData["Success"] is string s) { <div class="alert alert-success">@s</div> }
+
+    <form method="get" class="row g-3 mb-3">
+        <div class="col-auto">
+            <select name="type" class="form-select">
+                <option value="">All Types</option>
+                @foreach (var t in types)
+                {
+                    <option value="@t" selected="@(selected == t)">@t</option>
+                }
+            </select>
+        </div>
+        <div class="col-auto">
+            <input type="date" name="from" class="form-control" value="@ViewBag.From?.ToString("yyyy-MM-dd")" />
+        </div>
+        <div class="col-auto">
+            <input type="date" name="to" class="form-control" value="@ViewBag.To?.ToString("yyyy-MM-dd")" />
+        </div>
+        <div class="col-auto">
+            <button type="submit" class="btn btn-primary">Filter</button>
+        </div>
+        <div class="col-auto">
+            <div class="dropdown">
+                <button class="btn btn-success dropdown-toggle" type="button" data-bs-toggle="dropdown">New QC</button>
+                <ul class="dropdown-menu">
+                    @foreach (var t in types)
+                    {
+                        <li><a class="dropdown-item" asp-action="Create" asp-route-type="@t">@t</a></li>
+                    }
+                </ul>
+            </div>
+        </div>
+    </form>
+
+    <div class="card mb-4">
+        <div class="card-header"><i class="fas fa-flask me-1"></i> QC Records</div>
+        <div class="card-body">
+            <table class="table table-bordered table-hover">
+                <thead><tr>
+                    <th>#</th>
+                    <th>Type</th>
+                    <th>Date</th>
+                    <th>Key Details</th>
+                    <th></th>
+                </tr></thead>
+                <tbody>
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <td>@item.QCRecordId</td>
+                            <td><span class="badge bg-info">@item.QCType</span></td>
+                            <td>@item.QCDate.ToString("dd/MM/yyyy")</td>
+                            <td>
+                                @switch (item.QCType)
+                                {
+                                    case "PoolCell":
+                                        <text>Unit: @item.UnitNumber, Specificity: @item.Specificity, Batch: @item.BatchNo</text>
+                                        break;
+                                    case "Anticera":
+                                        <text>Batch: @item.BatchNo, Expiry: @item.Expiry?.ToString("dd/MM/yyyy"), Reactivity: @item.Reactivity</text>
+                                        break;
+                                    case "Saline":
+                                        <text>Appearance: @item.Appearance, Haemolysis: @item.Haemolysis, Sp.Gravity: @item.SpGravity</text>
+                                        break;
+                                    case "CopperSulphate":
+                                        <text>Sp.Gravity: @item.SpGravity, High: @item.HighControl, Low: @item.LowControl</text>
+                                        break;
+                                    case "CoombsAHG":
+                                    case "BSA":
+                                        <text>Batch: @item.BatchNo, Expiry: @item.Expiry?.ToString("dd/MM/yyyy"), Activity: @item.Activity, Titre: @item.Titre</text>
+                                        break;
+                                }
+                            </td>
+                            <td><a asp-action="Details" asp-route-id="@item.QCRecordId" class="btn btn-sm btn-info">View</a></td>
+                        </tr>
+                    }
+                    @if (!Model.Any()) { <tr><td colspan="5" class="text-center">No QC records found</td></tr> }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,60 @@
+@model InvoiceWithDetails
+
+@{
+    ViewData["Title"] = "Invoice Details";
+    var net = (Model.Invoice.TotalAmount ?? 0) + (Model.Invoice.TaxAmount ?? 0) - (Model.Invoice.Discount ?? 0);
+}
+
+<div class="container-fluid px-4">
+    <h1 class="mt-4">Invoice @Model.Invoice.InvoiceNumber</h1>
+
+    <div class="row mb-3">
+        <div class="col-md-3"><strong>Invoice #:</strong> @Model.Invoice.InvoiceNumber</div>
+        <div class="col-md-2"><strong>Amount:</strong> ₹@(Model.Invoice.TotalAmount?.ToString("N0"))</div>
+        <div class="col-md-2"><strong>Net:</strong> ₹@net.ToString("N0")</div>
+        <div class="col-md-2">
+            <strong>Status:</strong>
+            @if (Model.Invoice.PaymentStatus == "Paid") { <span class="badge bg-success">Paid</span> }
+            else if (Model.Invoice.PaymentStatus == "Partial") { <span class="badge bg-warning">Partial</span> }
+            else { <span class="badge bg-danger">@Model.Invoice.PaymentStatus</span> }
+        </div>
+        <div class="col-md-2"><strong>Mode:</strong> @(Model.Invoice.PaymentMode ?? "—")</div>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-header">Invoice Lines</div>
+        <div class="card-body">
+            <table class="table table-bordered">
+                <thead><tr>
+                    <th>#</th>
+                    <th>Service/Component</th>
+                    <th>Qty</th>
+                    <th>Unit Price</th>
+                    <th>Line Total</th>
+                </tr></thead>
+                <tbody>
+                    @foreach (var d in Model.Details)
+                    {
+                        <tr>
+                            <td>@d.InvoiceDetailId</td>
+                            <td>@d.ServiceName</td>
+                            <td>@d.Quantity</td>
+                            <td>₹@(d.UnitPrice?.ToString("N0"))</td>
+                            <td>₹@(d.LineTotal?.ToString("N0"))</td>
+                        </tr>
+                    }
+                    @if (!Model.Details.Any()) { <tr><td colspan="5" class="text-center">No line items</td></tr> }
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="d-flex gap-2">
+        <a asp-action="Index" class="btn btn-secondary">Back</a>
+        @if (Model.Invoice.PaymentStatus != "Paid")
+        {
+            <a asp-action="Payment" asp-route-id="@Model.Invoice.BillingTransactionId" class="btn btn-primary">Add Payment</a>
+            <a asp-action="CreditNote" asp-route-originalInvoiceId="@Model.Invoice.BillingTransactionId" class="btn btn-outline-danger">Credit Note</a>
+        }
+    </div>
+</div>

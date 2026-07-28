@@ -1,0 +1,26 @@
+@{ ViewBag.Title = "Register Replacement Donor"; ViewBag.ActiveMenu = "ReplacementDonors"; }
+<div class="page-header">
+  <div><h1 class="page-title">Register Replacement Donor <small>Link a donor to a patient request</small></h1></div>
+  <a href="@Url.Action("Index")" class="btn btn-outline-secondary"><i class="bi bi-arrow-left"></i> Back</a>
+</div>
+<form method="post">
+  <div class="card mb-3">
+    <div class="card-header"><h6>Donor Details</h6></div>
+    <div class="card-body">
+      <div class="row g-2">
+        <div class="col-md-6">
+          <label class="form-label">Request ID <span class="text-danger">*</span></label>
+          <input type="number" name="requestId" class="form-control" required />
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Donor ID <span class="text-danger">*</span></label>
+          <input type="number" name="donorId" class="form-control" required />
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="d-flex gap-2 justify-content-end">
+    <a href="@Url.Action("Index")" class="btn btn-outline-secondary">Cancel</a>
+    <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg"></i> Register</button>
+  </div>
+</form>

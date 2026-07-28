@@ -1,0 +1,47 @@
+@model List<BloodReception>
+@{ ViewBag.Title = "Blood Reception from MBB"; ViewBag.ActiveMenu = "BloodReception"; }
+<div class="page-header">
+  <div><h1 class="page-title">Blood Reception <small>From Mother Blood Bank</small></h1></div>
+  <a href="@Url.Action("Create")" class="btn btn-primary"><i class="bi bi-plus"></i> Receive Blood</a>
+</div>
+@if (TempData["Success"] is string s) { <div class="alert alert-success py-2 px-3 mb-3">@s</div> }
+@if (TempData["Error"] is string e) { <div class="alert alert-danger py-2 px-3 mb-3">@e</div> }
+
+<form method="get" class="row g-2 mb-3">
+  <div class="col-auto">
+    <label class="form-label form-label-sm text-muted mb-0">From</label>
+    <input type="date" name="fromDate" class="form-control form-control-sm" value="@ViewBag.FromDate" />
+  </div>
+  <div class="col-auto">
+    <label class="form-label form-label-sm text-muted mb-0">To</label>
+    <input type="date" name="toDate" class="form-control form-control-sm" value="@ViewBag.ToDate" />
+  </div>
+  <div class="col-auto d-flex align-items-end gap-1">
+    <button type="submit" class="btn btn-sm btn-outline-primary"><i class="bi bi-search"></i> Filter</button>
+    <a href="@Url.Action("Index")" class="btn btn-sm btn-outline-secondary">Clear</a>
+  </div>
+</form>
+
+<div class="card">
+  <div class="card-body p-0">
+    <table class="table mb-0">
+      <thead><tr><th>Date</th><th>MBB Name</th><th>Bill #</th><th>Bags</th><th>Notes</th><th></th></tr></thead>
+      <tbody>
+        @if (!Model.Any()) { <tr><td colspan="6" class="text-center text-muted py-3">No receptions found.</td></tr> }
+        @foreach (var item in Model)
+        {
+          <tr>
+            <td>@item.ReceiptDate.ToString("dd/MM/yyyy")</td>
+            <td>@item.MBBName</td>
+            <td>@item.BillNumber</td>
+            <td><span class="badge bg-info">@item.TotalBags</span></td>
+            <td class="text-muted small">@item.Notes</td>
+            <td class="text-end">
+              <a href="@Url.Action("Details", new { id = item.ReceptionId })" class="btn btn-sm btn-outline-info"><i class="bi bi-eye"></i></a>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+</div>

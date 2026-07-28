@@ -1,0 +1,82 @@
+@model CreateQcRequest
+
+@{
+    ViewData["Title"] = "New QC Record";
+    var types = ViewBag.QcTypes as string[] ?? Array.Empty<string>();
+    var selected = ViewBag.SelectedType as string ?? "PoolCell";
+}
+
+<div class="container-fluid px-4">
+    <h1 class="mt-4">New Quality Control Record</h1>
+
+    <ul class="nav nav-tabs mb-3">
+        @foreach (var t in types)
+        {
+            <li class="nav-item">
+                <a class="nav-link @(selected == t ? "active" : "")" asp-action="Create" asp-route-type="@t">@t</a>
+            </li>
+        }
+    </ul>
+
+    <form asp-action="Create" method="post">
+        <input type="hidden" asp-for="QCType" value="@selected" />
+        <input type="hidden" asp-for="QCDate" value="@Model.QCDate.ToString("yyyy-MM-dd")" />
+
+        <div class="card mb-3">
+            <div class="card-header">@selected — QC Details</div>
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-md-3">
+                        <label class="form-label">QC Date *</label>
+                        <input asp-for="QCDate" class="form-control" type="date" required />
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Device</label>
+                        <input asp-for="DeviceId" class="form-control" type="number" placeholder="Device ID" />
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Notes</label>
+                        <input asp-for="Notes" class="form-control" />
+                    </div>
+
+                    @if (selected == "PoolCell")
+                    {
+                        <div class="col-md-4"><label class="form-label">Unit Number</label><input asp-for="UnitNumber" class="form-control" /></div>
+                        <div class="col-md-4"><label class="form-label">Specificity</label><input asp-for="Specificity" class="form-control" /></div>
+                        <div class="col-md-4"><label class="form-label">Batch No</label><input asp-for="BatchNo" class="form-control" /></div>
+                    }
+                    else if (selected == "Anticera")
+                    {
+                        <div class="col-md-4"><label class="form-label">Batch No</label><input asp-for="BatchNo" class="form-control" /></div>
+                        <div class="col-md-4"><label class="form-label">Expiry</label><input asp-for="Expiry" class="form-control" type="date" /></div>
+                        <div class="col-md-4"><label class="form-label">Reactivity</label><input asp-for="Reactivity" class="form-control" /></div>
+                    }
+                    else if (selected == "Saline")
+                    {
+                        <div class="col-md-4"><label class="form-label">Appearance</label><input asp-for="Appearance" class="form-control" /></div>
+                        <div class="col-md-4"><label class="form-label">Haemolysis</label><input asp-for="Haemolysis" class="form-control" /></div>
+                        <div class="col-md-4"><label class="form-label">Specific Gravity</label><input asp-for="SpGravity" class="form-control" /></div>
+                    }
+                    else if (selected == "CopperSulphate")
+                    {
+                        <div class="col-md-4"><label class="form-label">Specific Gravity</label><input asp-for="SpGravity" class="form-control" /></div>
+                        <div class="col-md-4"><label class="form-label">High Control</label><input asp-for="HighControl" class="form-control" /></div>
+                        <div class="col-md-4"><label class="form-label">Low Control</label><input asp-for="LowControl" class="form-control" /></div>
+                    }
+                    else if (selected == "CoombsAHG" || selected == "BSA")
+                    {
+                        <div class="col-md-3"><label class="form-label">Batch No</label><input asp-for="BatchNo" class="form-control" /></div>
+                        <div class="col-md-3"><label class="form-label">Expiry</label><input asp-for="Expiry" class="form-control" type="date" /></div>
+                        <div class="col-md-3"><label class="form-label">Activity</label><input asp-for="Activity" class="form-control" /></div>
+                        <div class="col-md-3"><label class="form-label">Titre</label><input asp-for="Titre" class="form-control" /></div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <div class="d-flex gap-2 justify-content-end">
+            <a asp-action="Index" class="btn btn-secondary">Cancel</a>
+            <button type="submit" class="btn btn-primary">Save QC Record</button>
+        </div>
+    </form>
+</div>

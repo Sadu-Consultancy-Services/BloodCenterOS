@@ -1,0 +1,81 @@
+@model List<DiscardRecord>
+
+@{
+    ViewData["Title"] = "Discard Register";
+    var reasons = new[] { "EXPIRED", "CLOTTED", "BAG_DAMAGED", "CONTAMINATED", "TEST_POSITIVE", "SHORT_BLEED" };
+}
+
+<div class="container-fluid px-4">
+    <h1 class="mt-4">Discard Register</h1>
+
+    @if (TempData["Success"] is string s) { <div class="alert alert-success">@s</div> }
+    @if (TempData["Error"] is string e) { <div class="alert alert-danger">@e</div> }
+
+    <form method="get" class="row g-3 mb-3">
+        <div class="col-auto">
+            <input type="date" name="from" class="form-control" value="@ViewBag.From?.ToString("yyyy-MM-dd")" />
+        </div>
+        <div class="col-auto">
+            <input type="date" name="to" class="form-control" value="@ViewBag.To?.ToString("yyyy-MM-dd")" />
+        </div>
+        <div class="col-auto">
+            <select name="reason" class="form-select">
+                <option value="">All Reasons</option>
+                @foreach (var r in reasons)
+                {
+                    <option value="@r" selected="@(ViewBag.Reason == r)">@r</option>
+                }
+            </select>
+        </div>
+        <div class="col-auto">
+            <button type="submit" class="btn btn-primary">Filter</button>
+            <a asp-action="Create" class="btn btn-danger">Discard Blood</a>
+            <a asp-action="AutoclaveRegister" class="btn btn-secondary">Autoclave Register</a>
+        </div>
+    </form>
+
+    <div class="card mb-4">
+        <div class="card-header"><i class="fas fa-trash-alt me-1"></i> Discarded Components</div>
+        <div class="card-body">
+            <table class="table table-bordered table-hover">
+                <thead><tr>
+                    <th>Component</th>
+                    <th>Type</th>
+                    <th>Blood Group</th>
+                    <th>Bag #</th>
+                    <th>Donor</th>
+                    <th>Reason</th>
+                    <th>Discarded At</th>
+                    <th>Autoclave</th>
+                    <th></th>
+                </tr></thead>
+                <tbody>
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <td>@item.ComponentCode</td>
+                            <td>@item.ComponentType</td>
+                            <td>@item.BloodGroup</td>
+                            <td>@item.BagNo</td>
+                            <td>@item.DonorName</td>
+                            <td><span class="badge bg-warning">@item.DiscardReason</span></td>
+                            <td>@item.DiscardedAt.ToString("dd/MM/yyyy HH:mm")</td>
+                            <td>
+                                @if (item.AutoClaveStartTime.HasValue)
+                                {
+                                    <span>@item.AutoClaveStartTime?.ToString("HH:mm") - @item.AutoClaveEndTime?.ToString("HH:mm")</span>
+                                }
+                                else
+                                {
+                                    <a asp-action="SetAutoclave" asp-route-discardId="@item.DiscardId" class="btn btn-sm btn-outline-secondary">Set Times</a>
+                                }
+                            </td>
+                            <td>@item.Notes</td>
+                        </tr>
+                    }
+                    @if (!Model.Any()) { <tr><td colspan="9" class="text-center">No discarded records found</td></tr> }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

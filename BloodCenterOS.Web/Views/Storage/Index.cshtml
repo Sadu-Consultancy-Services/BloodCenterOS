@@ -1,0 +1,54 @@
+@model List<StorageMaster>
+
+@{
+    ViewData["Title"] = "Storage Units";
+}
+
+<div class="container-fluid px-4">
+    <h1 class="mt-4">Blood Storage Units</h1>
+
+    @if (TempData["Success"] is string msg) { <div class="alert alert-success">@msg</div> }
+
+    <div class="mb-3"><a asp-action="Create" class="btn btn-primary">New Storage Unit</a></div>
+
+    <div class="card mb-4">
+        <div class="card-header"><i class="fas fa-warehouse me-1"></i> Storage Units</div>
+        <div class="card-body">
+            <table class="table table-bordered table-hover">
+                <thead><tr>
+                    <th>Name</th>
+                    <th>Contact Person</th>
+                    <th>Phone</th>
+                    <th>Email</th>
+                    <th>Rates (WB/PCV/FFP/Plt)</th>
+                    <th>Active</th>
+                    <th></th>
+                </tr></thead>
+                <tbody>
+                    @foreach (var s in Model)
+                    {
+                        <tr>
+                            <td>@s.StorageName</td>
+                            <td>@s.ContactPerson</td>
+                            <td>@s.PhoneNo</td>
+                            <td>@s.Email</td>
+                            <td>₹@s.RateWB / ₹@s.RatePCV / ₹@s.RateFFP / ₹@s.RatePltsConc</td>
+                            <td>@(s.IsActive ? "Yes" : "No")</td>
+                            <td>
+                                <a asp-action="Edit" asp-route-id="@s.StorageId" class="btn btn-sm btn-info">Edit</a>
+                                @if (s.IsActive)
+                                {
+                                    <form asp-action="Delete" method="post" style="display:inline" onsubmit="return confirm('Deactivate this storage?')">
+                                        <input type="hidden" name="id" value="@s.StorageId" />
+                                        <button type="submit" class="btn btn-sm btn-outline-danger">Deactivate</button>
+                                    </form>
+                                }
+                            </td>
+                        </tr>
+                    }
+                    @if (!Model.Any()) { <tr><td colspan="7" class="text-center">No storage units</td></tr> }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

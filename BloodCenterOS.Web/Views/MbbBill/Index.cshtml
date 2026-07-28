@@ -1,0 +1,52 @@
+@model List<MbbBill>
+
+@{
+    ViewData["Title"] = "MBB Bills";
+}
+
+<div class="container-fluid px-4">
+    <h1 class="mt-4">Mother Blood Bank Bills</h1>
+
+    @if (TempData["Success"] is string s) { <div class="alert alert-success">@s</div> }
+    @if (TempData["Error"] is string e) { <div class="alert alert-danger">@e</div> }
+
+    <div class="mb-3">
+        <a asp-action="Create" class="btn btn-primary">New MBB Bill</a>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-header"><i class="fas fa-file-invoice-dollar me-1"></i> MBB Bills</div>
+        <div class="card-body">
+            <table class="table table-bordered table-hover">
+                <thead><tr>
+                    <th>Bill #</th>
+                    <th>Supplier</th>
+                    <th>Date</th>
+                    <th>Amount</th>
+                    <th>Mode</th>
+                    <th>Status</th>
+                    <th></th>
+                </tr></thead>
+                <tbody>
+                    @foreach (var b in Model)
+                    {
+                        <tr>
+                            <td>@b.BillNumber</td>
+                            <td>@b.SupplierName</td>
+                            <td>@b.BillDate.ToString("dd/MM/yyyy")</td>
+                            <td>₹@(b.TotalAmount?.ToString("N0"))</td>
+                            <td>@(b.PaymentMode ?? "—")</td>
+                            <td>
+                                @if (b.PaymentStatus == "Paid") { <span class="badge bg-success">Paid</span> }
+                                else if (b.PaymentStatus == "Partial") { <span class="badge bg-warning">Partial</span> }
+                                else { <span class="badge bg-danger">@b.PaymentStatus</span> }
+                            </td>
+                            <td><a asp-action="Details" asp-route-id="@b.MbbBillId" class="btn btn-sm btn-info">View</a></td>
+                        </tr>
+                    }
+                    @if (!Model.Any()) { <tr><td colspan="7" class="text-center">No MBB bills found</td></tr> }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

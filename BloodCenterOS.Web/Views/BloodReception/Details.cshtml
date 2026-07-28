@@ -1,0 +1,47 @@
+@model BloodReception
+@{ ViewBag.Title = "Reception Details"; ViewBag.ActiveMenu = "BloodReception"; }
+<div class="page-header">
+  <div><h1 class="page-title">Reception Details</h1></div>
+  <a href="@Url.Action("Index")" class="btn btn-outline-secondary"><i class="bi bi-arrow-left"></i> Back</a>
+</div>
+
+<div class="card mb-3">
+  <div class="card-header"><strong>Reception Info</strong></div>
+  <div class="card-body">
+    <div class="row g-3">
+      <div class="col-md-3"><strong>MBB Name:</strong> <span>@Model.MBBName</span></div>
+      <div class="col-md-2"><strong>Date:</strong> <span>@Model.ReceiptDate.ToString("dd/MM/yyyy")</span></div>
+      <div class="col-md-2"><strong>Bill #:</strong> <span>@Model.BillNumber</span></div>
+      <div class="col-md-1"><strong>Bags:</strong> <span class="badge bg-info">@Model.TotalBags</span></div>
+      <div class="col-md-4"><strong>Notes:</strong> <span>@Model.Notes</span></div>
+    </div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header"><strong>Bag Details</strong></div>
+  <div class="card-body p-0">
+    <table class="table mb-0">
+      <thead><tr><th>#</th><th>Donor Name</th><th>Sex</th><th>Blood Group</th><th>Contact</th><th>Bag #</th><th>Type</th><th>Expiry</th><th>Volume</th></tr></thead>
+      <tbody>
+        @if (Model.Details == null || !Model.Details.Any())
+        { <tr><td colspan="9" class="text-center text-muted py-3">No details.</td></tr> }
+        @for (int i = 0; i < (Model.Details?.Count ?? 0); i++)
+        {
+          var d = Model.Details![i];
+          <tr>
+            <td>@(i + 1)</td>
+            <td>@d.DonorName</td>
+            <td>@d.Sex</td>
+            <td><span class="badge bg-danger">@d.BloodGroup</span></td>
+            <td>@d.ContactNo</td>
+            <td><code>@d.BagNumber</code></td>
+            <td><span class="badge bg-secondary">@d.BagType</span></td>
+            <td>@d.ExpiryDate?.ToString("dd/MM/yyyy")</td>
+            <td>@d.VolumeMl ml</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+</div>

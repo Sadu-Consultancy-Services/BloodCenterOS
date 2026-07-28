@@ -1,0 +1,27 @@
+@model PatientRequest
+@{ ViewBag.Title = "New Patient Request"; ViewBag.ActiveMenu = "PatientRequests"; }
+<div class="page-header">
+  <div><h1 class="page-title">New Patient Request <small>Create a blood request</small></h1></div>
+  <a href="@Url.Action("Index")" class="btn btn-outline-secondary"><i class="bi bi-arrow-left"></i> Back</a>
+</div>
+<form method="post">
+  <div class="card mb-3">
+    <div class="card-header"><h6>Request Details</h6></div>
+    <div class="card-body">
+      <div class="row g-2">
+        <div class="col-md-6"><label class="form-label">Patient Name <span class="text-danger">*</span></label><input type="text" name="PatientName" class="form-control" value="@Model.PatientName" required /></div>
+        <div class="col-md-3"><label class="form-label">Age <span class="text-danger">*</span></label><input type="number" name="PatientAge" class="form-control" value="@Model.PatientAge" required /></div>
+        <div class="col-md-3"><label class="form-label">Gender <span class="text-danger">*</span></label><select name="PatientGender" class="form-select" required><option value="">— Select —</option><option value="M">Male</option><option value="F">Female</option><option value="O">Other</option></select></div>
+        <div class="col-md-3"><label class="form-label">Blood Group <span class="text-danger">*</span></label><select name="BloodGroup" class="form-select" required><option value="">— Select —</option><option value="A+">A+</option><option value="A-">A-</option><option value="B+">B+</option><option value="B-">B-</option><option value="AB+">AB+</option><option value="AB-">AB-</option><option value="O+">O+</option><option value="O-">O-</option></select></div>
+        <div class="col-md-3"><label class="form-label">Component Type <span class="text-danger">*</span></label><input type="text" name="ComponentType" class="form-control" value="@Model.ComponentType" required /></div>
+        <div class="col-md-3"><label class="form-label">Units <span class="text-danger">*</span></label><input type="number" name="UnitsRequested" class="form-control" value="@Model.UnitsRequested" required /></div>
+        <div class="col-md-3"><label class="form-label">Urgency <span class="text-danger">*</span></label><select name="RequestUrgency" class="form-select" required><option value="">— Select —</option><option value="Normal">Normal</option><option value="Urgent">Urgent</option><option value="Emergency">Emergency</option></select></div>
+        <div class="col-md-6"><label class="form-label">Hospital</label><input type="text" name="HospitalId" class="form-control" value="@Model.HospitalId" /></div>
+      </div>
+    </div>
+  </div>
+  <div class="d-flex gap-2 justify-content-end">
+    <a href="@Url.Action("Index")" class="btn btn-outline-secondary">Cancel</a>
+    <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg"></i> Save</button>
+  </div>
+</form>

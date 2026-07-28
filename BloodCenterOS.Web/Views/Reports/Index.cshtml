@@ -9,181 +9,610 @@
   </div>
 </div>
 
-<ul class="nav nav-tabs mb-3" role="tablist" id="reportTabs">
-  <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tab-donor">Donor Report</button></li>
-  <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-inventory">Inventory Report</button></li>
-  <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-camp">Camp Report</button></li>
-</ul>
+<div class="mb-2">
+  <select id="reportSelector" class="form-select form-select-sm" style="max-width:400px" onchange="switchReport(this.value)">
+    <optgroup label="Summary Reports">
+      <option value="tab-donor" selected>Donor Summary</option>
+      <option value="tab-camp">Camp Summary</option>
+      <option value="tab-procurement">Procurement Summary</option>
+      <option value="tab-blood-stock">Blood Stock</option>
+      <option value="tab-inventory">Inventory Summary</option>
+      <option value="tab-inv-stock">Store Inventory Stock</option>
+    </optgroup>
+    <optgroup label="Financial Reports">
+      <option value="tab-cm-income">Cross Match Income</option>
+      <option value="tab-discount">Discount Details</option>
+      <option value="tab-daily-issues">Daily Issues</option>
+      <option value="tab-dues">Dues Register</option>
+      <option value="tab-mbb-inward">MBB Inward</option>
+    </optgroup>
+    <optgroup label="Operational Reports">
+      <option value="tab-donor-list">Donor List</option>
+      <option value="tab-qc-daily">QC Daily</option>
+      <option value="tab-discard">Discard Register</option>
+      <option value="tab-autoclave">Autoclave Register</option>
+      <option value="tab-inv-inout">Store Inventory In/Out</option>
+    </optgroup>
+    <optgroup label="Invoice Reports">
+      <option value="tab-invoice-detail">Invoice Detail</option>
+      <option value="tab-bs-invoice">BS Invoice Detail</option>
+      <option value="tab-crossmatch">Cross Match Report</option>
+    </optgroup>
+  </select>
+</div>
 
-<div class="tab-content">
+<div class="tab-content" id="reportTabContent">
 
-  @* ── Donor Report ── *@
+  @* ── Donor Summary ── *@
   <div class="tab-pane fade show active" id="tab-donor">
-    <div class="card mb-3">
-      <div class="card-body">
-        <div class="row g-2 align-items-end">
-          <div class="col-auto">
-            <label class="form-label" style="font-size:11px">From</label>
-            <input type="date" id="donorFrom" class="form-control form-control-sm" value="@ViewBag.FromDate" />
-          </div>
-          <div class="col-auto">
-            <label class="form-label" style="font-size:11px">To</label>
-            <input type="date" id="donorTo" class="form-control form-control-sm" value="@ViewBag.ToDate" />
-          </div>
-          <div class="col-auto">
-            <button class="btn btn-primary btn-sm" onclick="loadDonorReport()"><i class="bi bi-search"></i> Load</button>
-          </div>
-          <div class="col-auto ms-auto">
-            <a href="#" id="donorExcelLink" class="btn btn-outline-success btn-sm"><i class="bi bi-file-earmark-excel"></i> Excel</a>
-            <a href="#" id="donorPdfLink" class="btn btn-outline-danger btn-sm"><i class="bi bi-file-earmark-pdf"></i> PDF</a>
-          </div>
-        </div>
+    <div class="card mb-3"><div class="card-body">
+      <div class="row g-2 align-items-end">
+        <div class="col-auto"><label class="form-label" style="font-size:11px">From</label><input type="date" id="donorFrom" class="form-control form-control-sm" value="@ViewBag.FromDate" /></div>
+        <div class="col-auto"><label class="form-label" style="font-size:11px">To</label><input type="date" id="donorTo" class="form-control form-control-sm" value="@ViewBag.ToDate" /></div>
+        <div class="col-auto"><button class="btn btn-primary btn-sm" onclick="loadDonorReport()"><i class="bi bi-search"></i> Load</button></div>
       </div>
-    </div>
-    <div class="card" id="donorTableContainer">
-      <div class="card-header"><h6>Donor Summary</h6></div>
+    </div></div>
+    <div class="card"><div class="card-header"><h6>Donor Summary</h6></div>
       <div class="card-body p-0" style="overflow-x:auto">
         <table class="table mb-0" style="font-size:12px">
-          <thead>
-            <tr>
-              <th>Period</th><th>Registered</th><th>A+</th><th>A-</th><th>B+</th><th>B-</th>
-              <th>AB+</th><th>AB-</th><th>O+</th><th>O-</th><th>Deferrals</th><th>Collections</th>
-            </tr>
-          </thead>
-          <tbody id="donorTableBody">
-            <tr><td colspan="12" class="text-center text-muted" style="padding:2em">Select date range and click Load.</td></tr>
-          </tbody>
+          <thead><tr><th>Period</th><th>Registered</th><th>A+</th><th>A-</th><th>B+</th><th>B-</th><th>AB+</th><th>AB-</th><th>O+</th><th>O-</th><th>Deferrals</th><th>Collections</th></tr></thead>
+          <tbody id="donorTableBody"><tr><td colspan="12" class="text-center text-muted" style="padding:2em">Select date range and click Load.</td></tr></tbody>
         </table>
       </div>
     </div>
   </div>
 
-  @* ── Inventory Report ── *@
-  <div class="tab-pane fade" id="tab-inventory">
-    <div class="card mb-3">
-      <div class="card-body">
-        <div class="d-flex justify-content-between align-items-center">
-          <span style="font-size:13px">Current stock levels and near-expiry items</span>
-          <div class="d-flex gap-2">
-            <button class="btn btn-primary btn-sm" onclick="loadInventoryReport()"><i class="bi bi-arrow-clockwise"></i> Refresh</button>
-            <a href="#" id="invExcelLink" class="btn btn-outline-success btn-sm"><i class="bi bi-file-earmark-excel"></i> Excel</a>
-          </div>
-        </div>
-      </div>
-    </div>
-    <div class="card">
-      <div class="card-header"><h6>Inventory Summary</h6></div>
-      <div class="card-body p-0" style="overflow-x:auto">
-        <table class="table mb-0" style="font-size:12px">
-          <thead>
-            <tr>
-              <th>Component</th><th>Blood Group</th><th>Available</th><th>Reserved</th><th>Quarantined</th><th>Near Expiry</th>
-            </tr>
-          </thead>
-          <tbody id="invTableBody">
-            <tr><td colspan="6" class="text-center text-muted" style="padding:2em">Click Refresh to load data.</td></tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-  </div>
-
-  @* ── Camp Report ── *@
+  @* ── Camp Summary ── *@
   <div class="tab-pane fade" id="tab-camp">
-    <div class="card mb-3">
-      <div class="card-body">
-        <div class="row g-2 align-items-end">
-          <div class="col-auto">
-            <label class="form-label" style="font-size:11px">From</label>
-            <input type="date" id="campFrom" class="form-control form-control-sm" value="@ViewBag.FromDate" />
-          </div>
-          <div class="col-auto">
-            <label class="form-label" style="font-size:11px">To</label>
-            <input type="date" id="campTo" class="form-control form-control-sm" value="@ViewBag.ToDate" />
-          </div>
-          <div class="col-auto">
-            <button class="btn btn-primary btn-sm" onclick="loadCampReport()"><i class="bi bi-search"></i> Load</button>
-          </div>
-          <div class="col-auto ms-auto">
-            <a href="#" id="campExcelLink" class="btn btn-outline-success btn-sm"><i class="bi bi-file-earmark-excel"></i> Excel</a>
-          </div>
-        </div>
+    <div class="card mb-3"><div class="card-body">
+      <div class="row g-2 align-items-end">
+        <div class="col-auto"><label class="form-label" style="font-size:11px">From</label><input type="date" id="campFrom" class="form-control form-control-sm" value="@ViewBag.FromDate" /></div>
+        <div class="col-auto"><label class="form-label" style="font-size:11px">To</label><input type="date" id="campTo" class="form-control form-control-sm" value="@ViewBag.ToDate" /></div>
+        <div class="col-auto"><button class="btn btn-primary btn-sm" onclick="loadCampReport()"><i class="bi bi-search"></i> Load</button></div>
       </div>
-    </div>
-    <div class="card">
-      <div class="card-header"><h6>Camp Summary</h6></div>
+    </div></div>
+    <div class="card"><div class="card-header"><h6>Camp Summary</h6></div>
       <div class="card-body p-0" style="overflow-x:auto">
         <table class="table mb-0" style="font-size:12px">
-          <thead>
-            <tr>
-              <th>Period</th><th>Camps</th><th>Expected</th><th>Collected</th><th>Rate (%)</th>
-            </tr>
-          </thead>
-          <tbody id="campTableBody">
-            <tr><td colspan="5" class="text-center text-muted" style="padding:2em">Select date range and click Load.</td></tr>
-          </tbody>
+          <thead><tr><th>Period</th><th>Camps</th><th>Expected</th><th>Collected</th><th>Rate (%)</th></tr></thead>
+          <tbody id="campTableBody"><tr><td colspan="5" class="text-center text-muted" style="padding:2em">Select date range and click Load.</td></tr></tbody>
         </table>
       </div>
     </div>
   </div>
+
+  @* ── Inventory Summary (blood components) ── *@
+  <div class="tab-pane fade" id="tab-inventory">
+    <div class="card mb-3"><div class="card-body">
+      <div class="d-flex justify-content-between align-items-center">
+        <span style="font-size:13px">Current blood component stock levels</span>
+        <button class="btn btn-primary btn-sm" onclick="loadInventoryReport()"><i class="bi bi-arrow-clockwise"></i> Refresh</button>
+      </div>
+    </div></div>
+    <div class="card"><div class="card-header"><h6>Blood Inventory Summary</h6></div>
+      <div class="card-body p-0" style="overflow-x:auto">
+        <table class="table mb-0" style="font-size:12px">
+          <thead><tr><th>Component</th><th>Blood Group</th><th>Available</th><th>Reserved</th><th>Quarantined</th><th>Near Expiry</th></tr></thead>
+          <tbody id="invTableBody"><tr><td colspan="6" class="text-center text-muted" style="padding:2em">Click Refresh to load.</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  @* ═══════════════════════════════════════════════════════════════ *@
+  @* Phase 9: New Reports                                           *@
+  @* ═══════════════════════════════════════════════════════════════ *@
+
+  @* ── Blood Stock ── *@
+  <div class="tab-pane fade" id="tab-blood-stock">
+    <div class="card mb-3"><div class="card-body">
+      <span style="font-size:13px">Current available blood stock by group and component</span>
+      <button class="btn btn-primary btn-sm float-end" onclick="loadBloodStock()"><i class="bi bi-arrow-clockwise"></i> Refresh</button>
+    </div></div>
+    <div class="card"><div class="card-header"><h6>Blood Stock</h6></div>
+      <div class="card-body p-0" style="overflow-x:auto">
+        <table class="table mb-0" style="font-size:12px">
+          <thead><tr><th>Blood Group</th><th>Component</th><th>Available Qty</th><th>Earliest Expiry</th></tr></thead>
+          <tbody id="bloodStockBody"><tr><td colspan="4" class="text-center text-muted" style="padding:2em">Click Refresh.</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  @* ── Procurement Summary ── *@
+  <div class="tab-pane fade" id="tab-procurement">
+    <div class="card mb-3"><div class="card-body">
+      <div class="row g-2 align-items-end">
+        <div class="col-auto"><label class="form-label" style="font-size:11px">From</label><input type="date" id="procFrom" class="form-control form-control-sm" value="@ViewBag.FromDate" /></div>
+        <div class="col-auto"><label class="form-label" style="font-size:11px">To</label><input type="date" id="procTo" class="form-control form-control-sm" value="@ViewBag.ToDate" /></div>
+        <div class="col-auto"><button class="btn btn-primary btn-sm" onclick="loadProcurementSummary()"><i class="bi bi-search"></i> Load</button></div>
+      </div>
+    </div></div>
+    <div class="card"><div class="card-header"><h6>Procurement Summary (8x4 Matrix)</h6></div>
+      <div class="card-body p-0" style="overflow-x:auto">
+        <table class="table mb-0 table-bordered" style="font-size:11px">
+          <thead><tr><th>Blood Group</th><th>WB Avail</th><th>WB Issued</th><th>WB Disc</th><th>PCV Avail</th><th>PCV Issued</th><th>PCV Disc</th><th>FFP Avail</th><th>FFP Issued</th><th>FFP Disc</th><th>PC Avail</th><th>PC Issued</th><th>PC Disc</th><th>Total Avail</th><th>Total Issued</th><th>Total Disc</th></tr></thead>
+          <tbody id="procSummaryBody"><tr><td colspan="16" class="text-center text-muted" style="padding:2em">Select date range.</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  @* ── Store Inventory Stock ── *@
+  <div class="tab-pane fade" id="tab-inv-stock">
+    <div class="card mb-3"><div class="card-body">
+      <span style="font-size:13px">Current general store inventory stock</span>
+      <button class="btn btn-primary btn-sm float-end" onclick="loadInvStock()"><i class="bi bi-arrow-clockwise"></i> Refresh</button>
+    </div></div>
+    <div class="card"><div class="card-header"><h6>Store Inventory Stock</h6></div>
+      <div class="card-body p-0" style="overflow-x:auto">
+        <table class="table mb-0" style="font-size:12px">
+          <thead><tr><th>Item</th><th>Unit</th><th>Min Order</th><th>Current Stock</th><th>Last Txn Date</th></tr></thead>
+          <tbody id="invStockBody"><tr><td colspan="5" class="text-center text-muted" style="padding:2em">Click Refresh.</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  @* ── CM Income ── *@
+  <div class="tab-pane fade" id="tab-cm-income">
+    <div class="card mb-3"><div class="card-body">
+      <div class="row g-2 align-items-end">
+        <div class="col-auto"><label class="form-label" style="font-size:11px">From</label><input type="date" id="cmFrom" class="form-control form-control-sm" value="@ViewBag.FromDate" /></div>
+        <div class="col-auto"><label class="form-label" style="font-size:11px">To</label><input type="date" id="cmTo" class="form-control form-control-sm" value="@ViewBag.ToDate" /></div>
+        <div class="col-auto"><button class="btn btn-primary btn-sm" onclick="loadCmIncome()"><i class="bi bi-search"></i> Load</button></div>
+      </div>
+    </div></div>
+    <div class="card"><div class="card-header"><h6>Cross Match Income</h6></div>
+      <div class="card-body p-0" style="overflow-x:auto">
+        <table class="table mb-0" style="font-size:12px">
+          <thead><tr><th>Date</th><th>Invoice #</th><th>Patient</th><th>Total Amt</th><th>Emergency</th><th>Discount</th></tr></thead>
+          <tbody id="cmIncomeBody"><tr><td colspan="6" class="text-center text-muted" style="padding:2em">Select date range.</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  @* ── Discount Details ── *@
+  <div class="tab-pane fade" id="tab-discount">
+    <div class="card mb-3"><div class="card-body">
+      <div class="row g-2 align-items-end">
+        <div class="col-auto"><label class="form-label" style="font-size:11px">From</label><input type="date" id="discFrom" class="form-control form-control-sm" value="@ViewBag.FromDate" /></div>
+        <div class="col-auto"><label class="form-label" style="font-size:11px">To</label><input type="date" id="discTo" class="form-control form-control-sm" value="@ViewBag.ToDate" /></div>
+        <div class="col-auto"><button class="btn btn-primary btn-sm" onclick="loadDiscountDetails()"><i class="bi bi-search"></i> Load</button></div>
+      </div>
+    </div></div>
+    <div class="card"><div class="card-header"><h6>Discount Details</h6></div>
+      <div class="card-body p-0" style="overflow-x:auto">
+        <table class="table mb-0" style="font-size:12px">
+          <thead><tr><th>Date</th><th>Invoice #</th><th>Patient</th><th>Gross</th><th>Discount</th><th>Net</th><th>Reason</th><th>Status</th></tr></thead>
+          <tbody id="discountBody"><tr><td colspan="8" class="text-center text-muted" style="padding:2em">Select date range.</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  @* ── Daily Issues ── *@
+  <div class="tab-pane fade" id="tab-daily-issues">
+    <div class="card mb-3"><div class="card-body">
+      <div class="row g-2 align-items-end">
+        <div class="col-auto"><label class="form-label" style="font-size:11px">From</label><input type="date" id="issFrom" class="form-control form-control-sm" value="@ViewBag.FromDate" /></div>
+        <div class="col-auto"><label class="form-label" style="font-size:11px">To</label><input type="date" id="issTo" class="form-control form-control-sm" value="@ViewBag.ToDate" /></div>
+        <div class="col-auto"><button class="btn btn-primary btn-sm" onclick="loadDailyIssues()"><i class="bi bi-search"></i> Load</button></div>
+      </div>
+    </div></div>
+    <div class="card"><div class="card-header"><h6>Daily Issues</h6></div>
+      <div class="card-body p-0" style="overflow-x:auto">
+        <table class="table mb-0" style="font-size:12px">
+          <thead><tr><th>Date</th><th>Invoice #</th><th>Patient</th><th>Component</th><th>Qty</th><th>Unit Price</th><th>Total</th></tr></thead>
+          <tbody id="dailyIssuesBody"><tr><td colspan="7" class="text-center text-muted" style="padding:2em">Select date range.</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  @* ── Dues Register ── *@
+  <div class="tab-pane fade" id="tab-dues">
+    <div class="card mb-3"><div class="card-body">
+      <div class="row g-2 align-items-end">
+        <div class="col-auto"><label class="form-label" style="font-size:11px">As On Date</label><input type="date" id="duesDate" class="form-control form-control-sm" value="@ViewBag.ToDate" /></div>
+        <div class="col-auto"><button class="btn btn-primary btn-sm" onclick="loadDuesRegister()"><i class="bi bi-search"></i> Load</button></div>
+      </div>
+    </div></div>
+    <div class="card"><div class="card-header"><h6>Dues Register</h6></div>
+      <div class="card-body p-0" style="overflow-x:auto">
+        <table class="table mb-0" style="font-size:12px">
+          <thead><tr><th>Date</th><th>Invoice #</th><th>Patient</th><th>Total</th><th>Paid</th><th>Due</th><th>Status</th><th>Days Overdue</th></tr></thead>
+          <tbody id="duesBody"><tr><td colspan="8" class="text-center text-muted" style="padding:2em">Click Load.</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  @* ── MBB Inward ── *@
+  <div class="tab-pane fade" id="tab-mbb-inward">
+    <div class="card mb-3"><div class="card-body">
+      <div class="row g-2 align-items-end">
+        <div class="col-auto"><label class="form-label" style="font-size:11px">From</label><input type="date" id="mbbFrom" class="form-control form-control-sm" value="@ViewBag.FromDate" /></div>
+        <div class="col-auto"><label class="form-label" style="font-size:11px">To</label><input type="date" id="mbbTo" class="form-control form-control-sm" value="@ViewBag.ToDate" /></div>
+        <div class="col-auto"><label class="form-label" style="font-size:11px">Supplier</label><input type="text" id="mbbSupplier" class="form-control form-control-sm" placeholder="Filter..." /></div>
+        <div class="col-auto"><button class="btn btn-primary btn-sm" onclick="loadMbbInward()"><i class="bi bi-search"></i> Load</button></div>
+      </div>
+    </div></div>
+    <div class="card"><div class="card-header"><h6>MBB Inward</h6></div>
+      <div class="card-body p-0" style="overflow-x:auto">
+        <table class="table mb-0" style="font-size:12px">
+          <thead><tr><th>Bill #</th><th>Date</th><th>Supplier</th><th>Component</th><th>BG</th><th>Qty</th><th>Unit Price</th><th>Line Total</th><th>Total</th><th>Status</th></tr></thead>
+          <tbody id="mbbInwardBody"><tr><td colspan="10" class="text-center text-muted" style="padding:2em">Select date range.</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  @* ── Donor List ── *@
+  <div class="tab-pane fade" id="tab-donor-list">
+    <div class="card mb-3"><div class="card-body">
+      <div class="row g-2 align-items-end">
+        <div class="col-auto"><label class="form-label" style="font-size:11px">From</label><input type="date" id="dlFrom" class="form-control form-control-sm" value="@ViewBag.FromDate" /></div>
+        <div class="col-auto"><label class="form-label" style="font-size:11px">To</label><input type="date" id="dlTo" class="form-control form-control-sm" value="@ViewBag.ToDate" /></div>
+        <div class="col-auto"><label class="form-check-label"><input type="checkbox" id="dlContact" checked /> Show Contact</label></div>
+        <div class="col-auto"><button class="btn btn-primary btn-sm" onclick="loadDonorList()"><i class="bi bi-search"></i> Load</button></div>
+      </div>
+    </div></div>
+    <div class="card"><div class="card-header"><h6>Donor List</h6></div>
+      <div class="card-body p-0" style="overflow-x:auto">
+        <table class="table mb-0" style="font-size:12px">
+          <thead><tr><th>#</th><th>Name</th><th>Gender</th><th>Blood Group</th><th>Phone</th><th>Email</th><th>Last Donation</th><th>Total</th></tr></thead>
+          <tbody id="donorListBody"><tr><td colspan="8" class="text-center text-muted" style="padding:2em">Select date range.</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  @* ── QC Daily ── *@
+  <div class="tab-pane fade" id="tab-qc-daily">
+    <div class="card mb-3"><div class="card-body">
+      <div class="row g-2 align-items-end">
+        <div class="col-auto"><label class="form-label" style="font-size:11px">Date</label><input type="date" id="qcDate" class="form-control form-control-sm" value="@ViewBag.ToDate" /></div>
+        <div class="col-auto"><button class="btn btn-primary btn-sm" onclick="loadQcDaily()"><i class="bi bi-search"></i> Load</button></div>
+      </div>
+    </div></div>
+    <div class="card"><div class="card-header"><h6>QC Daily Report</h6></div>
+      <div class="card-body p-0" style="overflow-x:auto">
+        <table class="table mb-0" style="font-size:12px">
+          <thead><tr><th>Type</th><th>Unit No</th><th>Specificity</th><th>Batch</th><th>Expiry</th><th>Reactivity</th><th>Activity</th><th>Titre</th><th>Appearance</th><th>Haemolysis</th><th>Sp.Gravity</th><th>High Ctrl</th><th>Low Ctrl</th></tr></thead>
+          <tbody id="qcDailyBody"><tr><td colspan="13" class="text-center text-muted" style="padding:2em">Select date.</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  @* ── Discard Register ── *@
+  <div class="tab-pane fade" id="tab-discard">
+    <div class="card mb-3"><div class="card-body">
+      <div class="row g-2 align-items-end">
+        <div class="col-auto"><label class="form-label" style="font-size:11px">From</label><input type="date" id="discardFrom" class="form-control form-control-sm" value="@ViewBag.FromDate" /></div>
+        <div class="col-auto"><label class="form-label" style="font-size:11px">To</label><input type="date" id="discardTo" class="form-control form-control-sm" value="@ViewBag.ToDate" /></div>
+        <div class="col-auto"><label class="form-label" style="font-size:11px">Reason</label><input type="text" id="discardReason" class="form-control form-control-sm" placeholder="Filter..." /></div>
+        <div class="col-auto"><button class="btn btn-primary btn-sm" onclick="loadDiscardRegister()"><i class="bi bi-search"></i> Load</button></div>
+      </div>
+    </div></div>
+    <div class="card"><div class="card-header"><h6>Discard Register</h6></div>
+      <div class="card-body p-0" style="overflow-x:auto">
+        <table class="table mb-0" style="font-size:12px">
+          <thead><tr><th>#</th><th>Component</th><th>Type</th><th>Donor</th><th>BG</th><th>Reason</th><th>Date</th><th>Bag</th><th>AutoClave Start</th><th>AutoClave End</th></tr></thead>
+          <tbody id="discardBody"><tr><td colspan="10" class="text-center text-muted" style="padding:2em">Select date range.</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  @* ── Autoclave Register ── *@
+  <div class="tab-pane fade" id="tab-autoclave">
+    <div class="card mb-3"><div class="card-body">
+      <div class="row g-2 align-items-end">
+        <div class="col-auto"><label class="form-label" style="font-size:11px">From</label><input type="date" id="acFrom" class="form-control form-control-sm" value="@ViewBag.FromDate" /></div>
+        <div class="col-auto"><label class="form-label" style="font-size:11px">To</label><input type="date" id="acTo" class="form-control form-control-sm" value="@ViewBag.ToDate" /></div>
+        <div class="col-auto"><button class="btn btn-primary btn-sm" onclick="loadAutoclaveRegister()"><i class="bi bi-search"></i> Load</button></div>
+      </div>
+    </div></div>
+    <div class="card"><div class="card-header"><h6>Autoclave Register</h6></div>
+      <div class="card-body p-0" style="overflow-x:auto">
+        <table class="table mb-0" style="font-size:12px">
+          <thead><tr><th>#</th><th>Component</th><th>Donor</th><th>BG</th><th>Reason</th><th>Start</th><th>End</th></tr></thead>
+          <tbody id="autoclaveBody"><tr><td colspan="7" class="text-center text-muted" style="padding:2em">Select date range.</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  @* ── Store Inventory In/Out ── *@
+  <div class="tab-pane fade" id="tab-inv-inout">
+    <div class="card mb-3"><div class="card-body">
+      <div class="row g-2 align-items-end">
+        <div class="col-auto"><label class="form-label" style="font-size:11px">From</label><input type="date" id="ioFrom" class="form-control form-control-sm" value="@ViewBag.FromDate" /></div>
+        <div class="col-auto"><label class="form-label" style="font-size:11px">To</label><input type="date" id="ioTo" class="form-control form-control-sm" value="@ViewBag.ToDate" /></div>
+        <div class="col-auto"><label class="form-label" style="font-size:11px">Type</label><select id="ioType" class="form-select form-select-sm"><option value="">All</option><option value="I">Inward</option><option value="O">Outward</option></select></div>
+        <div class="col-auto"><button class="btn btn-primary btn-sm" onclick="loadInvInOut()"><i class="bi bi-search"></i> Load</button></div>
+      </div>
+    </div></div>
+    <div class="card"><div class="card-header"><h6>Store Inventory Transactions</h6></div>
+      <div class="card-body p-0" style="overflow-x:auto">
+        <table class="table mb-0" style="font-size:12px">
+          <thead><tr><th>#</th><th>Item</th><th>Qty</th><th>Type</th><th>Date</th><th>Description</th></tr></thead>
+          <tbody id="invInOutBody"><tr><td colspan="6" class="text-center text-muted" style="padding:2em">Select date range.</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  @* ── Invoice Detail ── *@
+  <div class="tab-pane fade" id="tab-invoice-detail">
+    <div class="card mb-3"><div class="card-body">
+      <div class="row g-2 align-items-end">
+        <div class="col-auto"><label class="form-label" style="font-size:11px">Invoice ID</label><input type="number" id="invId" class="form-control form-control-sm" min="1" /></div>
+        <div class="col-auto"><button class="btn btn-primary btn-sm" onclick="loadInvoiceDetail()"><i class="bi bi-search"></i> Load</button></div>
+      </div>
+    </div></div>
+    <div class="card"><div class="card-header"><h6>Invoice Detail</h6></div>
+      <div class="card-body p-0" style="overflow-x:auto">
+        <table class="table mb-0" style="font-size:12px">
+          <thead><tr><th>Invoice #</th><th>Date</th><th>Patient</th><th>BG</th><th>Hospital</th><th>Component</th><th>Qty</th><th>Unit Price</th><th>Total</th><th>Status</th></tr></thead>
+          <tbody id="invDetailBody"><tr><td colspan="10" class="text-center text-muted" style="padding:2em">Enter Invoice ID.</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  @* ── BS Invoice Detail ── *@
+  <div class="tab-pane fade" id="tab-bs-invoice">
+    <div class="card mb-3"><div class="card-body">
+      <div class="row g-2 align-items-end">
+        <div class="col-auto"><label class="form-label" style="font-size:11px">Invoice ID</label><input type="number" id="bsInvId" class="form-control form-control-sm" min="1" /></div>
+        <div class="col-auto"><button class="btn btn-primary btn-sm" onclick="loadBsInvoiceDetail()"><i class="bi bi-search"></i> Load</button></div>
+      </div>
+    </div></div>
+    <div class="card"><div class="card-header"><h6>Blood Storage Invoice Detail</h6></div>
+      <div class="card-body p-0" style="overflow-x:auto">
+        <table class="table mb-0" style="font-size:12px">
+          <thead><tr><th>Invoice #</th><th>Date</th><th>Storage</th><th>Component</th><th>BG</th><th>Donor</th><th>Donation Date</th><th>Expiry</th><th>Rate</th></tr></thead>
+          <tbody id="bsInvDetailBody"><tr><td colspan="9" class="text-center text-muted" style="padding:2em">Enter Invoice ID.</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  @* ── Cross Match Report ── *@
+  <div class="tab-pane fade" id="tab-crossmatch">
+    <div class="card mb-3"><div class="card-body">
+      <div class="row g-2 align-items-end">
+        <div class="col-auto"><label class="form-label" style="font-size:11px">Invoice ID</label><input type="number" id="cmRepInvId" class="form-control form-control-sm" min="1" /></div>
+        <div class="col-auto"><button class="btn btn-primary btn-sm" onclick="loadCrossMatchReport()"><i class="bi bi-search"></i> Load</button></div>
+      </div>
+    </div></div>
+    <div class="card"><div class="card-header"><h6>Cross Match Report</h6></div>
+      <div class="card-body p-0" style="overflow-x:auto">
+        <table class="table mb-0" style="font-size:12px">
+          <thead><tr><th>Invoice #</th><th>Patient</th><th>BG</th><th>Hospital</th><th>Component</th><th>Donor BG</th><th>Overall</th><th>Test Type</th><th>Result</th></tr></thead>
+          <tbody id="cmReportBody"><tr><td colspan="9" class="text-center text-muted" style="padding:2em">Enter Invoice ID.</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
 </div>
 
 @section Scripts {
 <script>
   function fmtDate(d) { return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
 
-  // ── Donor Report ──
+  function switchReport(tabId) {
+    document.querySelectorAll('.tab-pane').forEach(t => t.classList.remove('show','active'));
+    document.getElementById(tabId).classList.add('show','active');
+  }
+
+  // ── Donor Summary ──
   function loadDonorReport() {
-    var f = document.getElementById('donorFrom').value;
-    var t = document.getElementById('donorTo').value;
-    var tb = document.getElementById('donorTableBody');
-    tb.innerHTML = '<tr><td colspan="12" class="text-center" style="padding:2em"><i class="bi bi-arrow-clockwise"></i> Loading...</td></tr>';
-
-    document.getElementById('donorExcelLink').href = '/Reports/ExportDonorExcel?fromDate='+f+'&toDate='+t;
-    document.getElementById('donorPdfLink').href = '/Reports/ExportDonorPdf?fromDate='+f+'&toDate='+t;
-
-    fetch('/Reports/DonorData?fromDate='+f+'&toDate='+t)
-      .then(r=>r.json())
-      .then(d=>{
-        if(!d||!d.length){ tb.innerHTML='<tr><td colspan="12" class="text-center text-muted" style="padding:2em">No data.</td></tr>'; return; }
-        tb.innerHTML = d.map(r=>'<tr><td>'+r.period+'</td><td>'+r.totalRegistered+'</td><td>'+r.totalBloodGroupAPositive+'</td><td>'+r.totalBloodGroupANegative+'</td><td>'+r.totalBloodGroupBPositive+'</td><td>'+r.totalBloodGroupBNegative+'</td><td>'+r.totalBloodGroupAbPositive+'</td><td>'+r.totalBloodGroupAbNegative+'</td><td>'+r.totalBloodGroupOPositive+'</td><td>'+r.totalBloodGroupONegative+'</td><td>'+r.totalDeferrals+'</td><td>'+r.totalCollections+'</td></tr>').join('');
-      })
-      .catch(()=>{ tb.innerHTML='<tr><td colspan="12" class="text-center text-danger" style="padding:2em">Failed to load.</td></tr>'; });
+    var f=document.getElementById('donorFrom').value, t=document.getElementById('donorTo').value, tb=document.getElementById('donorTableBody');
+    tb.innerHTML='<tr><td colspan="12" class="text-center" style="padding:2em">Loading...</td></tr>';
+    fetch('/Reports/DonorData?fromDate='+f+'&toDate='+t).then(r=>r.json()).then(d=>{
+      if(!d||!d.length){tb.innerHTML='<tr><td colspan="12" class="text-center text-muted">No data.</td></tr>';return;}
+      tb.innerHTML=d.map(r=>'<tr><td>'+r.period+'</td><td>'+r.totalRegistered+'</td><td>'+r.totalBloodGroupAPositive+'</td><td>'+r.totalBloodGroupANegative+'</td><td>'+r.totalBloodGroupBPositive+'</td><td>'+r.totalBloodGroupBNegative+'</td><td>'+r.totalBloodGroupAbPositive+'</td><td>'+r.totalBloodGroupAbNegative+'</td><td>'+r.totalBloodGroupOPositive+'</td><td>'+r.totalBloodGroupONegative+'</td><td>'+r.totalDeferrals+'</td><td>'+r.totalCollections+'</td></tr>').join('');
+    }).catch(()=>{tb.innerHTML='<tr><td colspan="12" class="text-center text-danger">Failed.</td></tr>';});
   }
 
-  // ── Inventory Report ──
-  function loadInventoryReport() {
-    var tb = document.getElementById('invTableBody');
-    tb.innerHTML = '<tr><td colspan="6" class="text-center" style="padding:2em"><i class="bi bi-arrow-clockwise"></i> Loading...</td></tr>';
-
-    fetch('/Reports/InventoryData')
-      .then(r=>r.json())
-      .then(d=>{
-        if(!d||!d.length){ tb.innerHTML='<tr><td colspan="6" class="text-center text-muted" style="padding:2em">No data.</td></tr>'; return; }
-        tb.innerHTML = d.map(r=>'<tr><td>'+r.componentType+'</td><td>'+r.bloodGroup+'</td><td>'+r.availableQty+'</td><td>'+r.reservedQty+'</td><td>'+r.quarantinedQty+'</td><td>'+r.nearExpiryQty+'</td></tr>').join('');
-      })
-      .catch(()=>{ tb.innerHTML='<tr><td colspan="6" class="text-center text-danger" style="padding:2em">Failed to load.</td></tr>'; });
-  }
-
-  // ── Camp Report ──
+  // ── Camp Summary ──
   function loadCampReport() {
-    var f = document.getElementById('campFrom').value;
-    var t = document.getElementById('campTo').value;
-    var tb = document.getElementById('campTableBody');
-    tb.innerHTML = '<tr><td colspan="5" class="text-center" style="padding:2em"><i class="bi bi-arrow-clockwise"></i> Loading...</td></tr>';
-
-    document.getElementById('campExcelLink').href = '/Reports/ExportCampExcel?fromDate='+f+'&toDate='+t;
-
-    fetch('/Reports/CampData?fromDate='+f+'&toDate='+t)
-      .then(r=>r.json())
-      .then(d=>{
-        if(!d||!d.length){ tb.innerHTML='<tr><td colspan="5" class="text-center text-muted" style="padding:2em">No data.</td></tr>'; return; }
-        tb.innerHTML = d.map(r=>'<tr><td>'+r.period+'</td><td>'+r.totalCamps+'</td><td>'+r.totalExpected+'</td><td>'+r.totalCollected+'</td><td>'+r.collectionRate+'</td></tr>').join('');
-      })
-      .catch(()=>{ tb.innerHTML='<tr><td colspan="5" class="text-center text-danger" style="padding:2em">Failed to load.</td></tr>'; });
+    var f=document.getElementById('campFrom').value, t=document.getElementById('campTo').value, tb=document.getElementById('campTableBody');
+    tb.innerHTML='<tr><td colspan="5" class="text-center" style="padding:2em">Loading...</td></tr>';
+    fetch('/Reports/CampData?fromDate='+f+'&toDate='+t).then(r=>r.json()).then(d=>{
+      if(!d||!d.length){tb.innerHTML='<tr><td colspan="5" class="text-center text-muted">No data.</td></tr>';return;}
+      tb.innerHTML=d.map(r=>'<tr><td>'+r.period+'</td><td>'+r.totalCamps+'</td><td>'+r.totalExpected+'</td><td>'+r.totalCollected+'</td><td>'+r.collectionRate+'</td></tr>').join('');
+    }).catch(()=>{tb.innerHTML='<tr><td colspan="5" class="text-center text-danger">Failed.</td></tr>';});
   }
 
-  // Auto-load donor report on first tab show
+  // ── Inventory ──
+  function loadInventoryReport() {
+    var tb=document.getElementById('invTableBody');
+    tb.innerHTML='<tr><td colspan="6" class="text-center" style="padding:2em">Loading...</td></tr>';
+    fetch('/Reports/InventoryData').then(r=>r.json()).then(d=>{
+      if(!d||!d.length){tb.innerHTML='<tr><td colspan="6" class="text-center text-muted">No data.</td></tr>';return;}
+      tb.innerHTML=d.map(r=>'<tr><td>'+r.componentType+'</td><td>'+r.bloodGroup+'</td><td>'+r.availableQty+'</td><td>'+r.reservedQty+'</td><td>'+r.quarantinedQty+'</td><td>'+r.nearExpiryQty+'</td></tr>').join('');
+    }).catch(()=>{tb.innerHTML='<tr><td colspan="6" class="text-center text-danger">Failed.</td></tr>';});
+  }
+
+  // ── Blood Stock ──
+  function loadBloodStock() {
+    var tb=document.getElementById('bloodStockBody');
+    tb.innerHTML='<tr><td colspan="4" class="text-center">Loading...</td></tr>';
+    fetch('/Reports/BloodStockData').then(r=>r.json()).then(d=>{
+      if(!d||!d.length){tb.innerHTML='<tr><td colspan="4" class="text-center text-muted">No data.</td></tr>';return;}
+      tb.innerHTML=d.map(r=>'<tr><td>'+r.bloodGroup+'</td><td>'+r.componentType+'</td><td>'+r.availableQty+'</td><td>'+(r.expiryDate?r.expiryDate.substring(0,10):'')+'</td></tr>').join('');
+    }).catch(()=>{tb.innerHTML='<tr><td colspan="4" class="text-center text-danger">Failed.</td></tr>';});
+  }
+
+  // ── Procurement Summary ──
+  function loadProcurementSummary() {
+    var f=document.getElementById('procFrom').value, t=document.getElementById('procTo').value, tb=document.getElementById('procSummaryBody');
+    tb.innerHTML='<tr><td colspan="16" class="text-center">Loading...</td></tr>';
+    fetch('/Reports/ProcurementSummaryData?fromDate='+f+'&toDate='+t).then(r=>r.json()).then(d=>{
+      if(!d||!d.length){tb.innerHTML='<tr><td colspan="16" class="text-center text-muted">No data.</td></tr>';return;}
+      tb.innerHTML=d.map(r=>'<tr><td>'+r.bloodGroup+'</td><td>'+r.wbAvailable+'</td><td>'+r.wbIssued+'</td><td>'+r.wbDiscarded+'</td><td>'+r.pcvAvailable+'</td><td>'+r.pcvIssued+'</td><td>'+r.pcvDiscarded+'</td><td>'+r.ffpAvailable+'</td><td>'+r.ffpIssued+'</td><td>'+r.ffpDiscarded+'</td><td>'+r.pcAvailable+'</td><td>'+r.pcIssued+'</td><td>'+r.pcDiscarded+'</td><td>'+r.totalAvailable+'</td><td>'+r.totalIssued+'</td><td>'+r.totalDiscarded+'</td></tr>').join('');
+    }).catch(()=>{tb.innerHTML='<tr><td colspan="16" class="text-center text-danger">Failed.</td></tr>';});
+  }
+
+  // ── Inv Stock ──
+  function loadInvStock() {
+    var tb=document.getElementById('invStockBody');
+    tb.innerHTML='<tr><td colspan="5" class="text-center">Loading...</td></tr>';
+    fetch('/Reports/InvStockData').then(r=>r.json()).then(d=>{
+      if(!d||!d.length){tb.innerHTML='<tr><td colspan="5" class="text-center text-muted">No data.</td></tr>';return;}
+      tb.innerHTML=d.map(r=>'<tr><td>'+r.itemName+'</td><td>'+r.itemUnit+'</td><td>'+r.minOrderQty+'</td><td class="'+(r.currentStock<=r.minOrderQty?'text-danger fw-bold':'')+'">'+r.currentStock+'</td><td>'+(r.lastTransactionDate?new Date(r.lastTransactionDate).toLocaleDateString():'')+'</td></tr>').join('');
+    }).catch(()=>{tb.innerHTML='<tr><td colspan="5" class="text-center text-danger">Failed.</td></tr>';});
+  }
+
+  // ── CM Income ──
+  function loadCmIncome() {
+    var f=document.getElementById('cmFrom').value, t=document.getElementById('cmTo').value, tb=document.getElementById('cmIncomeBody');
+    tb.innerHTML='<tr><td colspan="6" class="text-center">Loading...</td></tr>';
+    fetch('/Reports/CmIncomeData?fromDate='+f+'&toDate='+t).then(r=>r.json()).then(d=>{
+      if(!d||!d.length){tb.innerHTML='<tr><td colspan="6" class="text-center text-muted">No data.</td></tr>';return;}
+      tb.innerHTML=d.map(r=>'<tr><td>'+r.invoiceDate.substring(0,10)+'</td><td>'+r.invoiceId+'</td><td>'+r.patientName+'</td><td>'+r.totalAmount+'</td><td>'+r.emergencyAmount+'</td><td>'+r.discount+'</td></tr>').join('');
+    }).catch(()=>{tb.innerHTML='<tr><td colspan="6" class="text-center text-danger">Failed.</td></tr>';});
+  }
+
+  // ── Discount Details ──
+  function loadDiscountDetails() {
+    var f=document.getElementById('discFrom').value, t=document.getElementById('discTo').value, tb=document.getElementById('discountBody');
+    tb.innerHTML='<tr><td colspan="8" class="text-center">Loading...</td></tr>';
+    fetch('/Reports/DiscountDetailsData?fromDate='+f+'&toDate='+t).then(r=>r.json()).then(d=>{
+      if(!d||!d.length){tb.innerHTML='<tr><td colspan="8" class="text-center text-muted">No data.</td></tr>';return;}
+      tb.innerHTML=d.map(r=>'<tr><td>'+r.invoiceDate.substring(0,10)+'</td><td>'+r.invoiceId+'</td><td>'+r.patientName+'</td><td>'+r.grossAmount+'</td><td>'+r.discountAmount+'</td><td>'+r.netAmount+'</td><td>'+r.discountReason+'</td><td>'+r.paymentStatus+'</td></tr>').join('');
+    }).catch(()=>{tb.innerHTML='<tr><td colspan="8" class="text-center text-danger">Failed.</td></tr>';});
+  }
+
+  // ── Daily Issues ──
+  function loadDailyIssues() {
+    var f=document.getElementById('issFrom').value, t=document.getElementById('issTo').value, tb=document.getElementById('dailyIssuesBody');
+    tb.innerHTML='<tr><td colspan="7" class="text-center">Loading...</td></tr>';
+    fetch('/Reports/DailyIssuesData?fromDate='+f+'&toDate='+t).then(r=>r.json()).then(d=>{
+      if(!d||!d.length){tb.innerHTML='<tr><td colspan="7" class="text-center text-muted">No data.</td></tr>';return;}
+      tb.innerHTML=d.map(r=>'<tr><td>'+r.issueDate.substring(0,10)+'</td><td>'+r.invoiceId+'</td><td>'+r.patientName+'</td><td>'+r.componentType+'</td><td>'+r.quantity+'</td><td>'+r.unitPrice+'</td><td>'+r.lineTotal+'</td></tr>').join('');
+    }).catch(()=>{tb.innerHTML='<tr><td colspan="7" class="text-center text-danger">Failed.</td></tr>';});
+  }
+
+  // ── Dues Register ──
+  function loadDuesRegister() {
+    var d=document.getElementById('duesDate').value, tb=document.getElementById('duesBody');
+    tb.innerHTML='<tr><td colspan="8" class="text-center">Loading...</td></tr>';
+    fetch('/Reports/DuesRegisterData?asOnDate='+d).then(r=>r.json()).then(dta=>{
+      if(!dta||!dta.length){tb.innerHTML='<tr><td colspan="8" class="text-center text-muted">No dues.</td></tr>';return;}
+      tb.innerHTML=dta.map(r=>'<tr class="'+(r.daysOverdue>30?'table-danger':r.daysOverdue>15?'table-warning':'')+'"><td>'+r.invoiceDate.substring(0,10)+'</td><td>'+r.invoiceId+'</td><td>'+r.patientName+'</td><td>'+r.totalAmount+'</td><td>'+r.paidAmount+'</td><td class="fw-bold text-danger">'+r.dueAmount+'</td><td>'+r.paymentStatus+'</td><td>'+r.daysOverdue+'</td></tr>').join('');
+    }).catch(()=>{tb.innerHTML='<tr><td colspan="8" class="text-center text-danger">Failed.</td></tr>';});
+  }
+
+  // ── MBB Inward ──
+  function loadMbbInward() {
+    var f=document.getElementById('mbbFrom').value, t=document.getElementById('mbbTo').value, s=document.getElementById('mbbSupplier').value, tb=document.getElementById('mbbInwardBody');
+    tb.innerHTML='<tr><td colspan="10" class="text-center">Loading...</td></tr>';
+    var url='/Reports/MbbInwardData?fromDate='+f+'&toDate='+t;
+    if(s) url+='&supplier='+encodeURIComponent(s);
+    fetch(url).then(r=>r.json()).then(d=>{
+      if(!d||!d.length){tb.innerHTML='<tr><td colspan="10" class="text-center text-muted">No data.</td></tr>';return;}
+      tb.innerHTML=d.map(r=>'<tr><td>'+r.billNumber+'</td><td>'+new Date(r.billDate).toLocaleDateString()+'</td><td>'+r.supplierName+'</td><td>'+r.componentType+'</td><td>'+(r.bloodGroup||'')+'</td><td>'+r.quantity+'</td><td>'+r.unitPrice+'</td><td>'+r.lineTotal+'</td><td>'+r.totalAmount+'</td><td>'+r.paymentStatus+'</td></tr>').join('');
+    }).catch(()=>{tb.innerHTML='<tr><td colspan="10" class="text-center text-danger">Failed.</td></tr>';});
+  }
+
+  // ── Donor List ──
+  function loadDonorList() {
+    var f=document.getElementById('dlFrom').value, t=document.getElementById('dlTo').value, sc=document.getElementById('dlContact').checked, tb=document.getElementById('donorListBody');
+    tb.innerHTML='<tr><td colspan="8" class="text-center">Loading...</td></tr>';
+    fetch('/Reports/DonorListData?fromDate='+f+'&toDate='+t+'&showContact='+sc).then(r=>r.json()).then(d=>{
+      if(!d||!d.length){tb.innerHTML='<tr><td colspan="8" class="text-center text-muted">No data.</td></tr>';return;}
+      tb.innerHTML=d.map((r,i)=>'<tr><td>'+(i+1)+'</td><td>'+r.donorName+'</td><td>'+(r.gender||'')+'</td><td>'+(r.bloodGroup||'')+'</td><td>'+(r.phone||'')+'</td><td>'+(r.email||'')+'</td><td>'+(r.lastDonationDate?r.lastDonationDate.substring(0,10):'')+'</td><td>'+r.totalDonations+'</td></tr>').join('');
+    }).catch(()=>{tb.innerHTML='<tr><td colspan="8" class="text-center text-danger">Failed.</td></tr>';});
+  }
+
+  // ── QC Daily ──
+  function loadQcDaily() {
+    var d=document.getElementById('qcDate').value, tb=document.getElementById('qcDailyBody');
+    tb.innerHTML='<tr><td colspan="13" class="text-center">Loading...</td></tr>';
+    fetch('/Reports/QcDailyData?date='+d).then(r=>r.json()).then(dta=>{
+      if(!dta||!dta.length){tb.innerHTML='<tr><td colspan="13" class="text-center text-muted">No data.</td></tr>';return;}
+      tb.innerHTML=dta.map(r=>'<tr><td>'+r.qcType+'</td><td>'+(r.unitNumber||'')+'</td><td>'+(r.specificity||'')+'</td><td>'+(r.batchNo||'')+'</td><td>'+(r.expiry?r.expiry.substring(0,10):'')+'</td><td>'+(r.reactivity||'')+'</td><td>'+(r.activity||'')+'</td><td>'+(r.titre||'')+'</td><td>'+(r.appearance||'')+'</td><td>'+(r.haemolysis||'')+'</td><td>'+(r.spGravity||'')+'</td><td>'+(r.highControl||'')+'</td><td>'+(r.lowControl||'')+'</td></tr>').join('');
+    }).catch(()=>{tb.innerHTML='<tr><td colspan="13" class="text-center text-danger">Failed.</td></tr>';});
+  }
+
+  // ── Discard Register ──
+  function loadDiscardRegister() {
+    var f=document.getElementById('discardFrom').value, t=document.getElementById('discardTo').value, r=document.getElementById('discardReason').value, tb=document.getElementById('discardBody');
+    tb.innerHTML='<tr><td colspan="10" class="text-center">Loading...</td></tr>';
+    var url='/Reports/DiscardRegisterData?fromDate='+f+'&toDate='+t;
+    if(r) url+='&reason='+encodeURIComponent(r);
+    fetch(url).then(r=>r.json()).then(d=>{
+      if(!d||!d.length){tb.innerHTML='<tr><td colspan="10" class="text-center text-muted">No data.</td></tr>';return;}
+      tb.innerHTML=d.map(r=>'<tr><td>'+r.discardId+'</td><td>'+(r.componentCode||'')+'</td><td>'+(r.componentType||'')+'</td><td>'+(r.donorName||'')+'</td><td>'+(r.bloodGroup||'')+'</td><td>'+(r.discardReason||'')+'</td><td>'+new Date(r.discardedAt).toLocaleDateString()+'</td><td>'+(r.bagNumber||'')+'</td><td>'+(r.autoclaveStart?new Date(r.autoclaveStart).toLocaleString():'')+'</td><td>'+(r.autoclaveEnd?new Date(r.autoclaveEnd).toLocaleString():'')+'</td></tr>').join('');
+    }).catch(()=>{tb.innerHTML='<tr><td colspan="10" class="text-center text-danger">Failed.</td></tr>';});
+  }
+
+  // ── Autoclave Register ──
+  function loadAutoclaveRegister() {
+    var f=document.getElementById('acFrom').value, t=document.getElementById('acTo').value, tb=document.getElementById('autoclaveBody');
+    tb.innerHTML='<tr><td colspan="7" class="text-center">Loading...</td></tr>';
+    fetch('/Reports/AutoclaveRegisterData?fromDate='+f+'&toDate='+t).then(r=>r.json()).then(d=>{
+      if(!d||!d.length){tb.innerHTML='<tr><td colspan="7" class="text-center text-muted">No data.</td></tr>';return;}
+      tb.innerHTML=d.map(r=>'<tr><td>'+r.discardId+'</td><td>'+(r.componentType||'')+'</td><td>'+(r.donorName||'')+'</td><td>'+(r.bloodGroup||'')+'</td><td>'+(r.discardReason||'')+'</td><td>'+(r.autoclaveStart?new Date(r.autoclaveStart).toLocaleString():'')+'</td><td>'+(r.autoclaveEnd?new Date(r.autoclaveEnd).toLocaleString():'')+'</td></tr>').join('');
+    }).catch(()=>{tb.innerHTML='<tr><td colspan="7" class="text-center text-danger">Failed.</td></tr>';});
+  }
+
+  // ── Inv In/Out ──
+  function loadInvInOut() {
+    var f=document.getElementById('ioFrom').value, t=document.getElementById('ioTo').value, tp=document.getElementById('ioType').value, tb=document.getElementById('invInOutBody');
+    tb.innerHTML='<tr><td colspan="6" class="text-center">Loading...</td></tr>';
+    var url='/Reports/InvInOutData?fromDate='+f+'&toDate='+t;
+    if(tp) url+='&type='+tp;
+    fetch(url).then(r=>r.json()).then(d=>{
+      if(!d||!d.length){tb.innerHTML='<tr><td colspan="6" class="text-center text-muted">No data.</td></tr>';return;}
+      tb.innerHTML=d.map(r=>'<tr><td>'+r.transId+'</td><td>'+r.itemName+'</td><td>'+r.transQty+'</td><td>'+(r.transTyp=='I'?'<span class="badge bg-success">In</span>':'<span class="badge bg-danger">Out</span>')+'</td><td>'+new Date(r.transDate).toLocaleString()+'</td><td>'+(r.transDesc||'')+'</td></tr>').join('');
+    }).catch(()=>{tb.innerHTML='<tr><td colspan="6" class="text-center text-danger">Failed.</td></tr>';});
+  }
+
+  // ── Invoice Detail ──
+  function loadInvoiceDetail() {
+    var id=document.getElementById('invId').value, tb=document.getElementById('invDetailBody');
+    if(!id){tb.innerHTML='<tr><td colspan="10" class="text-center text-danger">Enter Invoice ID.</td></tr>';return;}
+    tb.innerHTML='<tr><td colspan="10" class="text-center">Loading...</td></tr>';
+    fetch('/Reports/InvoiceDetailData?invoiceId='+id).then(r=>r.json()).then(d=>{
+      if(!d||!d.length){tb.innerHTML='<tr><td colspan="10" class="text-center text-muted">No data.</td></tr>';return;}
+      var h=d[0];
+      tb.innerHTML='<tr><td colspan="10" class="bg-light"><strong>Patient:</strong> '+h.patientName+' | <strong>Address:</strong> '+h.patientAddress+' | <strong>Contact:</strong> '+h.patientContact+' | <strong>Hospital:</strong> '+h.hospitalName+' | <strong>Ward:</strong> '+h.ward+' | <strong>Payment:</strong> '+h.paymentMode+' | <strong>Status:</strong> '+h.paymentStatus+'</td></tr>';
+      tb.innerHTML+=d.map(r=>'<tr><td>'+r.invoiceId+'</td><td>'+new Date(r.invoiceDate).toLocaleDateString()+'</td><td>'+r.patientName+'</td><td>'+(r.patientBloodGroup||'')+'</td><td>'+(r.hospitalName||'')+'</td><td>'+(r.componentType||'')+'</td><td>'+r.quantity+'</td><td>'+r.unitPrice+'</td><td>'+r.lineTotal+'</td><td>'+(r.paymentStatus||'')+'</td></tr>').join('');
+    }).catch(()=>{tb.innerHTML='<tr><td colspan="10" class="text-center text-danger">Failed.</td></tr>';});
+  }
+
+  // ── BS Invoice Detail ──
+  function loadBsInvoiceDetail() {
+    var id=document.getElementById('bsInvId').value, tb=document.getElementById('bsInvDetailBody');
+    if(!id){tb.innerHTML='<tr><td colspan="9" class="text-center text-danger">Enter Invoice ID.</td></tr>';return;}
+    tb.innerHTML='<tr><td colspan="9" class="text-center">Loading...</td></tr>';
+    fetch('/Reports/BsInvoiceDetailData?invoiceId='+id).then(r=>r.json()).then(d=>{
+      if(!d||!d.length){tb.innerHTML='<tr><td colspan="9" class="text-center text-muted">No data.</td></tr>';return;}
+      tb.innerHTML=d.map(r=>'<tr><td>'+r.invoiceId+'</td><td>'+new Date(r.invoiceDate).toLocaleDateString()+'</td><td>'+(r.storageName||'')+'</td><td>'+(r.componentType||'')+'</td><td>'+(r.bloodGroup||'')+'</td><td>'+(r.donorName||'')+'</td><td>'+(r.donationDate?r.donationDate.substring(0,10):'')+'</td><td>'+(r.expiryDate?r.expiryDate.substring(0,10):'')+'</td><td>'+r.unitRate+'</td></tr>').join('');
+    }).catch(()=>{tb.innerHTML='<tr><td colspan="9" class="text-center text-danger">Failed.</td></tr>';});
+  }
+
+  // ── Cross Match Report ──
+  function loadCrossMatchReport() {
+    var id=document.getElementById('cmRepInvId').value, tb=document.getElementById('cmReportBody');
+    if(!id){tb.innerHTML='<tr><td colspan="9" class="text-center text-danger">Enter Invoice ID.</td></tr>';return;}
+    tb.innerHTML='<tr><td colspan="9" class="text-center">Loading...</td></tr>';
+    fetch('/Reports/CrossMatchReportData?invoiceId='+id).then(r=>r.json()).then(d=>{
+      if(!d||!d.length){tb.innerHTML='<tr><td colspan="9" class="text-center text-muted">No data.</td></tr>';return;}
+      tb.innerHTML=d.map(r=>'<tr><td>'+r.invoiceId+'</td><td>'+r.patientName+'</td><td>'+(r.patientBloodGroup||'')+'</td><td>'+(r.hospitalName||'')+'</td><td>'+(r.componentType||'')+'</td><td>'+(r.bloodGroup||'')+'</td><td>'+(r.overallResult||'')+'</td><td>'+(r.testType||'')+'</td><td>'+(r.testResult||'')+'</td></tr>').join('');
+    }).catch(()=>{tb.innerHTML='<tr><td colspan="9" class="text-center text-danger">Failed.</td></tr>';});
+  }
+
+  // Auto-load donor report on page load
   document.addEventListener('DOMContentLoaded', function() { loadDonorReport(); });
 </script>
 }

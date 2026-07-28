@@ -1,0 +1,137 @@
+@{
+    ViewBag.Title = "Receive Blood from MBB";
+    ViewBag.ActiveMenu = "BloodReception";
+}
+<div class="page-header">
+    <div><h1 class="page-title">Receive Blood from Mother Blood Bank</h1></div>
+    <a href="@Url.Action("Index")" class="btn btn-outline-secondary"><i class="bi bi-arrow-left"></i> Back</a>
+</div>
+@if (TempData["Success"] is string s) { <div class="alert alert-success py-2 px-3 mb-3">@s</div> }
+@if (!ViewData.ModelState.IsValid)
+{
+    <div class="alert alert-danger py-2 px-3 mb-3">
+        @foreach (var err in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+        { <div>@err.ErrorMessage</div> }
+    </div>
+}
+
+<form method="post" id="frmReception">
+    <div class="card mb-3">
+        <div class="card-header"><strong>Reception Details</strong></div>
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <label class="form-label">MBB Name *</label>
+                    <input type="text" name="mbbName" class="form-control" required placeholder="Mother Blood Bank name" />
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Receipt Date *</label>
+                    <input type="date" name="receiptDate" class="form-control" required value="@DateTime.Now.ToString("yyyy-MM-dd")" />
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Bill Number</label>
+                    <input type="text" name="billNumber" class="form-control" placeholder="Optional" />
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Notes</label>
+                    <input type="text" name="notes" class="form-control" placeholder="Optional" />
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card mb-3">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <strong>Blood Bag Details</strong>
+            <button type="button" class="btn btn-sm btn-success" onclick="addRow()"><i class="bi bi-plus"></i> Add Row</button>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table mb-0" id="bagTable">
+                    <thead>
+                        <tr>
+                            <th>Donor Name</th>
+                            <th>Sex</th>
+                            <th>Blood Group</th>
+                            <th>Contact No</th>
+                            <th>Bag Number</th>
+                            <th>Bag Type</th>
+                            <th>Expiry Date</th>
+                            <th>Volume (ml)</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody id="bagBody">
+                        <tr>
+                            <td><input type="text" name="donorNames" class="form-control form-control-sm" required placeholder="Donor name" /></td>
+                            <td>
+                                <select name="sexes" class="form-select form-select-sm">
+                                    <option value="">--</option>
+                                    <option value="Male">Male</option>
+                                    <option value="Female">Female</option>
+                                </select>
+                            </td>
+                            <td>
+                                <select name="bloodGroups" class="form-select form-select-sm" required>
+                                    <option value="">--</option>
+                                    <option value="A+">A+</option>
+                                    <option value="A-">A-</option>
+                                    <option value="B+">B+</option>
+                                    <option value="B-">B-</option>
+                                    <option value="AB+">AB+</option>
+                                    <option value="AB-">AB-</option>
+                                    <option value="O+">O+</option>
+                                    <option value="O-">O-</option>
+                                </select>
+                            </td>
+                            <td><input type="text" name="contactNos" class="form-control form-control-sm" placeholder="Phone" /></td>
+                            <td><input type="text" name="bagNumbers" class="form-control form-control-sm" required placeholder="Bag #" /></td>
+                            <td>
+                                <select name="bagTypes" class="form-select form-select-sm" required>
+                                    <option value="">--</option>
+                                    <option value="SB">SB (Single)</option>
+                                    <option value="DB">DB (Double)</option>
+                                    <option value="TB">TB (Triple)</option>
+                                    <option value="QB">QB (Quadruple)</option>
+                                </select>
+                            </td>
+                            <td><input type="date" name="expiryDates" class="form-control form-control-sm" /></td>
+                            <td><input type="number" name="volumes" class="form-control form-control-sm" value="350" min="200" max="500" /></td>
+                            <td><button type="button" class="btn btn-sm btn-outline-danger" onclick="this.closest('tr').remove()"><i class="bi bi-x"></i></button></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="d-flex gap-2">
+        <button type="submit" class="btn btn-primary"><i class="bi bi-save"></i> Save Reception</button>
+        <a href="@Url.Action("Index")" class="btn btn-outline-secondary">Cancel</a>
+    </div>
+</form>
+
+@section Scripts {
+<script>
+    function addRow() {
+        var tbody = document.getElementById('bagBody');
+        var row = tbody.querySelector('tr').cloneNode(true);
+        row.querySelectorAll('input, select').forEach(function(el) { el.value = ''; });
+        var vol = row.querySelector('[name="volumes"]');
+        if (vol) vol.value = '350';
+        tbody.appendChild(row);
+    }
+
+    document.getElementById('frmReception').addEventListener('submit', function(e) {
+        var rows = document.querySelectorAll('#bagBody tr');
+        var valid = true;
+        rows.forEach(function(row) {
+            var inputs = row.querySelectorAll('[required]');
+            inputs.forEach(function(inp) {
+                if (!inp.value.trim()) valid = false;
+            });
+        });
+        if (!valid) { e.preventDefault(); alert('All required fields (*) must be filled.'); }
+    });
+</script>
+}

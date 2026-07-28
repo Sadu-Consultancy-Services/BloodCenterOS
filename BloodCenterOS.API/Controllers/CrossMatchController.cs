@@ -17,18 +17,48 @@ public class CrossMatchController : ControllerBase
     private long CenterId => long.TryParse(User.FindFirst("CenterId")?.Value, out var id) ? id : 0;
     private long UserId => long.TryParse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value, out var id) ? id : 0;
 
-    [HttpPost]
-    public async Task<IActionResult> Create([FromBody] CreateCrossMatchRequest request)
+    [HttpPost("start")]
+    public async Task<IActionResult> Start([FromBody] StartCrossMatchRequest req)
     {
-        var id = await _repo.CreateAsync(CenterId, request.RequestId, request.ComponentId, request.Result, request.Method, UserId);
-        return Ok(ApiResponse<long>.Ok(id, "Cross-match recorded"));
+        var id = await _repo.StartAsync(CenterId, req.ReservationId, UserId);
+        return Ok(ApiResponse<long>.Ok(id, "Cross-match started"));
     }
-}
 
-public class CreateCrossMatchRequest
-{
-    public long RequestId { get; set; }
-    public long ComponentId { get; set; }
-    public string? Result { get; set; }
-    public string? Method { get; set; }
+    [HttpPut("set-result")]
+    public async Task<IActionResult> SetResult([FromBody] SetTestResultRequest req)
+    {
+        await _repo.SetTestResultAsync(req.TestResultId, req.Result);
+        return Ok(ApiResponse<string>.Ok("Result updated"));
+    }
+
+    [HttpPost("reject-component/{testResultId}")]
+    public async Task<IActionResult> RejectComponent(long testResultId)
+    {
+        await _repo.RejectComponentAsync(testResultId);
+        return Ok(ApiResponse<string>.Ok("Component rejected"));
+    }
+
+    [HttpGet("pending-reservations")]
+    public async Task<IActionResult> GetPendingReservations()
+    {
+        var items = await _repo.GetPendingReservationsAsync(CenterId);
+        return Ok(ApiResponse<IEnumerable<CrossMatchEntry>>.Ok(items));
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> GetAll([FromQuery] string? status, [FromQuery] DateTime? from, [FromQuery] DateTime? to)
+    {
+        var items = await _repo.GetByCenterAsync(CenterId, status, from, to);
+        return Ok(ApiResponse<IEnumerable<CrossMatchEntry>>.Ok(items));
+    }
+
+    [HttpGet("{id}")]
+    public async Task<IActionResult> GetById(long id)
+    {
+        var entry = await _repo.GetByIdAsync(id);
+        if (entry == null) return NotFound(ApiResponse<string>.Fail("Cross-match not found"));
+        var tests = await _repo.GetTestsAsync(id);
+        var result = new CrossMatchWithTests { Entry = entry, Tests = tests.ToList() };
+        return Ok(ApiResponse<CrossMatchWithTests>.Ok(result));
+    }
 }

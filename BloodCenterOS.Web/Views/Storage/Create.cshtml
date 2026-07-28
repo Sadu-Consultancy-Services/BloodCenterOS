@@ -1,0 +1,43 @@
+@model StorageMaster
+
+@{
+    ViewData["Title"] = "New Storage Unit";
+}
+
+<div class="container-fluid px-4">
+    <h1 class="mt-4">New Storage Unit</h1>
+
+    <form asp-action="Create" method="post">
+        <div class="card mb-3">
+            <div class="card-header">Storage Details</div>
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-md-6"><label class="form-label">Storage Name *</label><input asp-for="StorageName" class="form-control" required /></div>
+                    <div class="col-md-6"><label class="form-label">Address</label><input asp-for="Address" class="form-control" /></div>
+                    <div class="col-md-4"><label class="form-label">Phone</label><input asp-for="PhoneNo" class="form-control" /></div>
+                    <div class="col-md-4"><label class="form-label">Email</label><input asp-for="Email" class="form-control" type="email" /></div>
+                    <div class="col-md-4"><label class="form-label">Contact Person</label><input asp-for="ContactPerson" class="form-control" /></div>
+                    <div class="col-md-4"><label class="form-label">Contact Phone</label><input asp-for="ContactPhone" class="form-control" /></div>
+                    <div class="col-md-4"><label class="form-label">Contact Email</label><input asp-for="ContactEmail" class="form-control" type="email" /></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-3">
+            <div class="card-header">Component Rates (per unit)</div>
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-md-3"><label class="form-label">WB Rate (₹)</label><input asp-for="RateWB" class="form-control" type="number" step="0.01" /></div>
+                    <div class="col-md-3"><label class="form-label">PCV Rate (₹)</label><input asp-for="RatePCV" class="form-control" type="number" step="0.01" /></div>
+                    <div class="col-md-3"><label class="form-label">FFP Rate (₹)</label><input asp-for="RateFFP" class="form-control" type="number" step="0.01" /></div>
+                    <div class="col-md-3"><label class="form-label">Plts Conc Rate (₹)</label><input asp-for="RatePltsConc" class="form-control" type="number" step="0.01" /></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="d-flex gap-2 justify-content-end">
+            <a asp-action="Index" class="btn btn-secondary">Cancel</a>
+            <button type="submit" class="btn btn-primary">Save</button>
+        </div>
+    </form>
+</div>

@@ -1,0 +1,40 @@
+@model List<IssueRecord>
+
+@{
+    ViewData["Title"] = "Issue Details";
+}
+
+<div class="container-fluid px-4">
+    <h1 class="mt-4">Issued Components</h1>
+
+    <div class="card mb-4">
+        <div class="card-body">
+            <table class="table table-bordered">
+                <thead><tr>
+                    <th>Issue #</th>
+                    <th>Component Code</th>
+                    <th>Component Type</th>
+                    <th>Blood Group</th>
+                    <th>Issue Date</th>
+                    <th>Notes</th>
+                </tr></thead>
+                <tbody>
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <td>@item.IssueRecordId</td>
+                            <td>@item.ComponentCode</td>
+                            <td>@item.ComponentType</td>
+                            <td>@item.BloodGroup</td>
+                            <td>@item.IssueDate.ToString("dd/MM/yyyy HH:mm")</td>
+                            <td>@item.Notes</td>
+                        </tr>
+                    }
+                    @if (!Model.Any()) { <tr><td colspan="6" class="text-center">No issue records found</td></tr> }
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <a asp-action="Index" class="btn btn-secondary">Back</a>
+</div>

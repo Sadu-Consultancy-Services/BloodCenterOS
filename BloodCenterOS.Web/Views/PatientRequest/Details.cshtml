@@ -1,0 +1,53 @@
+@model PatientRequest
+@{ ViewBag.Title = "Request Details"; ViewBag.ActiveMenu = "PatientRequests"; }
+<div class="page-header">
+  <div><h1 class="page-title">Request Details <small>#@Model.RequestId</small></h1></div>
+  <a href="@Url.Action("Index")" class="btn btn-outline-secondary"><i class="bi bi-arrow-left"></i> Back to List</a>
+</div>
+<div class="card">
+  <div class="card-header"><h6>Patient Information</h6></div>
+  <div class="card-body">
+    <div class="row g-3">
+      <div class="col-md-4">
+        <div style="font-size:11px;color:var(--bc-text-muted)">Patient Name</div>
+        <div style="font-size:13px;font-weight:500">@Model.PatientName</div>
+      </div>
+      <div class="col-md-2">
+        <div style="font-size:11px;color:var(--bc-text-muted)">Age</div>
+        <div style="font-size:13px">@Model.PatientAge</div>
+      </div>
+      <div class="col-md-2">
+        <div style="font-size:11px;color:var(--bc-text-muted)">Gender</div>
+        <div style="font-size:13px">@(Model.PatientGender == "M" ? "Male" : Model.PatientGender == "F" ? "Female" : "Other")</div>
+      </div>
+      <div class="col-md-4">
+        <div style="font-size:11px;color:var(--bc-text-muted)">Blood Group</div>
+        <div style="font-size:13px"><span class="badge" style="background:#dcfce7;color:#166534">@Model.BloodGroup</span></div>
+      </div>
+      <div class="col-md-4">
+        <div style="font-size:11px;color:var(--bc-text-muted)">Component Type</div>
+        <div style="font-size:13px">@Model.ComponentType</div>
+      </div>
+      <div class="col-md-2">
+        <div style="font-size:11px;color:var(--bc-text-muted)">Units</div>
+        <div style="font-size:13px">@Model.UnitsRequested</div>
+      </div>
+      <div class="col-md-3">
+        <div style="font-size:11px;color:var(--bc-text-muted)">Urgency</div>
+        <div>
+          @if (Model.RequestUrgency == "Emergency") { <span class="badge bg-danger">Emergency</span> }
+          else if (Model.RequestUrgency == "Urgent") { <span class="badge bg-warning text-dark">Urgent</span> }
+          else { <span class="badge bg-primary">Normal</span> }
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div style="font-size:11px;color:var(--bc-text-muted)">Date</div>
+        <div style="font-size:13px">@Model.RequestDate.ToString("yyyy-MM-dd")</div>
+      </div>
+      <div class="col-md-4">
+        <div style="font-size:11px;color:var(--bc-text-muted)">Hospital</div>
+        <div style="font-size:13px">@Model.HospitalId</div>
+      </div>
+    </div>
+  </div>
+</div>

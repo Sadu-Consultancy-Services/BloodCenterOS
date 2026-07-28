@@ -1,100 +1,53 @@
 using BloodCenterOS.Core.Models;
-using BloodCenterOS.Web.Models;
 using BloodCenterOS.Web.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BloodCenterOS.Web.Controllers;
 
+[Authorize]
 public class IssueController : Controller
 {
     private readonly ApiClient _api;
-    private readonly IWebAuthService _auth;
-
-    public IssueController(ApiClient api, IWebAuthService auth)
-    {
-        _api = api;
-        _auth = auth;
-    }
+    public IssueController(ApiClient api) => _api = api;
 
     public async Task<IActionResult> Index()
     {
-        if (!_auth.IsAuthenticated) return RedirectToAction("Login", "Account");
-        ViewBag.Title = "Blood Issues";
         ViewBag.ActiveMenu = "Issue";
-
-        var pending = new List<PatientRequest>();
-        var history = new List<IssueRecord>();
-
-        try
-        {
-            var p = await _api.GetPendingRequestsAsync();
-            if (p?.Success == true && p.Data != null) pending = p.Data;
-        }
-        catch { }
-
-        try
-        {
-            var h = await _api.GetIssueHistoryAsync();
-            if (h?.Success == true && h.Data != null) history = h.Data;
-        }
-        catch { }
-
-        if (!pending.Any())
-        {
-            pending = new List<PatientRequest>
-            {
-                new() { RequestId = 1, PatientName = "Anita Deshmukh", BloodGroup = "B+", ComponentType = "PRBC", UnitsRequested = 2, RequestUrgency = "High", RequestDate = DateTime.Now.AddHours(-3) },
-                new() { RequestId = 2, PatientName = "Ravi Kumar", BloodGroup = "O-", ComponentType = "Whole Blood", UnitsRequested = 3, RequestUrgency = "Critical", RequestDate = DateTime.Now.AddHours(-1) },
-                new() { RequestId = 3, PatientName = "Sneha Patil", BloodGroup = "A+", ComponentType = "FFP", UnitsRequested = 1, RequestUrgency = "Normal", RequestDate = DateTime.Now.AddDays(-1) },
-            };
-        }
-
-        if (!history.Any())
-        {
-            history = new List<IssueRecord>
-            {
-                new() { IssueRecordId = 1, PatientName = "Rajesh Mehta", IssueType = "Cross-match", IssueSlipNumber = "ISS-2026-001", IssueDate = DateTime.Now.AddDays(-5) },
-                new() { IssueRecordId = 2, PatientName = "Meena Iyer", IssueType = "Emergency", IssueSlipNumber = "ISS-2026-002", IssueDate = DateTime.Now.AddDays(-3) },
-            };
-        }
-
-        ViewBag.Pending = pending;
-        return View(history);
+        var ready = await _api.GetReadyForIssueAsync();
+        var history = await _api.GetIssueHistoryAsync();
+        ViewBag.ReadyForIssue = ready?.Data ?? new();
+        return View(history?.Data ?? new());
     }
 
-    public IActionResult Create()
+    public async Task<IActionResult> Create(long? reservationId)
     {
-        if (!_auth.IsAuthenticated) return RedirectToAction("Login", "Account");
-        ViewBag.Title = "New Blood Issue";
-        ViewBag.ActiveMenu = "Issue";
-        return View(new IssueRecord());
+        var ready = await _api.GetReadyForIssueAsync();
+        ViewBag.ReadyForIssue = ready?.Data ?? new();
+        if (reservationId.HasValue)
+        {
+            var selected = ready?.Data?.FirstOrDefault(r => r.ReservationId == reservationId.Value);
+            ViewBag.Selected = selected;
+        }
+        return View();
     }
 
     [HttpPost]
-    public async Task<IActionResult> Create(IssueRecord issue)
+    public async Task<IActionResult> Create(long reservationId, string? paymentMode, string? notes)
     {
-        if (!_auth.IsAuthenticated) return RedirectToAction("Login", "Account");
-        ViewBag.Title = "New Blood Issue";
-        ViewBag.ActiveMenu = "Issue";
-
-        if (string.IsNullOrWhiteSpace(issue.PatientName))
+        var result = await _api.IssueFromReservationAsync(new { reservationId, paymentMode, notes });
+        if (result?.Success == true)
         {
-            ModelState.AddModelError("PatientName", "Patient name is required");
-            return View(issue);
+            TempData["Success"] = "Blood issued successfully!";
+            return RedirectToAction("Index");
         }
+        TempData["Error"] = result?.Message ?? "Failed to issue blood";
+        return RedirectToAction("Create", new { reservationId });
+    }
 
-        try
-        {
-            var result = await _api.CreateIssueAsync(issue);
-            if (result?.Success == true)
-            {
-                TempData["Success"] = "Issue created successfully";
-                return RedirectToAction("Index");
-            }
-            ModelState.AddModelError("", result?.Message ?? "Failed to create issue");
-        }
-        catch { ModelState.AddModelError("", "API unavailable."); }
-
-        return View(issue);
+    public async Task<IActionResult> Details(long reservationId)
+    {
+        var issues = await _api.GetIssuesByReservationAsync(reservationId);
+        return View(issues?.Data ?? new());
     }
 }

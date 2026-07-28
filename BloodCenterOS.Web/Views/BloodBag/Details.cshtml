@@ -1,0 +1,52 @@
+@model BloodBag
+@{ ViewBag.Title = "Blood Bag Details"; ViewBag.ActiveMenu = "BloodBags"; }
+<div class="page-header">
+  <div><h1 class="page-title">Blood Bag Details <small>@Model.BloodBagNumber</small></h1></div>
+  <a href="@Url.Action("Index")" class="btn btn-outline-secondary"><i class="bi bi-arrow-left"></i> Back</a>
+</div>
+@if (TempData["Success"] is string s) { <div class="alert alert-success py-2 px-3 mb-3">@s</div> }
+@if (TempData["Error"] is string e) { <div class="alert alert-danger py-2 px-3 mb-3">@e</div> }
+<div class="card mb-3">
+  <div class="card-header"><h6>Bag Information</h6></div>
+  <div class="card-body">
+    <div class="row g-3">
+      <div class="col-md-4"><strong>Bag ID:</strong><br>@Model.BagId</div>
+      <div class="col-md-4"><strong>Blood Bag Number:</strong><br>@Model.BloodBagNumber</div>
+      <div class="col-md-4"><strong>Bag Barcode:</strong><br>@Model.BagBarcode</div>
+      <div class="col-md-4"><strong>Bag Lot Number:</strong><br>@Model.BagLotNumber</div>
+      <div class="col-md-4"><strong>Bag Type:</strong><br>@Model.BagType</div>
+      <div class="col-md-4">
+        <strong>Bag Status:</strong><br>
+        @switch (Model.BagStatus)
+        {
+          case "Available": <span class="badge bg-success">Available</span>; break;
+          case "Issued": <span class="badge bg-primary">Issued</span>; break;
+          case "Discarded": <span class="badge bg-danger">Discarded</span>; break;
+          default: <span class="badge bg-secondary">@Model.BagStatus</span>; break;
+        }
+      </div>
+      <div class="col-md-4"><strong>Donor ID:</strong><br>@Model.DonorId</div>
+      <div class="col-md-4"><strong>Volume (mL):</strong><br>@Model.BagVolumeMl</div>
+      <div class="col-md-4"><strong>Initial Collected At:</strong><br>@Model.InitialCollectedAt?.ToString("yyyy-MM-dd HH:mm")</div>
+      <div class="col-md-4"><strong>Expiry Date:</strong><br>@Model.ExpiryDate?.ToString("yyyy-MM-dd")</div>
+    </div>
+  </div>
+</div>
+<div class="card">
+  <div class="card-header"><h6>Update Status</h6></div>
+  <div class="card-body">
+    <form method="post" action="@Url.Action("UpdateStatus", new { bagId = Model.BagId })" class="row g-2">
+      <div class="col-auto">
+        <select name="status" class="form-select">
+          <option value="Available" selected="@(Model.BagStatus == "Available")">Available</option>
+          <option value="Issued" selected="@(Model.BagStatus == "Issued")">Issued</option>
+          <option value="Discarded" selected="@(Model.BagStatus == "Discarded")">Discarded</option>
+          <option value="Quarantined" selected="@(Model.BagStatus == "Quarantined")">Quarantined</option>
+        </select>
+      </div>
+      <div class="col-auto">
+        <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg"></i> Update</button>
+      </div>
+    </form>
+  </div>
+</div>

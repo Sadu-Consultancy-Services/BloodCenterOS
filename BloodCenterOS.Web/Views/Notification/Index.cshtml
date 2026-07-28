@@ -1,0 +1,29 @@
+@model List<Notification>
+@{ ViewBag.Title = "Notifications"; ViewBag.ActiveMenu = "Notifications"; }
+<div class="page-header">
+  <div><h1 class="page-title">Notifications <small>Manage alerts & messages</small></h1></div>
+  <a href="@Url.Action("Create")" class="btn btn-primary"><i class="bi bi-plus"></i> Create Notification</a>
+</div>
+@if (TempData["Success"] is string s) { <div class="alert alert-success py-2 px-3 mb-3">@s</div> }
+@if (TempData["Error"] is string e) { <div class="alert alert-danger py-2 px-3 mb-3">@e</div> }
+<div class="card">
+  <div class="card-body p-0">
+    <table class="table mb-0">
+      <thead><tr><th>Type</th><th>Title</th><th>Body</th><th>Audience</th><th>Active</th><th>Created</th></tr></thead>
+      <tbody>
+        @if (!Model.Any()) { <tr><td colspan="6" class="text-center text-muted py-3">No notifications.</td></tr> }
+        @foreach (var item in Model)
+        {
+          <tr>
+            <td><span class="badge bg-secondary">@item.NotificationType</span></td>
+            <td>@item.Title</td>
+            <td class="text-truncate" style="max-width:280px">@item.Body</td>
+            <td>@item.TargetAudience</td>
+            <td>@if (item.IsActive) { <span class="badge bg-success">Yes</span> } else { <span class="badge bg-danger">No</span> }</td>
+            <td>@item.CreatedAt.ToString("yyyy-MM-dd HH:mm")</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+</div>

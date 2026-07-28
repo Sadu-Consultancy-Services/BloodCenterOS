@@ -1,0 +1,109 @@
+@model CrossMatchWithTests
+
+@{
+    ViewData["Title"] = "Cross Match Details";
+    var grouped = Model.Tests.GroupBy(t => t.ReservationDetailId);
+}
+
+<div class="container-fluid px-4">
+    <h1 class="mt-4">Cross Match #@Model.Entry.CrossMatchEntryId</h1>
+
+    <div class="row mb-3">
+        <div class="col-md-3"><strong>Reservation:</strong> @Model.Entry.ReservationId</div>
+        <div class="col-md-3"><strong>Overall Result:</strong>
+            @if (Model.Entry.OverallResult == "Pass") { <span class="badge bg-success">Pass</span> }
+            else if (Model.Entry.OverallResult == "Reject") { <span class="badge bg-danger">Reject</span> }
+            else { <span class="badge bg-warning">@Model.Entry.OverallResult</span> }
+        </div>
+        <div class="col-md-3"><strong>Performed:</strong> @Model.Entry.PerformedAt?.ToString("dd/MM/yyyy HH:mm")</div>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-header">Component Test Results</div>
+        <div class="card-body">
+            <table class="table table-bordered">
+                <thead><tr>
+                    <th>Component</th>
+                    <th>Blood Group</th>
+                    <th>Type</th>
+                    <th>Volume (ml)</th>
+                    <th>Saline</th>
+                    <th>Bovine</th>
+                    <th>Coombs</th>
+                    <th></th>
+                </tr></thead>
+                <tbody>
+                    @foreach (var g in grouped)
+                    {
+                        var first = g.First();
+                        var saline = g.FirstOrDefault(t => t.TestType == "Saline");
+                        var bovine = g.FirstOrDefault(t => t.TestType == "Bovine");
+                        var coombs = g.FirstOrDefault(t => t.TestType == "Coombs");
+                        <tr>
+                            <td>@first.ComponentCode</td>
+                            <td>@first.BloodGroup</td>
+                            <td>@first.ComponentType</td>
+                            <td>@first.VolumeMl</td>
+                            <td>
+                                @if (saline != null && saline.Result == "Pending")
+                                {
+                                    <form asp-action="SetResult" method="post" style="display:inline">
+                                        <input type="hidden" name="testResultId" value="@saline.TestResultId" />
+                                        <input type="hidden" name="entryId" value="@Model.Entry.CrossMatchEntryId" />
+                                        <button type="submit" name="result" value="Pass" class="btn btn-success btn-sm">Pass</button>
+                                        <button type="submit" name="result" value="Reject" class="btn btn-danger btn-sm">Reject</button>
+                                    </form>
+                                }
+                                else
+                                {
+                                    <span class="badge @(saline?.Result == "Pass" ? "bg-success" : "bg-danger")">@saline?.Result</span>
+                                }
+                            </td>
+                            <td>
+                                @if (bovine != null && bovine.Result == "Pending")
+                                {
+                                    <form asp-action="SetResult" method="post" style="display:inline">
+                                        <input type="hidden" name="testResultId" value="@bovine.TestResultId" />
+                                        <input type="hidden" name="entryId" value="@Model.Entry.CrossMatchEntryId" />
+                                        <button type="submit" name="result" value="Pass" class="btn btn-success btn-sm">Pass</button>
+                                        <button type="submit" name="result" value="Reject" class="btn btn-danger btn-sm">Reject</button>
+                                    </form>
+                                }
+                                else
+                                {
+                                    <span class="badge @(bovine?.Result == "Pass" ? "bg-success" : "bg-danger")">@bovine?.Result</span>
+                                }
+                            </td>
+                            <td>
+                                @if (coombs != null && coombs.Result == "Pending")
+                                {
+                                    <form asp-action="SetResult" method="post" style="display:inline">
+                                        <input type="hidden" name="testResultId" value="@coombs.TestResultId" />
+                                        <input type="hidden" name="entryId" value="@Model.Entry.CrossMatchEntryId" />
+                                        <button type="submit" name="result" value="Pass" class="btn btn-success btn-sm">Pass</button>
+                                        <button type="submit" name="result" value="Reject" class="btn btn-danger btn-sm">Reject</button>
+                                    </form>
+                                }
+                                else
+                                {
+                                    <span class="badge @(coombs?.Result == "Pass" ? "bg-success" : "bg-danger")">@coombs?.Result</span>
+                                }
+                            </td>
+                            <td>
+                                <form asp-action="RejectComponent" method="post" style="display:inline">
+                                    <input type="hidden" name="testResultId" value="@(saline?.TestResultId ?? 0)" />
+                                    <input type="hidden" name="entryId" value="@Model.Entry.CrossMatchEntryId" />
+                                    <button type="submit" class="btn btn-outline-danger btn-sm" onclick="return confirm('Release this component back to inventory?')">Release</button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div>
+        <a asp-action="Index" class="btn btn-secondary">Back to List</a>
+    </div>
+</div>

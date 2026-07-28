@@ -17,16 +17,25 @@ public class QualityControlController : ControllerBase
     private long CenterId => long.TryParse(User.FindFirst("CenterId")?.Value, out var id) ? id : 0;
     private long UserId => long.TryParse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value, out var id) ? id : 0;
 
-    [HttpPost]
-    public async Task<IActionResult> Create([FromBody] CreateQcRequest request)
+    [HttpGet]
+    public async Task<IActionResult> GetAll([FromQuery] string? type, [FromQuery] DateTime? from, [FromQuery] DateTime? to)
     {
-        var id = await _repo.CreateAsync(CenterId, request.DeviceId, request.Detail, UserId);
+        var items = await _repo.GetByCenterAsync(CenterId, type, from, to);
+        return Ok(ApiResponse<IEnumerable<QualityControl>>.Ok(items));
+    }
+
+    [HttpGet("{id}")]
+    public async Task<IActionResult> GetById(long id)
+    {
+        var item = await _repo.GetByIdAsync(id);
+        if (item == null) return NotFound(ApiResponse<string>.Fail("QC record not found"));
+        return Ok(ApiResponse<QualityControl>.Ok(item));
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> Create([FromBody] CreateQcRequest req)
+    {
+        var id = await _repo.CreateAsync(CenterId, req, UserId);
         return Ok(ApiResponse<long>.Ok(id, "QC record saved"));
     }
-}
-
-public class CreateQcRequest
-{
-    public long DeviceId { get; set; }
-    public string Detail { get; set; } = "";
 }

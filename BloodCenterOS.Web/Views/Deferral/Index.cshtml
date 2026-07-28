@@ -1,0 +1,32 @@
+@model List<DeferralRecord>
+@{ ViewBag.Title = "Deferrals"; ViewBag.ActiveMenu = "Deferrals"; }
+<div class="page-header">
+  <div><h1 class="page-title">Deferrals <small>Donor deferral records</small></h1></div>
+  <a href="@Url.Action("Create")" class="btn btn-primary"><i class="bi bi-plus"></i> New Deferral</a>
+</div>
+@if (TempData["Success"] is string s) { <div class="alert alert-success py-2 px-3 mb-3">@s</div> }
+@if (TempData["Error"] is string e) { <div class="alert alert-danger py-2 px-3 mb-3">@e</div> }
+<form method="get" class="row g-2 mb-3">
+  <div class="col-auto"><input type="number" name="donorId" class="form-control form-control-sm" placeholder="Donor ID" value="@Context.Request.Query["donorId"]" /></div>
+  <div class="col-auto"><button type="submit" class="btn btn-sm btn-outline-primary">Filter</button></div>
+</form>
+<div class="card">
+  <div class="card-body p-0">
+    <table class="table mb-0">
+      <thead><tr><th>Donor Name</th><th>Reason</th><th>Deferral Date</th><th>Until</th><th>Notes</th></tr></thead>
+      <tbody>
+        @if (!Model.Any()) { <tr><td colspan="5" class="text-center text-muted py-3">No deferrals found.</td></tr> }
+        @foreach (var item in Model)
+        {
+          <tr>
+            <td>@item.DonorId</td>
+            <td>@item.Reason</td>
+            <td>@item.DeferralDate.ToString("yyyy-MM-dd")</td>
+            <td>@item.DeferralUntil?.ToString("yyyy-MM-dd")</td>
+            <td>@item.Notes</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+</div>

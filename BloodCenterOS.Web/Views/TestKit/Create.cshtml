@@ -1,0 +1,23 @@
+@model TestKit
+@{ ViewBag.Title = "Add Test Kit"; ViewBag.ActiveMenu = "TestKits"; }
+<div class="page-header">
+  <div><h1 class="page-title">Add Test Kit <small>Register a new test kit</small></h1></div>
+  <a href="@Url.Action("Index")" class="btn btn-outline-secondary"><i class="bi bi-arrow-left"></i> Back</a>
+</div>
+<form method="post">
+  <div class="card mb-3">
+    <div class="card-header"><h6>Kit Details</h6></div>
+    <div class="card-body">
+      <div class="row g-2">
+        <div class="col-md-6"><label class="form-label">Kit Name <span class="text-danger">*</span></label><input type="text" name="KitName" class="form-control" value="@Model.KitName" required /></div>
+        <div class="col-md-6"><label class="form-label">Manufacturer</label><input type="text" name="Manufacturer" class="form-control" value="@Model.Manufacturer" /></div>
+        <div class="col-md-4"><label class="form-label">Lot Number</label><input type="text" name="LotNumber" class="form-control" value="@Model.LotNumber" /></div>
+        <div class="col-md-4"><label class="form-label">Expiry Date</label><input type="date" name="ExpiryDate" class="form-control" value="@Model.ExpiryDate?.ToString("yyyy-MM-dd")" /></div>
+      </div>
+    </div>
+  </div>
+  <div class="d-flex gap-2 justify-content-end">
+    <a href="@Url.Action("Index")" class="btn btn-outline-secondary">Cancel</a>
+    <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg"></i> Save</button>
+  </div>
+</form>

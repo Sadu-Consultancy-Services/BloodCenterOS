@@ -1,3 +1,5 @@
+using System.Security.Claims;
+
 namespace BloodCenterOS.Web.Services;
 
 public class JwtCookieMiddleware
@@ -17,7 +19,17 @@ public class JwtCookieMiddleware
                 var role = context.Request.Cookies["bc_role"] ?? "";
                 tokenStore.Set(token, name, userId, role);
             }
+
+            var claims = new List<Claim>
+            {
+                new(ClaimTypes.Name, tokenStore.DisplayName ?? ""),
+                new(ClaimTypes.NameIdentifier, tokenStore.UserId.ToString()),
+                new(ClaimTypes.Role, tokenStore.Role ?? "")
+            };
+            var identity = new ClaimsIdentity(claims, "jwt-cookie");
+            context.User = new ClaimsPrincipal(identity);
         }
+
         await _next(context);
     }
 }

@@ -1,0 +1,31 @@
+@{ ViewBag.Title = "Discard Component"; ViewBag.ActiveMenu = "ComponentLog"; var componentId = ViewBag.ComponentId as long?; }
+<div class="page-header">
+  <div><h1 class="page-title">Discard Component <small>Dispose of a blood component</small></h1></div>
+  <a href="@Url.Action("Index")" class="btn btn-outline-secondary"><i class="bi bi-arrow-left"></i> Back</a>
+</div>
+<form method="post">
+  <div class="card mb-3">
+    <div class="card-header"><h6>Discard Details</h6></div>
+    <div class="card-body">
+      <input type="hidden" name="componentId" value="@componentId" />
+      <div class="row g-2">
+        <div class="col-md-6">
+          <label class="form-label">Bag ID <span class="text-danger">*</span></label>
+          <input type="number" name="bagId" class="form-control" required />
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Reason <span class="text-danger">*</span></label>
+          <input type="text" name="reason" class="form-control" placeholder="e.g. Expired, Contaminated" required />
+        </div>
+        <div class="col-md-12">
+          <label class="form-label">Notes</label>
+          <textarea name="notes" class="form-control" rows="3"></textarea>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="d-flex gap-2 justify-content-end">
+    <a href="@Url.Action("Index")" class="btn btn-outline-secondary">Cancel</a>
+    <button type="submit" class="btn btn-danger"><i class="bi bi-trash"></i> Discard</button>
+  </div>
+</form>

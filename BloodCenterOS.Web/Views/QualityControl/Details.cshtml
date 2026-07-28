@@ -1,0 +1,60 @@
+@model QualityControl
+
+@{
+    ViewData["Title"] = "QC Details";
+}
+
+<div class="container-fluid px-4">
+    <h1 class="mt-4">QC Record #@Model.QCRecordId</h1>
+
+    <div class="card mb-4">
+        <div class="card-header">
+            <span class="badge bg-info fs-6">@Model.QCType</span>
+            <span class="ms-2 text-muted">@Model.QCDate.ToString("dd/MM/yyyy HH:mm")</span>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                @switch (Model.QCType)
+                {
+                    case "PoolCell":
+                        <div class="col-md-4"><strong>Unit Number:</strong> @Model.UnitNumber</div>
+                        <div class="col-md-4"><strong>Specificity:</strong> @Model.Specificity</div>
+                        <div class="col-md-4"><strong>Batch No:</strong> @Model.BatchNo</div>
+                        break;
+                    case "Anticera":
+                        <div class="col-md-4"><strong>Batch No:</strong> @Model.BatchNo</div>
+                        <div class="col-md-4"><strong>Expiry:</strong> @Model.Expiry?.ToString("dd/MM/yyyy")</div>
+                        <div class="col-md-4"><strong>Reactivity:</strong> @Model.Reactivity</div>
+                        break;
+                    case "Saline":
+                        <div class="col-md-4"><strong>Appearance:</strong> @Model.Appearance</div>
+                        <div class="col-md-4"><strong>Haemolysis:</strong> @Model.Haemolysis</div>
+                        <div class="col-md-4"><strong>Specific Gravity:</strong> @Model.SpGravity</div>
+                        break;
+                    case "CopperSulphate":
+                        <div class="col-md-4"><strong>Specific Gravity:</strong> @Model.SpGravity</div>
+                        <div class="col-md-4"><strong>High Control:</strong> @Model.HighControl</div>
+                        <div class="col-md-4"><strong>Low Control:</strong> @Model.LowControl</div>
+                        break;
+                    case "CoombsAHG":
+                    case "BSA":
+                        <div class="col-md-3"><strong>Batch No:</strong> @Model.BatchNo</div>
+                        <div class="col-md-3"><strong>Expiry:</strong> @Model.Expiry?.ToString("dd/MM/yyyy")</div>
+                        <div class="col-md-3"><strong>Activity:</strong> @Model.Activity</div>
+                        <div class="col-md-3"><strong>Titre:</strong> @Model.Titre</div>
+                        break;
+                }
+            </div>
+            @if (!string.IsNullOrEmpty(Model.Notes))
+            {
+                <div class="mt-3"><strong>Notes:</strong> @Model.Notes</div>
+            }
+            @if (Model.DeviceId.HasValue)
+            {
+                <div class="mt-2"><strong>Device ID:</strong> @Model.DeviceId</div>
+            }
+        </div>
+    </div>
+
+    <a asp-action="Index" class="btn btn-secondary">Back to Register</a>
+</div>

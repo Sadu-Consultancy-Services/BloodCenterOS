@@ -1,0 +1,35 @@
+@model List<PatientRequest>
+@{ ViewBag.Title = "Patient Requests"; ViewBag.ActiveMenu = "PatientRequests"; }
+<div class="page-header">
+  <div><h1 class="page-title">Patient Requests @if (Model.Any()) { <span class="badge bg-secondary">@Model.Count() pending</span> }</h1></div>
+  <a href="@Url.Action("Create")" class="btn btn-primary"><i class="bi bi-plus"></i> New Request</a>
+</div>
+@if (TempData["Success"] is string s) { <div class="alert alert-success py-2 px-3 mb-3">@s</div> }
+@if (TempData["Error"] is string e) { <div class="alert alert-danger py-2 px-3 mb-3">@e</div> }
+<div class="card">
+  <div class="card-body p-0">
+    <table class="table mb-0">
+      <thead><tr><th>Patient Name</th><th>Blood Group</th><th>Component Type</th><th>Units</th><th>Urgency</th><th>Date</th><th>Hospital</th><th></th></tr></thead>
+      <tbody>
+        @if (!Model.Any()) { <tr><td colspan="8" class="text-center text-muted py-3">No requests found.</td></tr> }
+        @foreach (var item in Model)
+        {
+          <tr>
+            <td>@item.PatientName</td>
+            <td><span class="badge" style="background:#dcfce7;color:#166534">@item.BloodGroup</span></td>
+            <td>@item.ComponentType</td>
+            <td>@item.UnitsRequested</td>
+            <td>
+              @if (item.RequestUrgency == "Emergency") { <span class="badge bg-danger">Emergency</span> }
+              else if (item.RequestUrgency == "Urgent") { <span class="badge bg-warning text-dark">Urgent</span> }
+              else { <span class="badge bg-primary">Normal</span> }
+            </td>
+            <td>@item.RequestDate.ToString("yyyy-MM-dd")</td>
+            <td>@item.HospitalId</td>
+            <td class="text-end"><a href="@Url.Action("Details", new { id = item.RequestId })" class="btn btn-sm btn-outline-primary"><i class="bi bi-info-circle"></i> Details</a></td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+</div>

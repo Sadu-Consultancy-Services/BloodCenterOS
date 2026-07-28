@@ -1,0 +1,27 @@
+@model List<TestKit>
+@{ ViewBag.Title = "Test Kits"; ViewBag.ActiveMenu = "TestKits"; }
+<div class="page-header">
+  <div><h1 class="page-title">Test Kits <small>Manage testing inventory</small></h1></div>
+  <a href="@Url.Action("Create")" class="btn btn-primary"><i class="bi bi-plus"></i> Add Kit</a>
+</div>
+@if (TempData["Success"] is string s) { <div class="alert alert-success py-2 px-3 mb-3">@s</div> }
+@if (TempData["Error"] is string e) { <div class="alert alert-danger py-2 px-3 mb-3">@e</div> }
+<div class="card">
+  <div class="card-body p-0">
+    <table class="table mb-0">
+      <thead><tr><th>Kit Name</th><th>Manufacturer</th><th>Lot Number</th><th>Expiry Date</th></tr></thead>
+      <tbody>
+        @if (!Model.Any()) { <tr><td colspan="4" class="text-center text-muted py-3">No kits found.</td></tr> }
+        @foreach (var item in Model)
+        {
+          <tr>
+            <td>@item.KitName</td>
+            <td>@item.Manufacturer</td>
+            <td>@item.LotNumber</td>
+            <td>@item.ExpiryDate?.ToString("yyyy-MM-dd")</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+</div>

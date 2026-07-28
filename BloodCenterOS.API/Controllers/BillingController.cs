@@ -1,6 +1,6 @@
 using System.Security.Claims;
-using BloodCenterOS.Core.Models;
 using BloodCenterOS.API.Repositories;
+using BloodCenterOS.Core.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -11,68 +11,56 @@ namespace BloodCenterOS.API.Controllers;
 [Route("api/billing")]
 public class BillingController : ControllerBase
 {
-    private readonly IBillingRepository _billingRepo;
+    private readonly IBillingRepository _repo;
+    public BillingController(IBillingRepository repo) => _repo = repo;
 
-    public BillingController(IBillingRepository billingRepo)
-    {
-        _billingRepo = billingRepo;
-    }
+    private long CenterId => long.TryParse(User.FindFirst("CenterId")?.Value, out var id) ? id : 0;
+    private long UserId => long.TryParse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value, out var id) ? id : 0;
 
     [HttpGet]
     public async Task<IActionResult> GetAll()
     {
-        try
-        {
-            var centerId = User.FindFirst("CenterId")?.Value;
-            if (!long.TryParse(centerId, out var cid))
-                return BadRequest(ApiResponse<IEnumerable<Billing>>.Fail("Invalid center id"));
+        var items = await _repo.GetByCenterAsync(CenterId);
+        return Ok(ApiResponse<IEnumerable<Billing>>.Ok(items));
+    }
 
-            var billings = await _billingRepo.GetByCenterAsync(cid);
-            return Ok(ApiResponse<IEnumerable<Billing>>.Ok(billings));
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(500, ApiResponse<IEnumerable<Billing>>.Fail($"An unexpected error occurred: {ex.Message}"));
-        }
+    [HttpGet("{id}")]
+    public async Task<IActionResult> GetById(long id)
+    {
+        var invoice = await _repo.GetByIdAsync(id);
+        if (invoice == null) return NotFound(ApiResponse<string>.Fail("Invoice not found"));
+        var details = await _repo.GetDetailAsync(id);
+        var result = new InvoiceWithDetails { Invoice = invoice, Details = details.ToList() };
+        return Ok(ApiResponse<InvoiceWithDetails>.Ok(result));
     }
 
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] Billing billing)
     {
-        try
-        {
-            var centerId = User.FindFirst("CenterId")?.Value;
-            if (long.TryParse(centerId, out var cid))
-                billing.CenterId = cid;
-
-            var id = await _billingRepo.CreateBillingAsync(billing);
-            billing.BillingTransactionId = id;
-            return CreatedAtAction(null, ApiResponse<Billing>.Ok(billing, "Billing created successfully"));
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(500, ApiResponse<Billing>.Fail($"An unexpected error occurred: {ex.Message}"));
-        }
+        billing.CenterId = CenterId;
+        var id = await _repo.CreateBillingAsync(billing);
+        billing.BillingTransactionId = id;
+        return CreatedAtAction(null, ApiResponse<Billing>.Ok(billing, "Invoice created"));
     }
 
     [HttpPost("{billingId}/payment")]
     public async Task<IActionResult> AddPayment(long billingId, [FromQuery] decimal amount, [FromQuery] string mode, [FromQuery] string? reference)
     {
-        try
-        {
-            var centerId = User.FindFirst("CenterId")?.Value;
-            if (!long.TryParse(centerId, out var cid))
-                return BadRequest(ApiResponse<long>.Fail("Invalid center id"));
+        var id = await _repo.AddPaymentAsync(billingId, CenterId, amount, mode, reference, UserId);
+        return Ok(ApiResponse<long>.Ok(id, "Payment recorded"));
+    }
 
-            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            long? uid = long.TryParse(userId, out var parsed) ? parsed : null;
+    [HttpGet("dues")]
+    public async Task<IActionResult> GetDues([FromQuery] string? keyword)
+    {
+        var items = await _repo.GetDuesAsync(CenterId, keyword);
+        return Ok(ApiResponse<IEnumerable<DuesRegisterItem>>.Ok(items));
+    }
 
-            var id = await _billingRepo.AddPaymentAsync(billingId, cid, amount, mode, reference, uid);
-            return Ok(ApiResponse<long>.Ok(id, "Payment added successfully"));
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(500, ApiResponse<long>.Fail($"An unexpected error occurred: {ex.Message}"));
-        }
+    [HttpPost("credit-note")]
+    public async Task<IActionResult> CreateCreditNote([FromBody] CreditNoteRequest req)
+    {
+        var id = await _repo.CreateCreditNoteAsync(CenterId, req.OriginalInvoiceId, req.Amount, req.Reason, UserId);
+        return Ok(ApiResponse<long>.Ok(id, "Credit note created"));
     }
 }

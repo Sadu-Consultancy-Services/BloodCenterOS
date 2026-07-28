@@ -1,0 +1,128 @@
+@model IssueToStorageRequest
+
+@{
+    ViewData["Title"] = "Issue to Storage";
+    var components = ViewBag.AvailableComponents as List<AvailableComponentForStorage> ?? new();
+    var storages = ViewBag.Storages as List<StorageMaster> ?? new();
+}
+
+<div class="container-fluid px-4">
+    <h1 class="mt-4">Issue Blood to Storage Unit</h1>
+
+    <form asp-action="Create" method="post">
+        <div class="card mb-3">
+            <div class="card-header">Storage Unit &amp; Filters</div>
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <label class="form-label">Storage Unit *</label>
+                        <select name="StorageId" class="form-select" required>
+                            <option value="">Select storage</option>
+                            @foreach (var st in storages.Where(s => s.IsActive))
+                            {
+                                <option value="@st.StorageId">@st.StorageName</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Issue Date</label>
+                        <input name="IssueDate" class="form-control" type="datetime-local" value="@DateTime.Now.ToString("yyyy-MM-ddTHH:mm")" />
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Payment Mode</label>
+                        <select name="PaymentMode" class="form-select">
+                            <option value="Credit">Credit</option>
+                            <option value="Paid">Paid</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-3">
+            <div class="card-header">
+                Select Components
+                <span class="text-muted ms-2">(@components.Count available)</span>
+                <button type="button" class="btn btn-sm btn-outline-primary ms-2" onclick="document.querySelectorAll('.comp-check').forEach(c=>c.checked=true)">Select All</button>
+            </div>
+            <div class="card-body">
+                @if (components.Any())
+                {
+                    <div style="max-height:400px;overflow-y:auto">
+                        <table class="table table-bordered table-hover table-sm">
+                            <thead><tr>
+                                <th><input type="checkbox" id="selectAll" /></th>
+                                <th>Code</th>
+                                <th>Type</th>
+                                <th>Blood Group</th>
+                                <th>Volume</th>
+                                <th>Expiry</th>
+                                <th>Bag #</th>
+                            </tr></thead>
+                            <tbody>
+                                @for (int i = 0; i < components.Count; i++)
+                                {
+                                    var c = components[i];
+                                    <tr>
+                                        <td><input type="checkbox" name="ComponentIds" value="@c.ComponentId" class="comp-check" /></td>
+                                        <td>@c.ComponentCode</td>
+                                        <td>@c.ComponentType</td>
+                                        <td>@c.BloodGroup</td>
+                                        <td>@c.VolumeMl ml</td>
+                                        <td>@c.ExpiryDate?.ToString("dd/MM/yyyy")</td>
+                                        <td>@c.BagNo</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+                else
+                {
+                    <p class="text-muted mb-0">No available components.</p>
+                }
+            </div>
+        </div>
+
+        <div class="card mb-3">
+            <div class="card-header">Billing Details</div>
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-md-3">
+                        <label class="form-label">Discount (₹)</label>
+                        <input name="Discount" class="form-control" type="number" step="0.01" value="0" />
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Discount Reason</label>
+                        <select name="DiscountReason" class="form-select">
+                            <option value="">None</option>
+                            <option value="Coupon">Coupon</option>
+                            <option value="Camp Organizer">Camp Organizer</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Packaging Charges (₹)</label>
+                        <input name="EmAmt" class="form-control" type="number" step="0.01" value="0" />
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Notes</label>
+                        <input name="Notes" class="form-control" />
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="d-flex gap-2 justify-content-end">
+            <a asp-action="Index" class="btn btn-secondary">Cancel</a>
+            <button type="submit" class="btn btn-success" onclick="return confirm('Issue selected components to storage?')">Issue to Storage</button>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+<script>
+    document.getElementById('selectAll')?.addEventListener('change', function() {
+        document.querySelectorAll('.comp-check').forEach(cb => cb.checked = this.checked);
+    });
+</script>
+}

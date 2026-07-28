@@ -4,6 +4,15 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllersWithViews();
 
+builder.Services.AddAuthentication(Microsoft.AspNetCore.Authentication.Cookies.CookieAuthenticationDefaults.AuthenticationScheme)
+    .AddCookie(options =>
+    {
+        options.LoginPath = "/Account/Login";
+        options.LogoutPath = "/Account/Logout";
+        options.Cookie.Name = "bc_token";
+    });
+builder.Services.AddAuthorization();
+
 builder.Services.AddHttpClient<ApiClient>(client =>
 {
     var baseUrl = builder.Configuration["Api:BaseUrl"] ?? "https://localhost:5001";

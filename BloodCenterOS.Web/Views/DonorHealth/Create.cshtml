@@ -1,0 +1,28 @@
+@model DonorHealth
+@{ ViewBag.Title = "New Health Record"; ViewBag.ActiveMenu = "DonorHealth"; }
+<div class="page-header">
+  <div><h1 class="page-title">New Health Record <small>Record donor health screening</small></h1></div>
+  <a href="@Url.Action("Index")" class="btn btn-outline-secondary"><i class="bi bi-arrow-left"></i> Back</a>
+</div>
+<form method="post">
+  <div class="card mb-3">
+    <div class="card-header"><h6>Health Screening</h6></div>
+    <div class="card-body">
+      <input type="hidden" name="DonorId" value="@Model.DonorId" />
+      <div class="row g-2">
+        <div class="col-md-3"><label class="form-label">Donor ID <span class="text-danger">*</span></label><input type="number" name="DonorId" class="form-control" value="@Model.DonorId" required /></div>
+        <div class="col-md-3"><label class="form-label">Visit Date</label><input type="date" name="VisitDate" class="form-control" value="@Model.VisitDate.ToString("yyyy-MM-dd")" /></div>
+        <div class="col-md-2"><label class="form-label">Weight (kg)</label><input type="number" name="WeightKg" class="form-control" value="@Model.WeightKg" step="0.1" /></div>
+        <div class="col-md-2"><label class="form-label">Temperature</label><input type="number" name="Temperature" class="form-control" value="@Model.Temperature" step="0.1" /></div>
+        <div class="col-md-2"><label class="form-label">Blood Pressure</label><input type="text" name="BloodPressure" class="form-control" value="@Model.BloodPressure" placeholder="e.g., 120/80" /></div>
+        <div class="col-md-3"><label class="form-label">Hemoglobin</label><input type="number" name="Hemoglobin" class="form-control" value="@Model.Hemoglobin" step="0.1" /></div>
+        <div class="col-md-3"><label class="form-label">Pulse Rate</label><input type="number" name="PulseRate" class="form-control" value="@Model.PulseRate" /></div>
+        <div class="col-12"><label class="form-label">Remarks</label><textarea name="Remarks" class="form-control" rows="3">@Model.Remarks</textarea></div>
+      </div>
+    </div>
+  </div>
+  <div class="d-flex gap-2 justify-content-end">
+    <a href="@Url.Action("Index")" class="btn btn-outline-secondary">Cancel</a>
+    <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg"></i> Save</button>
+  </div>
+</form>

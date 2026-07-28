@@ -22,6 +22,13 @@ public class NotificationController : ControllerBase
         var id = await _repo.CreateAsync(CenterId, request.Type, request.Title, request.Body, request.Audience);
         return Ok(ApiResponse<long>.Ok(id, "Notification created"));
     }
+
+    [HttpGet]
+    public async Task<IActionResult> GetAll()
+    {
+        var data = await _repo.GetAllAsync(CenterId);
+        return Ok(ApiResponse<IEnumerable<Notification>>.Ok(data));
+    }
 }
 
 public class CreateNotificationRequest

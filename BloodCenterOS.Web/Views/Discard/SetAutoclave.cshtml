@@ -1,0 +1,33 @@
+@model SetAutoclaveRequest
+
+@{
+    ViewData["Title"] = "Set Autoclave Times";
+}
+
+<div class="container-fluid px-4">
+    <h1 class="mt-4">Set Autoclave Sterilization Times</h1>
+    <p class="text-muted">Discard Record #@ViewBag.DiscardId</p>
+
+    <form asp-action="SetAutoclave" method="post">
+        <input type="hidden" asp-for="DiscardId" value="@ViewBag.DiscardId" />
+        <div class="card mb-3">
+            <div class="card-header">Sterilization Details</div>
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label">Start Time *</label>
+                        <input asp-for="StartTime" class="form-control" type="datetime-local" required />
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">End Time *</label>
+                        <input asp-for="EndTime" class="form-control" type="datetime-local" required />
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="d-flex gap-2 justify-content-end">
+            <a asp-action="AutoclaveRegister" class="btn btn-secondary">Cancel</a>
+            <button type="submit" class="btn btn-primary">Save Times</button>
+        </div>
+    </form>
+</div>

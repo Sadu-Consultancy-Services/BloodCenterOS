@@ -1,0 +1,41 @@
+@model List<BloodBag>
+@{ ViewBag.Title = "Blood Bags"; ViewBag.ActiveMenu = "BloodBags"; }
+<div class="page-header">
+  <div><h1 class="page-title">Blood Bags <small>Search and manage blood bags</small></h1></div>
+</div>
+@if (TempData["Success"] is string s) { <div class="alert alert-success py-2 px-3 mb-3">@s</div> }
+@if (TempData["Error"] is string e) { <div class="alert alert-danger py-2 px-3 mb-3">@e</div> }
+<form method="get" class="mb-3">
+  <div class="input-group">
+    <input type="text" name="term" class="form-control" placeholder="Search by bag number, barcode, lot..." value="@ViewContext.HttpContext.Request.Query["term"]" />
+    <button type="submit" class="btn btn-primary"><i class="bi bi-search"></i> Search</button>
+  </div>
+</form>
+<div class="card">
+  <div class="card-body p-0">
+    <table class="table mb-0">
+      <thead><tr><th>Bag Number</th><th>Type</th><th>Status</th><th>Expiry Date</th><th></th></tr></thead>
+      <tbody>
+        @if (!Model.Any()) { <tr><td colspan="5" class="text-center text-muted py-3">Search for blood bags.</td></tr> }
+        @foreach (var item in Model)
+        {
+          <tr>
+            <td>@item.BloodBagNumber</td>
+            <td>@item.BagType</td>
+            <td>
+              @switch (item.BagStatus)
+              {
+                case "Available": <span class="badge bg-success">Available</span>; break;
+                case "Issued": <span class="badge bg-primary">Issued</span>; break;
+                case "Discarded": <span class="badge bg-danger">Discarded</span>; break;
+                default: <span class="badge bg-secondary">@item.BagStatus</span>; break;
+              }
+            </td>
+            <td>@item.ExpiryDate?.ToString("yyyy-MM-dd")</td>
+            <td class="text-end"><a href="@Url.Action("Details", new { bagNo = item.BloodBagNumber })" class="btn btn-sm btn-outline-primary"><i class="bi bi-info-circle"></i> Details</a></td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+</div>

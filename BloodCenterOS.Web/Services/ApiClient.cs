@@ -154,6 +154,74 @@ public class ApiClient
     public Task<ApiResponse<object>?> DeleteCampOrganizerAsync(long id) =>
         DeleteAsync<object>($"/api/camp-organizers/{id}");
 
+    // ── Blood Reception (from MBB) ──
+    public Task<ApiResponse<List<BloodReception>>?> GetBloodReceptionsAsync(DateTime? from = null, DateTime? to = null)
+    {
+        var q = new List<string>();
+        if (from.HasValue) q.Add($"fromDate={from:yyyy-MM-dd}");
+        if (to.HasValue) q.Add($"toDate={to:yyyy-MM-dd}");
+        var qs = q.Count > 0 ? "?" + string.Join("&", q) : "";
+        return GetAsync<List<BloodReception>>($"/api/blood-reception{qs}");
+    }
+    public Task<ApiResponse<BloodReception>?> GetBloodReceptionAsync(long id) =>
+        GetAsync<BloodReception>($"/api/blood-reception/{id}");
+    public Task<ApiResponse<long>?> CreateBloodReceptionAsync(object body) =>
+        PostAsync<long>("/api/blood-reception", body);
+
+    // ── Procurement Register ──
+    public Task<ApiResponse<List<ProcurementRegisterItem>>?> SearchProcurementRegisterAsync(
+        string? bloodGroup, string? componentType, string? status, DateTime? from, DateTime? to, string? keyword)
+    {
+        var q = new List<string>();
+        if (!string.IsNullOrEmpty(bloodGroup)) q.Add($"bloodGroup={Uri.EscapeDataString(bloodGroup)}");
+        if (!string.IsNullOrEmpty(componentType)) q.Add($"componentType={Uri.EscapeDataString(componentType)}");
+        if (!string.IsNullOrEmpty(status)) q.Add($"status={Uri.EscapeDataString(status)}");
+        if (from.HasValue) q.Add($"fromDate={from:yyyy-MM-dd}");
+        if (to.HasValue) q.Add($"toDate={to:yyyy-MM-dd}");
+        if (!string.IsNullOrEmpty(keyword)) q.Add($"keyword={Uri.EscapeDataString(keyword)}");
+        var qs = q.Count > 0 ? "?" + string.Join("&", q) : "";
+        return GetAsync<List<ProcurementRegisterItem>>($"/api/procurement/register{qs}");
+    }
+    public Task<ApiResponse<List<ProcurementRegisterSummaryRow>>?> GetProcurementSummaryAsync() =>
+        GetAsync<List<ProcurementRegisterSummaryRow>>("/api/procurement/summary");
+
+    // ── Rate Management ──
+    public Task<ApiResponse<List<RateMaster>>?> GetRatesAsync() =>
+        GetAsync<List<RateMaster>>("/api/rates");
+    public Task<ApiResponse<RateMaster>?> GetRateAsync(long id) =>
+        GetAsync<RateMaster>($"/api/rates/{id}");
+    public Task<ApiResponse<long>?> UpsertRateAsync(object body) =>
+        PostAsync<long>("/api/rates", body);
+    public Task<ApiResponse<object>?> DeleteRateAsync(long id) =>
+        DeleteAsync<object>($"/api/rates/{id}");
+
+    // ── Patient Reservation ──
+    public Task<ApiResponse<List<PatientReservation>>?> GetReservationsAsync(
+        string? status = null, DateTime? from = null, DateTime? to = null, string? keyword = null)
+    {
+        var q = new List<string>();
+        if (!string.IsNullOrEmpty(status)) q.Add($"status={Uri.EscapeDataString(status)}");
+        if (from.HasValue) q.Add($"fromDate={from:yyyy-MM-dd}");
+        if (to.HasValue) q.Add($"toDate={to:yyyy-MM-dd}");
+        if (!string.IsNullOrEmpty(keyword)) q.Add($"keyword={Uri.EscapeDataString(keyword)}");
+        var qs = q.Count > 0 ? "?" + string.Join("&", q) : "";
+        return GetAsync<List<PatientReservation>>($"/api/reservations{qs}");
+    }
+    public Task<ApiResponse<List<PatientReservation>>?> GetPendingReservationsAsync() =>
+        GetAsync<List<PatientReservation>>("/api/reservations/pending");
+    public Task<ApiResponse<PatientReservation>?> GetReservationAsync(long id) =>
+        GetAsync<PatientReservation>($"/api/reservations/{id}");
+    public Task<ApiResponse<long>?> CreateReservationAsync(object body) =>
+        PostAsync<long>("/api/reservations", body);
+    public Task<ApiResponse<object>?> CancelReservationAsync(long id, string? reason = null) =>
+        PostAsync<object>($"/api/reservations/{id}/cancel", reason);
+    public Task<ApiResponse<List<AvailableComponentItem>>?> GetAvailableComponentsAsync(
+        string bloodGroup, string componentType, int units = 1)
+    {
+        var q = $"?bloodGroup={Uri.EscapeDataString(bloodGroup)}&componentType={Uri.EscapeDataString(componentType)}&units={units}";
+        return GetAsync<List<AvailableComponentItem>>($"/api/reservations/available-components{q}");
+    }
+
     // ── Hospitals ──
     public Task<ApiResponse<List<Hospital>>?> GetHospitalsAsync() =>
         GetAsync<List<Hospital>>("/api/hospitals");
@@ -217,16 +285,6 @@ public class ApiClient
     public Task<ApiResponse<object>?> CompleteTestRecordAsync(long id) =>
         PostAsync<object>($"/api/tests/{id}/complete");
 
-    // ── Issues ──
-    public Task<ApiResponse<List<PatientRequest>>?> GetPendingRequestsAsync() =>
-        GetAsync<List<PatientRequest>>("/api/issues/pending-requests");
-
-    public Task<ApiResponse<List<IssueRecord>>?> GetIssueHistoryAsync() =>
-        GetAsync<List<IssueRecord>>("/api/issues");
-
-    public Task<ApiResponse<IssueRecord>?> CreateIssueAsync(IssueRecord issue) =>
-        PostAsync<IssueRecord>("/api/issues", issue);
-
     // ── Billing ──
     public Task<ApiResponse<List<Billing>>?> GetBillingsAsync() =>
         GetAsync<List<Billing>>("/api/billing");
@@ -240,6 +298,149 @@ public class ApiClient
         if (!string.IsNullOrEmpty(reference)) path += $"&reference={Uri.EscapeDataString(reference)}";
         return PostAsync<long>(path);
     }
+
+    public Task<ApiResponse<InvoiceWithDetails>?> GetInvoiceAsync(long id) =>
+        GetAsync<InvoiceWithDetails>($"/api/billing/{id}");
+
+    public Task<ApiResponse<List<DuesRegisterItem>>?> GetDuesAsync(string? keyword = null)
+    {
+        var path = "/api/billing/dues";
+        if (!string.IsNullOrEmpty(keyword)) path += $"?keyword={Uri.EscapeDataString(keyword)}";
+        return GetAsync<List<DuesRegisterItem>>(path);
+    }
+
+    public Task<ApiResponse<long>?> CreateCreditNoteAsync(object body) =>
+        PostAsync<long>("/api/billing/credit-note", body);
+
+    // ── MBB Billing ──
+    public Task<ApiResponse<List<MbbBill>>?> GetMbbBillsAsync() =>
+        GetAsync<List<MbbBill>>("/api/mbb-bills");
+
+    public Task<ApiResponse<MbbBillWithDetails>?> GetMbbBillAsync(long id) =>
+        GetAsync<MbbBillWithDetails>($"/api/mbb-bills/{id}");
+
+    public Task<ApiResponse<long>?> CreateMbbBillAsync(object body) =>
+        PostAsync<long>("/api/mbb-bills", body);
+
+    public Task<ApiResponse<object>?> PayMbbBillAsync(long id, decimal amount, string mode) =>
+        PostAsync<object>($"/api/mbb-bills/{id}/payment?amount={amount}&mode={Uri.EscapeDataString(mode)}");
+
+    // ── Discard ──
+    public Task<ApiResponse<List<AvailableComponentForDiscard>>?> GetAvailableComponentsForDiscardAsync() =>
+        GetAsync<List<AvailableComponentForDiscard>>("/api/discard/available-components");
+
+    public Task<ApiResponse<List<DiscardRecord>>?> BulkDiscardAsync(object body) =>
+        PostAsync<List<DiscardRecord>>("/api/discard/bulk", body);
+
+    public Task<ApiResponse<List<DiscardRecord>>?> GetDiscardRegisterAsync(DateTime? from = null, DateTime? to = null, string? reason = null)
+    {
+        var q = new List<string>();
+        if (from.HasValue) q.Add($"from={from:yyyy-MM-dd}");
+        if (to.HasValue) q.Add($"to={to:yyyy-MM-dd}");
+        if (!string.IsNullOrEmpty(reason)) q.Add($"reason={Uri.EscapeDataString(reason)}");
+        var qs = q.Count > 0 ? "?" + string.Join("&", q) : "";
+        return GetAsync<List<DiscardRecord>>($"/api/discard{qs}");
+    }
+
+    public Task<ApiResponse<object>?> SetAutoclaveAsync(object body) =>
+        PutAsync<object>("/api/discard/autoclave", body);
+
+    public Task<ApiResponse<List<DiscardRecord>>?> GetAutoclaveRegisterAsync() =>
+        GetAsync<List<DiscardRecord>>("/api/discard/autoclave-register");
+
+    // ── Quality Control ──
+    public Task<ApiResponse<List<QualityControl>>?> GetQcRecordsAsync(string? type = null, DateTime? from = null, DateTime? to = null)
+    {
+        var q = new List<string>();
+        if (!string.IsNullOrEmpty(type)) q.Add($"type={Uri.EscapeDataString(type)}");
+        if (from.HasValue) q.Add($"from={from:yyyy-MM-dd}");
+        if (to.HasValue) q.Add($"to={to:yyyy-MM-dd}");
+        var qs = q.Count > 0 ? "?" + string.Join("&", q) : "";
+        return GetAsync<List<QualityControl>>($"/api/quality-control{qs}");
+    }
+
+    public Task<ApiResponse<QualityControl>?> GetQcRecordAsync(long id) =>
+        GetAsync<QualityControl>($"/api/quality-control/{id}");
+
+    public Task<ApiResponse<long>?> CreateQcRecordAsync(object body) =>
+        PostAsync<long>("/api/quality-control", body);
+
+    // ── Storage Master ──
+    public Task<ApiResponse<List<StorageMaster>>?> GetStoragesAsync() =>
+        GetAsync<List<StorageMaster>>("/api/storages");
+
+    public Task<ApiResponse<StorageMaster>?> GetStorageAsync(long id) =>
+        GetAsync<StorageMaster>($"/api/storages/{id}");
+
+    public Task<ApiResponse<long>?> UpsertStorageAsync(object body) =>
+        PostAsync<long>("/api/storages", body);
+
+    public Task<ApiResponse<object>?> DeleteStorageAsync(long id) =>
+        DeleteAsync<object>($"/api/storages/{id}");
+
+    // ── Issue to Storage ──
+    public Task<ApiResponse<List<AvailableComponentForStorage>>?> GetAvailableComponentsForStorageAsync() =>
+        GetAsync<List<AvailableComponentForStorage>>("/api/issue-storage/available-components");
+
+    public Task<ApiResponse<decimal>?> GetStorageRateAsync(long storageId, string componentType) =>
+        GetAsync<decimal>($"/api/issue-storage/rate/{storageId}/{componentType}");
+
+    public Task<ApiResponse<long>?> CreateIssueToStorageAsync(object body) =>
+        PostAsync<long>("/api/issue-storage", body);
+
+    public Task<ApiResponse<List<IssueStorageRecord>>?> GetIssueStorageRecordsAsync(long? storageId = null, DateTime? from = null, DateTime? to = null)
+    {
+        var q = new List<string>();
+        if (storageId.HasValue) q.Add($"storageId={storageId}");
+        if (from.HasValue) q.Add($"from={from:yyyy-MM-dd}");
+        if (to.HasValue) q.Add($"to={to:yyyy-MM-dd}");
+        var qs = q.Count > 0 ? "?" + string.Join("&", q) : "";
+        return GetAsync<List<IssueStorageRecord>>($"/api/issue-storage{qs}");
+    }
+
+    public Task<ApiResponse<List<IssueStorageInvoice>>?> GetIssueStorageInvoicesAsync(long? storageId = null, DateTime? from = null, DateTime? to = null)
+    {
+        var q = new List<string>();
+        if (storageId.HasValue) q.Add($"storageId={storageId}");
+        if (from.HasValue) q.Add($"from={from:yyyy-MM-dd}");
+        if (to.HasValue) q.Add($"to={to:yyyy-MM-dd}");
+        var qs = q.Count > 0 ? "?" + string.Join("&", q) : "";
+        return GetAsync<List<IssueStorageInvoice>>($"/api/issue-storage/invoices{qs}");
+    }
+
+    // ── Store Inventory ──
+    public Task<ApiResponse<List<InvItem>>?> GetStoreItemsAsync() =>
+        GetAsync<List<InvItem>>("/api/store-inventory/items");
+
+    public Task<ApiResponse<List<InvItem>>?> GetActiveStoreItemsAsync() =>
+        GetAsync<List<InvItem>>("/api/store-inventory/items/active");
+
+    public Task<ApiResponse<InvItem>?> GetStoreItemAsync(long id) =>
+        GetAsync<InvItem>($"/api/store-inventory/items/{id}");
+
+    public Task<ApiResponse<long>?> UpsertStoreItemAsync(object body) =>
+        PostAsync<long>("/api/store-inventory/items", body);
+
+    public Task<ApiResponse<object>?> DeleteStoreItemAsync(long id) =>
+        DeleteAsync<object>($"/api/store-inventory/items/{id}");
+
+    public Task<ApiResponse<long>?> InwardStockAsync(object body) =>
+        PostAsync<long>("/api/store-inventory/inward", body);
+
+    public Task<ApiResponse<long>?> OutwardStockAsync(object body) =>
+        PostAsync<long>("/api/store-inventory/outward", body);
+
+    public Task<ApiResponse<List<InvTransaction>>?> GetStoreTransactionsAsync(long itemId, DateTime? from = null, DateTime? to = null)
+    {
+        var q = new List<string>();
+        if (from.HasValue) q.Add($"from={from:yyyy-MM-dd}");
+        if (to.HasValue) q.Add($"to={to:yyyy-MM-dd}");
+        var qs = q.Count > 0 ? "?" + string.Join("&", q) : "";
+        return GetAsync<List<InvTransaction>>($"/api/store-inventory/transactions/{itemId}{qs}");
+    }
+
+    public Task<ApiResponse<List<InvStockSummary>>?> GetStoreStockSummaryAsync() =>
+        GetAsync<List<InvStockSummary>>("/api/store-inventory/summary");
 
     // ── Users ──
     public Task<ApiResponse<long>?> CreateUserAsync(object body) =>
@@ -276,6 +477,72 @@ public class ApiClient
 
     public Task<ApiResponse<List<CampSummaryRow>>?> GetCampSummaryAsync(DateTime from, DateTime to) =>
         GetAsync<List<CampSummaryRow>>($"/api/reports/camp-summary?fromDate={from:yyyy-MM-dd}&toDate={to:yyyy-MM-dd}");
+
+    // ── Phase 9 Reports ──
+    public Task<ApiResponse<List<BloodStockRow>>?> GetBloodStockReportAsync() =>
+        GetAsync<List<BloodStockRow>>("/api/reports/blood-stock");
+
+    public Task<ApiResponse<List<ProcurementSummaryRow>>?> GetProcurementSummaryAsync(DateTime from, DateTime to) =>
+        GetAsync<List<ProcurementSummaryRow>>($"/api/reports/procurement-summary?fromDate={from:yyyy-MM-dd}&toDate={to:yyyy-MM-dd}");
+
+    public Task<ApiResponse<List<DonorListRow>>?> GetDonorListReportAsync(DateTime from, DateTime to, bool showContact = true) =>
+        GetAsync<List<DonorListRow>>($"/api/reports/donor-list?fromDate={from:yyyy-MM-dd}&toDate={to:yyyy-MM-dd}&showContact={showContact}");
+
+    public Task<ApiResponse<List<CmIncomeRow>>?> GetCmIncomeReportAsync(DateTime from, DateTime to) =>
+        GetAsync<List<CmIncomeRow>>($"/api/reports/cm-income?fromDate={from:yyyy-MM-dd}&toDate={to:yyyy-MM-dd}");
+
+    public Task<ApiResponse<List<DiscountDetailRow>>?> GetDiscountDetailsReportAsync(DateTime from, DateTime to) =>
+        GetAsync<List<DiscountDetailRow>>($"/api/reports/discount-details?fromDate={from:yyyy-MM-dd}&toDate={to:yyyy-MM-dd}");
+
+    public Task<ApiResponse<List<DailyIssueRow>>?> GetDailyIssuesReportAsync(DateTime from, DateTime to) =>
+        GetAsync<List<DailyIssueRow>>($"/api/reports/daily-issues?fromDate={from:yyyy-MM-dd}&toDate={to:yyyy-MM-dd}");
+
+    public Task<ApiResponse<List<MbbInwardRow>>?> GetMbbInwardReportAsync(DateTime from, DateTime to, string? supplier = null)
+    {
+        var q = $"/api/reports/mbb-inward?fromDate={from:yyyy-MM-dd}&toDate={to:yyyy-MM-dd}";
+        if (!string.IsNullOrEmpty(supplier)) q += $"&supplier={Uri.EscapeDataString(supplier)}";
+        return GetAsync<List<MbbInwardRow>>(q);
+    }
+
+    public Task<ApiResponse<List<QcDailyRow>>?> GetQcDailyReportAsync(DateTime date) =>
+        GetAsync<List<QcDailyRow>>($"/api/reports/qc-daily?date={date:yyyy-MM-dd}");
+
+    public Task<ApiResponse<List<InvStockRow>>?> GetInvStockReportAsync() =>
+        GetAsync<List<InvStockRow>>("/api/reports/inv-stock");
+
+    public Task<ApiResponse<List<InvInOutRow>>?> GetInvInOutReportAsync(DateTime from, DateTime to, string? type = null, string? itemIds = null)
+    {
+        var q = $"/api/reports/inv-inout?fromDate={from:yyyy-MM-dd}&toDate={to:yyyy-MM-dd}";
+        if (!string.IsNullOrEmpty(type)) q += $"&type={type}";
+        if (!string.IsNullOrEmpty(itemIds)) q += $"&itemIds={itemIds}";
+        return GetAsync<List<InvInOutRow>>(q);
+    }
+
+    public Task<ApiResponse<List<InvoiceDetailRow>>?> GetInvoiceDetailReportAsync(long invoiceId) =>
+        GetAsync<List<InvoiceDetailRow>>($"/api/reports/invoice-detail/{invoiceId}");
+
+    public Task<ApiResponse<List<BsInvoiceDetailRow>>?> GetBsInvoiceDetailReportAsync(long invoiceId) =>
+        GetAsync<List<BsInvoiceDetailRow>>($"/api/reports/bs-invoice-detail/{invoiceId}");
+
+    public Task<ApiResponse<List<CrossMatchReportRow>>?> GetCrossMatchReportAsync(long invoiceId) =>
+        GetAsync<List<CrossMatchReportRow>>($"/api/reports/crossmatch-report/{invoiceId}");
+
+    public Task<ApiResponse<List<DiscardRegisterRow>>?> GetDiscardRegisterReportAsync(DateTime from, DateTime to, string? reason = null)
+    {
+        var q = $"/api/reports/discard-register?fromDate={from:yyyy-MM-dd}&toDate={to:yyyy-MM-dd}";
+        if (!string.IsNullOrEmpty(reason)) q += $"&reason={Uri.EscapeDataString(reason)}";
+        return GetAsync<List<DiscardRegisterRow>>(q);
+    }
+
+    public Task<ApiResponse<List<DuesRegisterRow>>?> GetDuesRegisterReportAsync(DateTime? asOnDate = null)
+    {
+        var q = "/api/reports/dues-register";
+        if (asOnDate.HasValue) q += $"?asOnDate={asOnDate:yyyy-MM-dd}";
+        return GetAsync<List<DuesRegisterRow>>(q);
+    }
+
+    public Task<ApiResponse<List<DiscardRegisterRow>>?> GetAutoclaveRegisterReportAsync(DateTime from, DateTime to) =>
+        GetAsync<List<DiscardRegisterRow>>($"/api/reports/autoclave-register?fromDate={from:yyyy-MM-dd}&toDate={to:yyyy-MM-dd}");
 
     // ── Settings ──
     public Task<ApiResponse<List<CenterConfigItem>>?> GetCenterConfigAsync() =>
@@ -516,4 +783,155 @@ public class ApiClient
         if (toDate.HasValue) q += $"&toDate={toDate:yyyy-MM-ddTHH:mm:ss}";
         return GetAsync<List<LoginHistory>>(q);
     }
+
+    // ── Cross Matching ──
+    public Task<ApiResponse<List<CrossMatchEntry>>?> GetCrossMatchPendingReservationsAsync() =>
+        GetAsync<List<CrossMatchEntry>>("/api/crossmatches/pending-reservations");
+
+    public Task<ApiResponse<List<CrossMatchEntry>>?> GetCrossMatchesAsync(string? status = null, DateTime? from = null, DateTime? to = null)
+    {
+        var q = new List<string>();
+        if (!string.IsNullOrEmpty(status)) q.Add($"status={Uri.EscapeDataString(status)}");
+        if (from.HasValue) q.Add($"from={from:yyyy-MM-dd}");
+        if (to.HasValue) q.Add($"to={to:yyyy-MM-dd}");
+        var qs = q.Count > 0 ? "?" + string.Join("&", q) : "";
+        return GetAsync<List<CrossMatchEntry>>($"/api/crossmatches{qs}");
+    }
+
+    public Task<ApiResponse<CrossMatchWithTests>?> GetCrossMatchAsync(long id) =>
+        GetAsync<CrossMatchWithTests>($"/api/crossmatches/{id}");
+
+    public Task<ApiResponse<long>?> StartCrossMatchAsync(object body) =>
+        PostAsync<long>("/api/crossmatches/start", body);
+
+    public Task<ApiResponse<object>?> SetCrossMatchResultAsync(object body) =>
+        PutAsync<object>("/api/crossmatches/set-result", body);
+
+    public Task<ApiResponse<object>?> RejectCrossMatchComponentAsync(long testResultId) =>
+        PostAsync<object>($"/api/crossmatches/reject-component/{testResultId}");
+
+    // ── Blood Issuing ──
+    public Task<ApiResponse<List<IssueRecord>>?> GetIssueHistoryAsync() =>
+        GetAsync<List<IssueRecord>>("/api/issues");
+
+    public Task<ApiResponse<List<ReservationReadyForIssue>>?> GetReadyForIssueAsync() =>
+        GetAsync<List<ReservationReadyForIssue>>("/api/issues/ready-for-issue");
+
+    public Task<ApiResponse<List<IssueRecord>>?> GetIssuesByReservationAsync(long reservationId) =>
+        GetAsync<List<IssueRecord>>($"/api/issues/by-reservation/{reservationId}");
+
+    public Task<ApiResponse<long>?> IssueFromReservationAsync(object body) =>
+        PostAsync<long>("/api/issues/from-reservation", body);
+
+    // ── Phase 10: Housekeeping Features ──
+
+    // Patient Requests
+    public Task<ApiResponse<List<PatientRequest>>?> GetPatientRequestsAsync() =>
+        GetAsync<List<PatientRequest>>("/api/patient-requests");
+
+    public Task<ApiResponse<List<PatientRequest>>?> GetPendingPatientRequestsAsync() =>
+        GetAsync<List<PatientRequest>>("/api/patient-requests/pending");
+
+    public Task<ApiResponse<PatientRequest>?> GetPatientRequestAsync(long id) =>
+        GetAsync<PatientRequest>($"/api/patient-requests/{id}");
+
+    public Task<ApiResponse<long>?> CreatePatientRequestAsync(object body) =>
+        PostAsync<long>("/api/patient-requests", body);
+
+    // Expense
+    public Task<ApiResponse<List<Expense>>?> GetExpensesAsync(DateTime? from = null, DateTime? to = null)
+    {
+        var q = "/api/expenses";
+        var p = new List<string>();
+        if (from.HasValue) p.Add($"from={from:yyyy-MM-dd}");
+        if (to.HasValue) p.Add($"to={to:yyyy-MM-dd}");
+        if (p.Count > 0) q += "?" + string.Join("&", p);
+        return GetAsync<List<Expense>>(q);
+    }
+
+    public Task<ApiResponse<long>?> CreateExpenseAsync(object body) =>
+        PostAsync<long>("/api/expenses", body);
+
+    // Donor Appointments
+    public Task<ApiResponse<List<DonorAppointment>>?> GetAppointmentsAsync(long? donorId = null)
+    {
+        var q = "/api/appointments";
+        if (donorId.HasValue) q += $"?donorId={donorId}";
+        return GetAsync<List<DonorAppointment>>(q);
+    }
+
+    public Task<ApiResponse<long>?> CreateAppointmentAsync(object body) =>
+        PostAsync<long>("/api/appointments", body);
+
+    public Task<ApiResponse<object>?> UpdateAppointmentStatusAsync(long id, string status) =>
+        PutAsync<object>($"/api/appointments/{id}/status", new { status });
+
+    // Blood Returns
+    public Task<ApiResponse<List<ReturnRecord>>?> GetReturnsAsync() =>
+        GetAsync<List<ReturnRecord>>("/api/returns");
+
+    public Task<ApiResponse<long>?> CreateReturnAsync(object body) =>
+        PostAsync<long>("/api/returns", body);
+
+    // Deferrals
+    public Task<ApiResponse<List<DeferralRecord>>?> GetActiveDeferralsAsync(long donorId) =>
+        GetAsync<List<DeferralRecord>>($"/api/deferrals/active/{donorId}");
+
+    public Task<ApiResponse<long>?> CreateDeferralAsync(object body) =>
+        PostAsync<long>("/api/deferrals", body);
+
+    // Donor Health
+    public Task<ApiResponse<List<DonorHealth>>?> GetDonorHealthAsync(long donorId) =>
+        GetAsync<List<DonorHealth>>($"/api/donors/{donorId}/health");
+
+    public Task<ApiResponse<long>?> CreateDonorHealthAsync(long donorId, object body) =>
+        PostAsync<long>($"/api/donors/{donorId}/health", body);
+
+    // Test Kits
+    public Task<ApiResponse<List<TestKit>>?> GetTestKitsAsync() =>
+        GetAsync<List<TestKit>>("/api/test-kits");
+
+    public Task<ApiResponse<long>?> CreateTestKitAsync(object body) =>
+        PostAsync<long>("/api/test-kits", body);
+
+    // Notifications
+    public Task<ApiResponse<List<Notification>>?> GetNotificationsAsync() =>
+        GetAsync<List<Notification>>("/api/notifications");
+
+    public Task<ApiResponse<long>?> CreateNotificationAsync(object body) =>
+        PostAsync<long>("/api/notifications", body);
+
+    // Replacement Donors
+    public Task<ApiResponse<List<ReplacementDonor>>?> GetReplacementDonorsAsync() =>
+        GetAsync<List<ReplacementDonor>>("/api/replacement-donors");
+
+    public Task<ApiResponse<long>?> RegisterReplacementDonorAsync(object body) =>
+        PostAsync<long>("/api/replacement-donors", body);
+
+    // Blood Bags
+    public Task<ApiResponse<List<BloodBag>>?> SearchBloodBagsAsync(string? term = null)
+    {
+        var q = "/api/blood-bags";
+        if (!string.IsNullOrEmpty(term)) q += $"?term={Uri.EscapeDataString(term)}";
+        return GetAsync<List<BloodBag>>(q);
+    }
+
+    public Task<ApiResponse<BloodBag>?> GetBloodBagByNumberAsync(string bagNo) =>
+        GetAsync<BloodBag>($"/api/blood-bags/{Uri.EscapeDataString(bagNo)}");
+
+    public Task<ApiResponse<object>?> UpdateBloodBagStatusAsync(long bagId, string status) =>
+        PutAsync<object>($"/api/blood-bags/{bagId}/status", new { status });
+
+    // Component Log (store/transfer/discard)
+    public Task<ApiResponse<long>?> StoreComponentAsync(long componentId, object body) =>
+        PostAsync<long>($"/api/components/{componentId}/store", body);
+
+    public Task<ApiResponse<long>?> TransferComponentAsync(long componentId, object body) =>
+        PostAsync<long>($"/api/components/{componentId}/transfer", body);
+
+    public Task<ApiResponse<long>?> DiscardComponentAsync(long componentId, object body) =>
+        PostAsync<long>($"/api/components/{componentId}/discard", body);
+
+    public Task<ApiResponse<object>?> UpdateComponentStatusAsync(long componentId, string status) =>
+        PutAsync<object>($"/api/components/{componentId}/status", new { status });
 }

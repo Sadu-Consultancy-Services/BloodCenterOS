@@ -17,6 +17,13 @@ public class ExpenseController : ControllerBase
     private long CenterId => long.TryParse(User.FindFirst("CenterId")?.Value, out var id) ? id : 0;
     private long UserId => long.TryParse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value, out var id) ? id : 0;
 
+    [HttpGet]
+    public async Task<IActionResult> GetAll([FromQuery] DateTime? from, [FromQuery] DateTime? to)
+    {
+        var data = await _repo.GetAllAsync(CenterId, from, to);
+        return Ok(ApiResponse<IEnumerable<Expense>>.Ok(data));
+    }
+
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] CreateExpenseRequest request)
     {

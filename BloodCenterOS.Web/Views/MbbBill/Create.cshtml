@@ -1,0 +1,106 @@
+@model CreateMbbBillRequest
+
+@{
+    ViewData["Title"] = "New MBB Bill";
+}
+
+<div class="container-fluid px-4">
+    <h1 class="mt-4">New MBB Bill</h1>
+
+    <form asp-action="Create" method="post">
+        <div class="card mb-3">
+            <div class="card-header">Bill Header</div>
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-md-3">
+                        <label class="form-label">Bill Number *</label>
+                        <input asp-for="BillNumber" class="form-control" required />
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Bill Date</label>
+                        <input asp-for="BillDate" class="form-control" type="date" />
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Supplier Name</label>
+                        <input asp-for="SupplierName" class="form-control" />
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Payment Mode</label>
+                        <select asp-for="PaymentMode" class="form-select">
+                            <option value="">Select</option>
+                            <option value="Cash">Cash</option>
+                            <option value="Credit">Credit</option>
+                            <option value="Cheque">Cheque</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Cheque No</label>
+                        <input asp-for="ChequeNo" class="form-control" />
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Cheque Date</label>
+                        <input asp-for="ChequeDate" class="form-control" type="date" />
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label">Notes</label>
+                        <textarea asp-for="Notes" class="form-control" rows="2"></textarea>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-3">
+            <div class="card-header">
+                Bill Details
+                <button type="button" class="btn btn-sm btn-success ms-2" onclick="addRow()">+ Add Row</button>
+            </div>
+            <div class="card-body">
+                <table class="table table-bordered" id="detailsTable">
+                    <thead><tr>
+                        <th>Component Type</th>
+                        <th>Blood Group</th>
+                        <th>Qty</th>
+                        <th>Unit Price</th>
+                        <th>Bag Numbers</th>
+                        <th></th>
+                    </tr></thead>
+                    <tbody>
+                        <tr>
+                            <td><input name="Details[0].ComponentType" class="form-control" required /></td>
+                            <td><input name="Details[0].BloodGroup" class="form-control" /></td>
+                            <td><input name="Details[0].Quantity" class="form-control" type="number" value="1" min="1" /></td>
+                            <td><input name="Details[0].UnitPrice" class="form-control" type="number" step="0.01" /></td>
+                            <td><input name="Details[0].BagNumbers" class="form-control" /></td>
+                            <td><button type="button" class="btn btn-danger btn-sm" onclick="this.closest('tr').remove()">X</button></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="d-flex gap-2 justify-content-end">
+            <a asp-action="Index" class="btn btn-secondary">Cancel</a>
+            <button type="submit" class="btn btn-primary">Create Bill</button>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+<script>
+    let rowIdx = 1;
+    function addRow() {
+        const tbody = document.querySelector('#detailsTable tbody');
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td><input name="Details[${rowIdx}].ComponentType" class="form-control" required /></td>
+            <td><input name="Details[${rowIdx}].BloodGroup" class="form-control" /></td>
+            <td><input name="Details[${rowIdx}].Quantity" class="form-control" type="number" value="1" min="1" /></td>
+            <td><input name="Details[${rowIdx}].UnitPrice" class="form-control" type="number" step="0.01" /></td>
+            <td><input name="Details[${rowIdx}].BagNumbers" class="form-control" /></td>
+            <td><button type="button" class="btn btn-danger btn-sm" onclick="this.closest('tr').remove()">X</button></td>
+        `;
+        tbody.appendChild(tr);
+        rowIdx++;
+    }
+</script>
+}

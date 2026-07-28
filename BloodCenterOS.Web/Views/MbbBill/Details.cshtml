@@ -1,0 +1,87 @@
+@model MbbBillWithDetails
+
+@{
+    ViewData["Title"] = "MBB Bill Details";
+}
+
+<div class="container-fluid px-4">
+    <h1 class="mt-4">MBB Bill @Model.Bill.BillNumber</h1>
+
+    @if (TempData["Success"] is string s) { <div class="alert alert-success">@s</div> }
+    @if (TempData["Error"] is string e) { <div class="alert alert-danger">@e</div> }
+
+    <div class="row mb-3">
+        <div class="col-md-3"><strong>Supplier:</strong> @Model.Bill.SupplierName</div>
+        <div class="col-md-2"><strong>Amount:</strong> ₹@(Model.Bill.TotalAmount?.ToString("N0"))</div>
+        <div class="col-md-2"><strong>Mode:</strong> @(Model.Bill.PaymentMode ?? "—")</div>
+        <div class="col-md-2">
+            <strong>Status:</strong>
+            @if (Model.Bill.PaymentStatus == "Paid") { <span class="badge bg-success">Paid</span> }
+            else if (Model.Bill.PaymentStatus == "Partial") { <span class="badge bg-warning">Partial</span> }
+            else { <span class="badge bg-danger">@Model.Bill.PaymentStatus</span> }
+        </div>
+        <div class="col-md-2"><strong>Date:</strong> @Model.Bill.BillDate.ToString("dd/MM/yyyy")</div>
+    </div>
+
+    @if (!string.IsNullOrEmpty(Model.Bill.Notes))
+    {
+        <div class="mb-3"><strong>Notes:</strong> @Model.Bill.Notes</div>
+    }
+
+    <div class="card mb-4">
+        <div class="card-header">Line Items</div>
+        <div class="card-body">
+            <table class="table table-bordered">
+                <thead><tr>
+                    <th>Component Type</th>
+                    <th>Blood Group</th>
+                    <th>Qty</th>
+                    <th>Unit Price</th>
+                    <th>Line Total</th>
+                    <th>Bag Numbers</th>
+                </tr></thead>
+                <tbody>
+                    @foreach (var d in Model.Details)
+                    {
+                        <tr>
+                            <td>@d.ComponentType</td>
+                            <td>@(d.BloodGroup ?? "—")</td>
+                            <td>@d.Quantity</td>
+                            <td>₹@(d.UnitPrice?.ToString("N0"))</td>
+                            <td>₹@(d.LineTotal?.ToString("N0"))</td>
+                            <td>@(d.BagNumbers ?? "—")</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    @if (Model.Bill.PaymentStatus != "Paid")
+    {
+        <div class="card mb-4">
+            <div class="card-header">Make Payment</div>
+            <div class="card-body">
+                <form asp-action="Pay" method="post" class="row g-3">
+                    <input type="hidden" name="id" value="@Model.Bill.MbbBillId" />
+                    <div class="col-auto">
+                        <input type="number" name="amount" class="form-control" placeholder="Amount" step="0.01" required />
+                    </div>
+                    <div class="col-auto">
+                        <select name="mode" class="form-select" required>
+                            <option value="">Mode</option>
+                            <option value="Cash">Cash</option>
+                            <option value="Cheque">Cheque</option>
+                            <option value="Bank Transfer">Bank Transfer</option>
+                        </select>
+                    </div>
+                    <div class="col-auto">
+                        <button type="submit" class="btn btn-success">Pay</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    }
+
+    <a asp-action="Index" class="btn btn-secondary">Back</a>
+</div>

@@ -22,6 +22,13 @@ public class ReplacementDonorController : ControllerBase
         var id = await _repo.RegisterAsync(CenterId, request.RequestId, request.DonorId);
         return Ok(ApiResponse<long>.Ok(id, "Replacement donor registered"));
     }
+
+    [HttpGet]
+    public async Task<IActionResult> GetAll()
+    {
+        var data = await _repo.GetAllAsync(CenterId);
+        return Ok(ApiResponse<IEnumerable<ReplacementDonor>>.Ok(data));
+    }
 }
 
 public class RegisterReplacementDonorRequest

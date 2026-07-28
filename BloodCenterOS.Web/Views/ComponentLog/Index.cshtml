@@ -1,0 +1,52 @@
+@{ ViewBag.Title = "Component Log"; ViewBag.ActiveMenu = "ComponentLog"; }
+<div class="page-header">
+  <div><h1 class="page-title">Component Log <small>Manage blood component lifecycle</small></h1></div>
+</div>
+@if (TempData["Success"] is string s) { <div class="alert alert-success py-2 px-3 mb-3">@s</div> }
+@if (TempData["Error"] is string e) { <div class="alert alert-danger py-2 px-3 mb-3">@e</div> }
+<form method="get" class="row g-2 mb-3">
+  <div class="col-auto">
+    <input type="number" name="componentId" class="form-control" placeholder="Enter Component ID" required />
+  </div>
+  <div class="col-auto">
+    <button type="submit" class="btn btn-primary"><i class="bi bi-search"></i> Select</button>
+  </div>
+</form>
+<div class="row g-3" id="actionCards">
+  @if (ViewContext.HttpContext.Request.Query["componentId"].Count > 0)
+  {
+    var cid = ViewContext.HttpContext.Request.Query["componentId"];
+    <div class="col-md-3">
+      <a href="@Url.Action("Store", new { componentId = cid })" class="text-decoration-none">
+        <div class="card text-center h-100 border-success">
+          <div class="card-body"><i class="bi bi-archive fs-1 text-success"></i><h5 class="mt-2">Store</h5><p class="text-muted small">Place in fridge</p></div>
+        </div>
+      </a>
+    </div>
+    <div class="col-md-3">
+      <a href="@Url.Action("Transfer", new { componentId = cid })" class="text-decoration-none">
+        <div class="card text-center h-100 border-primary">
+          <div class="card-body"><i class="bi bi-arrow-left-right fs-1 text-primary"></i><h5 class="mt-2">Transfer</h5><p class="text-muted small">Send to another center</p></div>
+        </div>
+      </a>
+    </div>
+    <div class="col-md-3">
+      <a href="@Url.Action("Discard", new { componentId = cid })" class="text-decoration-none">
+        <div class="card text-center h-100 border-danger">
+          <div class="card-body"><i class="bi bi-trash fs-1 text-danger"></i><h5 class="mt-2">Discard</h5><p class="text-muted small">Dispose of component</p></div>
+        </div>
+      </a>
+    </div>
+    <div class="col-md-3">
+      <a href="@Url.Action("UpdateStatus", new { componentId = cid })" class="text-decoration-none">
+        <div class="card text-center h-100 border-warning">
+          <div class="card-body"><i class="bi bi-arrow-repeat fs-1 text-warning"></i><h5 class="mt-2">Update Status</h5><p class="text-muted small">Change component status</p></div>
+        </div>
+      </a>
+    </div>
+  }
+  else
+  {
+    <div class="col-12"><p class="text-muted text-center py-4">Enter a Component ID above to view available actions.</p></div>
+  }
+</div>

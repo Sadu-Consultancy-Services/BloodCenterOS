@@ -1,0 +1,23 @@
+@model ReturnRecord
+@{ ViewBag.Title = "New Return"; ViewBag.ActiveMenu = "Returns"; }
+<div class="page-header">
+  <div><h1 class="page-title">New Return <small>Record a component return</small></h1></div>
+  <a href="@Url.Action("Index")" class="btn btn-outline-secondary"><i class="bi bi-arrow-left"></i> Back</a>
+</div>
+<form method="post">
+  <div class="card mb-3">
+    <div class="card-header"><h6>Return Details</h6></div>
+    <div class="card-body">
+      <div class="row g-2">
+        <div class="col-md-4"><label class="form-label">Issue Record ID <span class="text-danger">*</span></label><input type="number" name="IssueRecordId" class="form-control" value="@Model.IssueRecordId" required /></div>
+        <div class="col-md-4"><label class="form-label">Component ID <span class="text-danger">*</span></label><input type="number" name="ComponentId" class="form-control" value="@Model.ComponentId" required /></div>
+        <div class="col-md-4"><label class="form-label">Return Date</label><input type="date" name="ReturnDate" class="form-control" value="@Model.ReturnDate.ToString("yyyy-MM-dd")" /></div>
+        <div class="col-12"><label class="form-label">Reason <span class="text-danger">*</span></label><input type="text" name="Reason" class="form-control" value="@Model.Reason" required /></div>
+      </div>
+    </div>
+  </div>
+  <div class="d-flex gap-2 justify-content-end">
+    <a href="@Url.Action("Index")" class="btn btn-outline-secondary">Cancel</a>
+    <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg"></i> Save</button>
+  </div>
+</form>

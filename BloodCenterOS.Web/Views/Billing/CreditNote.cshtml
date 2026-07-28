@@ -1,0 +1,33 @@
+@model CreditNoteRequest
+
+@{
+    ViewData["Title"] = "Create Credit Note";
+}
+
+<div class="container-fluid px-4">
+    <h1 class="mt-4">Create Credit Note</h1>
+    <p class="text-muted">Original Invoice #@ViewBag.OriginalInvoiceId</p>
+
+    <form asp-action="CreditNote" method="post">
+        <input type="hidden" asp-for="OriginalInvoiceId" value="@ViewBag.OriginalInvoiceId" />
+        <div class="card mb-3">
+            <div class="card-header">Credit Note Details</div>
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <label class="form-label">Amount (₹) *</label>
+                        <input asp-for="Amount" class="form-control" type="number" step="0.01" required />
+                    </div>
+                    <div class="col-md-8">
+                        <label class="form-label">Reason *</label>
+                        <input asp-for="Reason" class="form-control" required placeholder="e.g. Damaged unit, cancellation..." />
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="d-flex gap-2 justify-content-end">
+            <a asp-action="Index" class="btn btn-secondary">Cancel</a>
+            <button type="submit" class="btn btn-warning">Create Credit Note</button>
+        </div>
+    </form>
+</div>

@@ -1,0 +1,137 @@
+@model List<ProcurementRegisterItem>
+@{
+    ViewBag.Title = "Procurement Register";
+    ViewBag.ActiveMenu = "Procurement";
+    var summary = ViewBag.Summary as List<ProcurementRegisterSummaryRow> ?? new();
+}
+<div class="page-header">
+  <div><h1 class="page-title">Procurement Register <small>Central blood stock register</small></h1></div>
+</div>
+
+@if (summary.Any())
+{
+    <div class="card mb-3">
+        <div class="card-header"><strong>Stock Summary (Blood Group × Component)</strong></div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-sm mb-0">
+                    <thead>
+                        <tr>
+                            <th>Blood Group</th>
+                            <th>Component</th>
+                            <th class="text-center text-success">Available</th>
+                            <th class="text-center text-warning">Reserved</th>
+                            <th class="text-center text-info">Issued</th>
+                            <th class="text-center text-danger">Discarded</th>
+                            <th class="text-center">Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var row in summary)
+                        {
+                            <tr>
+                                <td><span class="badge bg-danger">@row.BloodGroup</span></td>
+                                <td>@row.ComponentType</td>
+                                <td class="text-center">@row.Available</td>
+                                <td class="text-center">@row.Reserved</td>
+                                <td class="text-center">@row.Issued</td>
+                                <td class="text-center">@row.Discarded</td>
+                                <td class="text-center fw-bold">@row.Total</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+}
+
+<form method="get" class="row g-2 mb-3">
+    <div class="col-md-2">
+        <label class="form-label-sm text-muted mb-0">Blood Group</label>
+        <select name="bloodGroup" class="form-select form-select-sm">
+            <option value="">All</option>
+            <option value="A+" selected="@(ViewBag.SelectedBloodGroup == "A+")">A+</option>
+            <option value="A-" selected="@(ViewBag.SelectedBloodGroup == "A-")">A-</option>
+            <option value="B+" selected="@(ViewBag.SelectedBloodGroup == "B+")">B+</option>
+            <option value="B-" selected="@(ViewBag.SelectedBloodGroup == "B-")">B-</option>
+            <option value="AB+" selected="@(ViewBag.SelectedBloodGroup == "AB+")">AB+</option>
+            <option value="AB-" selected="@(ViewBag.SelectedBloodGroup == "AB-")">AB-</option>
+            <option value="O+" selected="@(ViewBag.SelectedBloodGroup == "O+")">O+</option>
+            <option value="O-" selected="@(ViewBag.SelectedBloodGroup == "O-")">O-</option>
+        </select>
+    </div>
+    <div class="col-md-2">
+        <label class="form-label-sm text-muted mb-0">Component</label>
+        <select name="componentType" class="form-select form-select-sm">
+            <option value="">All</option>
+            <option value="WB" selected="@(ViewBag.SelectedComponentType == "WB")">WB</option>
+            <option value="PCV" selected="@(ViewBag.SelectedComponentType == "PCV")">PCV</option>
+            <option value="FFP" selected="@(ViewBag.SelectedComponentType == "FFP")">FFP</option>
+            <option value="PC" selected="@(ViewBag.SelectedComponentType == "PC")">PC</option>
+        </select>
+    </div>
+    <div class="col-md-2">
+        <label class="form-label-sm text-muted mb-0">Status</label>
+        <select name="status" class="form-select form-select-sm">
+            <option value="">All</option>
+            <option value="Available" selected="@(ViewBag.SelectedStatus == "Available")">Available</option>
+            <option value="Reserved" selected="@(ViewBag.SelectedStatus == "Reserved")">Reserved</option>
+            <option value="Issued" selected="@(ViewBag.SelectedStatus == "Issued")">Issued</option>
+            <option value="Discarded" selected="@(ViewBag.SelectedStatus == "Discarded")">Discarded</option>
+        </select>
+    </div>
+    <div class="col-md-2">
+        <label class="form-label-sm text-muted mb-0">From</label>
+        <input type="date" name="fromDate" class="form-control form-control-sm" value="@ViewBag.FromDate" />
+    </div>
+    <div class="col-md-2">
+        <label class="form-label-sm text-muted mb-0">To</label>
+        <input type="date" name="toDate" class="form-control form-control-sm" value="@ViewBag.ToDate" />
+    </div>
+    <div class="col-md-2 d-flex align-items-end gap-1">
+        <button type="submit" class="btn btn-sm btn-outline-primary"><i class="bi bi-search"></i> Search</button>
+        <a href="@Url.Action("Index")" class="btn btn-sm btn-outline-secondary">Clear</a>
+    </div>
+</form>
+
+<div class="card">
+    <div class="card-body p-0">
+        <table class="table mb-0">
+            <thead>
+                <tr>
+                    <th>Component Code</th>
+                    <th>Component</th>
+                    <th>Blood Group</th>
+                    <th>Bag #</th>
+                    <th>Donor</th>
+                    <th>Status</th>
+                    <th>Expiry</th>
+                    <th>Volume</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (!Model.Any()) { <tr><td colspan="8" class="text-center text-muted py-3">No records found.</td></tr> }
+                @foreach (var item in Model)
+                {
+                    <tr>
+                        <td><code>@item.ComponentCode</code></td>
+                        <td>@item.ComponentType</td>
+                        <td><span class="badge bg-danger">@item.BloodGroup</span></td>
+                        <td>@item.BagNumber</td>
+                        <td>@item.DonorName</td>
+                        <td>
+                            @if (item.Status == "Available") { <span class="badge bg-success">Available</span> }
+                            else if (item.Status == "Reserved") { <span class="badge bg-warning text-dark">Reserved</span> }
+                            else if (item.Status == "Issued") { <span class="badge bg-info">Issued</span> }
+                            else if (item.Status == "Discarded") { <span class="badge bg-danger">Discarded</span> }
+                            else { <span class="badge bg-secondary">@item.Status</span> }
+                        </td>
+                        <td>@item.ExpiryDate?.ToString("dd/MM/yyyy")</td>
+                        <td>@item.VolumeMl ml</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
