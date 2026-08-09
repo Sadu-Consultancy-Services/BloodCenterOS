@@ -26,7 +26,7 @@ public class IssueController : Controller
         ViewBag.ReadyForIssue = ready?.Data ?? new();
         if (reservationId.HasValue)
         {
-            var selected = ready?.Data?.FirstOrDefault(r => r.ReservationId == reservationId.Value);
+            var selected = ready?.Data?.FirstOrDefault(r => r.BloodRequestId == reservationId.Value);
             ViewBag.Selected = selected;
         }
         return View();
@@ -35,7 +35,7 @@ public class IssueController : Controller
     [HttpPost]
     public async Task<IActionResult> Create(long reservationId, string? paymentMode, string? notes)
     {
-        var result = await _api.IssueFromReservationAsync(new { reservationId, paymentMode, notes });
+        var result = await _api.IssueFromReservationAsync(new { bloodRequestId = reservationId, paymentMode, notes });
         if (result?.Success == true)
         {
             TempData["Success"] = "Blood issued successfully!";

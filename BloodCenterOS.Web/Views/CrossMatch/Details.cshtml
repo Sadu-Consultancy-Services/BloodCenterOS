@@ -2,14 +2,14 @@
 
 @{
     ViewData["Title"] = "Cross Match Details";
-    var grouped = Model.Tests.GroupBy(t => t.ReservationDetailId);
+    var grouped = Model.Tests.GroupBy(t => t.BloodRequestDetailId);
 }
 
 <div class="container-fluid px-4">
     <h1 class="mt-4">Cross Match #@Model.Entry.CrossMatchEntryId</h1>
 
     <div class="row mb-3">
-        <div class="col-md-3"><strong>Reservation:</strong> @Model.Entry.ReservationId</div>
+        <div class="col-md-3"><strong>Reservation:</strong> @Model.Entry.BloodRequestId</div>
         <div class="col-md-3"><strong>Overall Result:</strong>
             @if (Model.Entry.OverallResult == "Pass") { <span class="badge bg-success">Pass</span> }
             else if (Model.Entry.OverallResult == "Reject") { <span class="badge bg-danger">Reject</span> }

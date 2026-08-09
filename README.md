@@ -10,7 +10,7 @@ Developed & Maintained by **Sadu Consultancy Services**
 **BloodCenterOS** is an open-source, cloud-ready **Blood Center Management System** designed for **Indian Blood Centers** (aligned with common blood center workflows).  
 It simplifies operations from **donor registration** to **blood issue**, and includes Excel/PDF reporting useful for regulatory submissions.
 
-Developed using **.NET 9**, **PostgreSQL**, and **Stored Procedures** (without Entity Framework), this system provides a **secure, scalable, and fast** solution suitable for hospitals, NGOs, and regional blood centers.
+Developed using **.NET 10**, **PostgreSQL**, and **Stored Procedures** (without Entity Framework), this system provides a **secure, scalable, and fast** solution suitable for hospitals, NGOs, and regional blood centers.
 
 ---
 
@@ -35,7 +35,7 @@ A step-by-step guide for blood center staff — how to use each module, where to
 
 | Layer | Technology |
 |-------|-------------|
-| Backend | .NET 9 (ASP.NET Core MVC / Web API) |
+| Backend | .NET 10 (ASP.NET Core MVC / Web API) |
 | Database | PostgreSQL |
 | Data Access | ADO.NET / Dapper using Stored Procedures |
 | Reporting | ClosedXML (Excel), Autovitia / QuestPDF (PDF) |
@@ -186,7 +186,7 @@ We'll work together with the community to make BloodCenterOS the **best open-sou
 | Phase | Focus Area | Description | Status |
 |-------|-------------|--------------|--------|
 | **Phase 1** | Analysis & Database Design | Requirements gathering, PostgreSQL schema (~89 tables), and 95 stored procedures. | ✅ Complete |
-| **Phase 2** | API Development | Secure .NET 9 Web API with JWT authentication, Dapper, multi-center logic, 14 controllers. | ✅ Complete |
+| **Phase 2** | API Development | Secure .NET 10 Web API with JWT authentication, Dapper, multi-center logic, 14 controllers. | ✅ Complete |
 | **Phase 3** | Frontend (Web) | ASP.NET Core MVC with Razor Pages, admin theme, 15 controllers, 30+ views. | ✅ Complete |
 | **Phase 4** | Reporting | Excel (ClosedXML) and PDF (QuestPDF) export for donor/inventory/camp reports. | ✅ Complete |
 | **Phase 5** | Deployment & Documentation | Hosting setup, data migration guides, and API documentation. | ⏳ Planned |

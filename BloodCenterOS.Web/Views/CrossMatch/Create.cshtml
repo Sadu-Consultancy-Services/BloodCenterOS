@@ -28,7 +28,7 @@
                         @foreach (var item in pending)
                         {
                             <tr>
-                                <td>@item.ReservationId</td>
+                                <td>@item.BloodRequestId</td>
                                 <td>@item.PatientName</td>
                                 <td>@item.RequiredBloodGroup</td>
                                 <td>@item.ComponentType</td>
@@ -37,7 +37,7 @@
                                 <td>@item.ReservationDate?.ToString("dd/MM/yyyy")</td>
                                 <td>
                                     <form asp-action="Start" method="post" style="display:inline">
-                                        <input type="hidden" name="reservationId" value="@item.ReservationId" />
+                                        <input type="hidden" name="bloodRequestId" value="@item.BloodRequestId" />
                                         <button type="submit" class="btn btn-primary btn-sm">Start CM</button>
                                     </form>
                                 </td>

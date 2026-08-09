@@ -24,7 +24,7 @@
         </div>
 
         <form asp-action="Create" method="post">
-            <input type="hidden" name="reservationId" value="@selected.ReservationId" />
+            <input type="hidden" name="reservationId" value="@selected.BloodRequestId" />
 
             <div class="card mb-4">
                 <div class="card-header">Issue Details</div>
@@ -72,12 +72,12 @@
                             @foreach (var r in ready)
                             {
                                 <tr>
-                                    <td>@r.ReservationId</td>
+                                    <td>@r.BloodRequestId</td>
                                     <td>@r.PatientName</td>
                                     <td>@r.RequiredBloodGroup</td>
                                     <td>@r.ComponentType</td>
                                     <td>@r.UnitsReserved</td>
-                                    <td><a asp-action="Create" asp-route-reservationId="@r.ReservationId" class="btn btn-primary btn-sm">Select</a></td>
+                                    <td><a asp-action="Create" asp-route-reservationId="@r.BloodRequestId" class="btn btn-primary btn-sm">Select</a></td>
                                 </tr>
                             }
                         </tbody>

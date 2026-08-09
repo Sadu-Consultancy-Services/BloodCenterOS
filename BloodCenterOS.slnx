@@ -1,0 +1,11 @@
+<Solution>
+  <Configurations>
+    <Platform Name="Any CPU" />
+    <Platform Name="x64" />
+    <Platform Name="x86" />
+  </Configurations>
+  <Project Path="BloodCenterOS.API.IntegrationTests/BloodCenterOS.API.IntegrationTests.csproj" />
+  <Project Path="BloodCenterOS.API/BloodCenterOS.API.csproj" />
+  <Project Path="BloodCenterOS.Core/BloodCenterOS.Core.csproj" />
+  <Project Path="BloodCenterOS.Web/BloodCenterOS.Web.csproj" />
+</Solution>

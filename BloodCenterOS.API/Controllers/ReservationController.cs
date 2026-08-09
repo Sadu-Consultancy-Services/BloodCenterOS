@@ -22,14 +22,14 @@ public class ReservationController : ControllerBase
         [FromQuery] DateTime? toDate, [FromQuery] string? keyword)
     {
         var data = await _repo.GetAllAsync(CenterId, status, fromDate, toDate, keyword);
-        return Ok(ApiResponse<IEnumerable<PatientReservation>>.Ok(data));
+        return Ok(ApiResponse<IEnumerable<BloodRequest>>.Ok(data));
     }
 
     [HttpGet("pending")]
     public async Task<IActionResult> GetPending()
     {
         var data = await _repo.GetPendingAsync(CenterId);
-        return Ok(ApiResponse<IEnumerable<PatientReservation>>.Ok(data));
+        return Ok(ApiResponse<IEnumerable<BloodRequest>>.Ok(data));
     }
 
     [HttpGet("available-components")]
@@ -44,10 +44,10 @@ public class ReservationController : ControllerBase
     public async Task<IActionResult> GetById(long id)
     {
         var item = await _repo.GetByIdAsync(id);
-        if (item == null) return NotFound(ApiResponse<PatientReservation>.Fail("Reservation not found"));
+        if (item == null) return NotFound(ApiResponse<BloodRequest>.Fail("Reservation not found"));
         var details = await _repo.GetDetailsAsync(id);
         item.Details = details.ToList();
-        return Ok(ApiResponse<PatientReservation>.Ok(item));
+        return Ok(ApiResponse<BloodRequest>.Ok(item));
     }
 
     [HttpPost]

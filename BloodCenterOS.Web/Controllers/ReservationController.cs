@@ -16,7 +16,7 @@ public class ReservationController : Controller
         if (!_auth.IsAuthenticated) return RedirectToAction("Login", "Account");
         ViewBag.Title = "Patient Reservations";
         ViewBag.ActiveMenu = "Reservations";
-        var items = new List<PatientReservation>();
+        var items = new List<BloodRequest>();
         try
         {
             var r = await _api.GetReservationsAsync(status, fromDate, toDate, keyword);

@@ -4,7 +4,7 @@ public class CrossMatchEntry
 {
     public long CrossMatchEntryId { get; set; }
     public long CenterId { get; set; }
-    public long ReservationId { get; set; }
+    public long BloodRequestId { get; set; }
     public string OverallResult { get; set; } = "Pending";
     public string? Notes { get; set; }
     public long? PerformedBy { get; set; }
@@ -23,7 +23,7 @@ public class CrossMatchTestResult
 {
     public long TestResultId { get; set; }
     public long CrossMatchEntryId { get; set; }
-    public long ReservationDetailId { get; set; }
+    public long BloodRequestDetailId { get; set; }
     public string TestType { get; set; } = "";
     public string Result { get; set; } = "Pending";
     public DateTime CreatedAt { get; set; }
@@ -42,7 +42,7 @@ public class CrossMatchWithTests
 
 public class StartCrossMatchRequest
 {
-    public long ReservationId { get; set; }
+    public long BloodRequestId { get; set; }
 }
 
 public class SetTestResultRequest

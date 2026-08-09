@@ -1,4 +1,4 @@
-@model PatientReservation
+@model BloodRequest
 @{ ViewBag.Title = "Reservation Details"; ViewBag.ActiveMenu = "Reservations"; }
 <div class="page-header">
   <div><h1 class="page-title">Reservation Details</h1></div>
@@ -10,7 +10,7 @@
     <strong>Reservation Info</strong>
     @if (Model.Status == "Active")
     {
-      <form method="post" action="@Url.Action("Cancel", new { id = Model.ReservationId })" style="display:inline" onsubmit="return confirm('Cancel? Components will be released.')">
+      <form method="post" action="@Url.Action("Cancel", new { id = Model.BloodRequestId })" style="display:inline" onsubmit="return confirm('Cancel? Components will be released.')">
         <button type="submit" class="btn btn-sm btn-outline-warning"><i class="bi bi-x-circle"></i> Cancel</button>
       </form>
     }

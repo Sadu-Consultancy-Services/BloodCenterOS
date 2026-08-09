@@ -20,14 +20,14 @@ public class IssueRecord
 
 public class IssueFromReservationRequest
 {
-    public long ReservationId { get; set; }
+    public long BloodRequestId { get; set; }
     public string? PaymentMode { get; set; }
     public string? Notes { get; set; }
 }
 
 public class ReservationReadyForIssue
 {
-    public long ReservationId { get; set; }
+    public long BloodRequestId { get; set; }
     public string PatientName { get; set; } = "";
     public string RequiredBloodGroup { get; set; } = "";
     public string ComponentType { get; set; } = "";

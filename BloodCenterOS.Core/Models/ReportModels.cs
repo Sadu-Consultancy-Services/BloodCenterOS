@@ -246,7 +246,7 @@ public class CrossMatchReportRow
     public string? PatientBloodGroup { get; set; }
     public string? HospitalName { get; set; }
     public string? Ward { get; set; }
-    public long ReservationId { get; set; }
+    public long BloodRequestId { get; set; }
     public string? ComponentCode { get; set; }
     public string? ComponentType { get; set; }
     public string? BloodGroup { get; set; }

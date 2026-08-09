@@ -1,8 +1,8 @@
 namespace BloodCenterOS.Core.Models;
 
-public class PatientReservation
+public class BloodRequest
 {
-    public long ReservationId { get; set; }
+    public long BloodRequestId { get; set; }
     public long CenterId { get; set; }
     public string PatientName { get; set; } = string.Empty;
     public string? PatientAddress { get; set; }
@@ -20,13 +20,13 @@ public class PatientReservation
     public string? Notes { get; set; }
     public DateTime CreatedAt { get; set; }
     public long? CreatedBy { get; set; }
-    public List<ReservationDetail> Details { get; set; } = new();
+    public List<BloodRequestDetail> Details { get; set; } = new();
 }
 
-public class ReservationDetail
+public class BloodRequestDetail
 {
-    public long ReservationDetailId { get; set; }
-    public long ReservationId { get; set; }
+    public long BloodRequestDetailId { get; set; }
+    public long BloodRequestId { get; set; }
     public long ComponentId { get; set; }
     public string? ComponentCode { get; set; }
     public string? BloodGroup { get; set; }

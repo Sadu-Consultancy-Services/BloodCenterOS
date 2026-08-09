@@ -20,7 +20,7 @@ public class CrossMatchController : ControllerBase
     [HttpPost("start")]
     public async Task<IActionResult> Start([FromBody] StartCrossMatchRequest req)
     {
-        var id = await _repo.StartAsync(CenterId, req.ReservationId, UserId);
+        var id = await _repo.StartAsync(CenterId, req.BloodRequestId, UserId);
         return Ok(ApiResponse<long>.Ok(id, "Cross-match started"));
     }
 

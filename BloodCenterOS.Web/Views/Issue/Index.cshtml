@@ -30,13 +30,13 @@
                         @foreach (var r in ready)
                         {
                             <tr>
-                                <td>@r.ReservationId</td>
+                                <td>@r.BloodRequestId</td>
                                 <td>@r.PatientName</td>
                                 <td>@r.RequiredBloodGroup</td>
                                 <td>@r.ComponentType</td>
                                 <td>@r.UnitsReserved</td>
                                 <td>@r.HospitalName</td>
-                                <td><a asp-action="Create" asp-route-reservationId="@r.ReservationId" class="btn btn-success btn-sm">Issue</a></td>
+                                <td><a asp-action="Create" asp-route-reservationId="@r.BloodRequestId" class="btn btn-success btn-sm">Issue</a></td>
                             </tr>
                         }
                     </tbody>

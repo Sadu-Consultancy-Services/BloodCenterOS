@@ -1,4 +1,4 @@
-@model List<PatientReservation>
+@model List<BloodRequest>
 @{ ViewBag.Title = "Patient Reservations"; ViewBag.ActiveMenu = "Reservations"; }
 <div class="page-header">
   <div><h1 class="page-title">Patient Reservations <small>FIFO blood allocation</small></h1></div>
@@ -57,10 +57,10 @@
               else if (item.Status == "Issued") { <span class="badge bg-info">Issued</span> }
             </td>
             <td class="text-end">
-              <a href="@Url.Action("Details", new { id = item.ReservationId })" class="btn btn-sm btn-outline-info"><i class="bi bi-eye"></i></a>
+              <a href="@Url.Action("Details", new { id = item.BloodRequestId })" class="btn btn-sm btn-outline-info"><i class="bi bi-eye"></i></a>
               @if (item.Status == "Active")
               {
-                <form method="post" action="@Url.Action("Cancel", new { id = item.ReservationId })" style="display:inline" onsubmit="return confirm('Cancel this reservation? Components will be released.')">
+                <form method="post" action="@Url.Action("Cancel", new { id = item.BloodRequestId })" style="display:inline" onsubmit="return confirm('Cancel this reservation? Components will be released.')">
                   <button type="submit" class="btn btn-sm btn-outline-warning"><i class="bi bi-x-circle"></i></button>
                 </form>
               }

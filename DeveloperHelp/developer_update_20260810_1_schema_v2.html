@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Developer Update 2026-08-10 (1) — v2.0 Schema: BloodRequest Unification</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
+    <style>
+        :root { --bc-primary:#c0202e; --bc-bg:#f7f8fa; --bc-border:#e3e6ea; --bc-text:#222; }
+        body { font-family: -apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif; background:var(--bc-bg); color:var(--bc-text); line-height:1.6; margin:0; }
+        .wrap { max-width:960px; margin:0 auto; padding:32px 20px 64px; }
+        h1 { color:var(--bc-primary); border-bottom:3px solid var(--bc-primary); padding-bottom:10px; }
+        h2 { margin-top:36px; color:#333; border-left:4px solid var(--bc-primary); padding-left:10px; }
+        h3 { margin:8px 0 4px; font-size:15px; }
+        code, pre { background:#1e1e1e; color:#d4d4d4; border-radius:6px; }
+        code { padding:2px 6px; font-size:13px; }
+        pre { padding:14px 16px; overflow:auto; font-size:12.5px; line-height:1.5; }
+        .card { background:#fff; border:1px solid var(--bc-border); border-radius:10px; padding:18px 20px; margin:16px 0; box-shadow:0 1px 3px rgba(0,0,0,.04); }
+        .badge { display:inline-block; background:var(--bc-primary); color:#fff; border-radius:20px; padding:2px 12px; font-size:12px; }
+        .okb { display:inline-block; background:#1a7f37; color:#fff; border-radius:20px; padding:2px 12px; font-size:12px; }
+        table { width:100%; border-collapse:collapse; margin:12px 0; }
+        th, td { border:1px solid var(--bc-border); padding:8px 10px; text-align:left; font-size:14px; }
+        th { background:#f0f1f3; }
+        .ok { color:#1a7f37; font-weight:600; }
+        .fix { background:#eafaf0; border-left:4px solid #1a7f37; padding:10px 14px; border-radius:6px; }
+        .note { background:#fff8e6; border-left:4px solid #b8951a; padding:10px 14px; border-radius:6px; }
+        ul li { margin:4px 0; }
+        .toc { display:flex; flex-wrap:wrap; gap:8px; margin:14px 0; }
+        .toc a { background:#fff; border:1px solid var(--bc-border); color:var(--bc-primary); text-decoration:none; font-size:13px; padding:5px 12px; border-radius:16px; }
+        .toc a:hover { background:#fdecea; }
+    </style>
+</head>
+<body>
+<div class="wrap">
+    <span class="badge">BloodCenterOS v2.0</span>
+    <h1>Developer Update — 2026-08-10 (Build 1)</h1>
+    <p><strong>Subject:</strong> Database schema v2.0 — unification of PatientRequest / PatientReservation / EmergencyRequest into <code>BloodRequest</code>, full <code>reservation*</code> → <code>bloodrequest*</code> ID rename, and removal of legacy <code>CrossMatchRecord</code>.</p>
+    <p><strong>Scope:</strong> DB (PostgreSQL), API/Core/Web (.NET 10), all affected views. <strong>Result:</strong> builds green (0 warnings / 0 errors), migration verified against the live <code>bloodcenter</code> database.</p>
+
+    <div class="toc">
+        <a href="#why">Why</a>
+        <a href="#ddl">DB Migration Order</a>
+        <a href="#columns">Column Mapping</a>
+        <a href="#code">Code Changes</a>
+        <a href="#verify">Verification</a>
+        <a href="#pending">Pending / Follow-ups</a>
+    </div>
+
+    <div class="card" id="why">
+        <h3>What changed and why</h3>
+        <p><code>PatientRequest</code>, <code>PatientReservation</code> and <code>EmergencyRequest</code> overlapped heavily — all three described "a patient needs blood" with the same core fields (patient, blood group, units, hospital, status). Using the M9 High-priority recommendation from <code>database_tables_data_flow_guide.html</code>, the three were merged into a single canonical entity:</p>
+        <pre><code>BloodRequest        (header — reservation / patient / emergency via RequestType)
+BloodRequestDetail  (reserved component lines — status Reserved/Issued/Released)</code></pre>
+        <p>Legacy <code>CrossMatchRecord</code> (already superseded by <code>CrossMatchEntry</code> + <code>CrossMatchTestResult</code> from Patch 008) was <strong>dropped</strong>, along with its orphaned writer SP <code>fn_crossmatch_create</code>.</p>
+    </div>
+
+    <h2 id="ddl">1. Database migration — apply in order</h2>
+    <div class="card">
+        <pre><code>&amp; "C:\Program Files\PostgreSQL\18\bin\psql.exe" -U postgres -d bloodcenter -f DB\patch_20260810_018a_schema_v2_drop_crossmatchrecord.sql
+&amp; "C:\Program Files\PostgreSQL\18\bin\psql.exe" -U postgres -d bloodcenter -f DB\patch_20260810_018_schema_v2_blood_request.sql
+&amp; "C:\Program Files\PostgreSQL\18\bin\psql.exe" -U postgres -d bloodcenter -f DB\patch_20260810_018b_auto_gen.sql
+&amp; "C:\Program Files\PostgreSQL\18\bin\psql.exe" -U postgres -d bloodcenter -f DB\patch_20260810_018c_patient_emergency_rewrite.sql
+&amp; "C:\Program Files\PostgreSQL\18\bin\psql.exe" -U postgres -d bloodcenter -f DB\patch_20260810_018d_full_id_rename.sql
+&amp; "C:\Program Files\PostgreSQL\18\bin\psql.exe" -U postgres -d bloodcenter -f DB\patch_20260810_018e_regenerate_functions.sql</code></pre>
+        <ul>
+            <li><strong>018a</strong> — drop dead <code>CrossMatchRecord</code> + legacy writer SP.</li>
+            <li><strong>018</strong> — rename request tables (Part A) + migrate legacy rows into <code>BloodRequest</code>, add union columns, archive legacy tables.</li>
+            <li><strong>018b</strong> — auto-regenerate reservation/crossmatch/issue/report SPs against the new tables.</li>
+            <li><strong>018c</strong> — manual rewrite of patient / emergency / replacement-donor flows.</li>
+            <li><strong>018d</strong> — physical ID column renames (<code>reservation*</code> → <code>bloodrequest*</code>) + sequence renames.</li>
+            <li><strong>018e</strong> — drop + recreate every affected function against the renamed columns and new aliases (step MUST run after 018d, since CREATE OR REPLACE cannot alter existing bodies relying on old column names).</li>
+        </ul>
+    </div>
+
+    <h2 id="columns">2. Column mapping applied</h2>
+    <div class="card">
+        <table>
+            <thead><tr><th>Table</th><th>Old column</th><th>New column</th></tr></thead>
+            <tbody>
+                <tr><td><code>BloodRequest</code></td><td><code>reservationid</code></td><td><code>bloodrequestid</code></td></tr>
+                <tr><td><code>BloodRequestDetail</code></td><td><code>reservationid</code></td><td><code>bloodrequestid</code></td></tr>
+                <tr><td><code>BloodRequestDetail</code></td><td><code>reservationdetailid</code></td><td><code>bloodrequestdetailid</code></td></tr>
+                <tr><td><code>CrossMatchEntry</code></td><td><code>reservationid</code></td><td><code>bloodrequestid</code></td></tr>
+                <tr><td><code>CrossMatchTestResult</code></td><td><code>reservationdetailid</code></td><td><code>bloodrequestdetailid</code></td></tr>
+                <tr><td>sequence</td><td><code>patientreservation_reservationid_seq</code></td><td><code>bloodrequest_bloodrequestid_seq</code></td></tr>
+                <tr><td>sequence</td><td><code>reservationdetail_reservationdetailid_seq</code></td><td><code>bloodrequestdetail_bloodrequestdetailid_seq</code></td></tr>
+            </tbody>
+        </table>
+        <p><strong>New columns added to <code>BloodRequest</code>:</strong> <code>requesttype</code>, <code>hospitalid</code>, <code>patientgender</code>, <code>requesturgency</code>, <code>prescriptionattachmentid</code>, <code>requestedbyuserid</code>, <code>relatedissueid</code>, <code>fulfilledat</code>, <code>patientage</code>.</p>
+        <p>Legacy tables remain archived as <code>PatientRequest_legacy</code> / <code>EmergencyRequest_legacy</code> until historical-query retirement is confirmed.</p>
+    </div>
+
+    <h2 id="code">3. Code changes</h2>
+    <div class="card">
+        <h3>Entities (BloodCenterOS.Core)</h3>
+        <ul>
+            <li><code>PatientReservation.cs</code> → <code>BloodRequest.cs</code> (new); <code>PatientReservationDetail.cs</code> → <code>BloodRequestDetail.cs</code>.</li>
+            <li><code>CrossMatchEntry</code>, <code>CrossMatchTestResult</code>, <code>IssueRecord</code>, <code>ReportModels</code> updated to <code>BloodRequestId</code> / <code>BloodRequestDetailId</code>.</li>
+            <li><code>CrossMatchRecord.cs</code> <strong>deleted</strong> (orphaned model, no live writer).</li>
+        </ul>
+        <h3>Repository &amp; API (BloodCenterOS.API)</h3>
+        <ul>
+            <li><code>ReservationRepository</code> / <code>IReservationRepository</code> — Dapper calls and result aliases use <code>bloodrequestid</code> / <code>BloodRequestId</code>.</li>
+            <li>Controllers (<code>Reservation</code>, <code>CrossMatch</code>, <code>Issue</code>, <code>PatientRequest</code>, <code>Emergency</code>, <code>ReplacementDonor</code>) serialize <code>BloodRequestId</code> in request/response DTOs.</li>
+        </ul>
+        <h3>Web (BloodCenterOS.Web)</h3>
+        <ul>
+            <li><code>ApiClient.cs</code> — sends <code>bloodRequestId</code> as the JSON body property to API endpoints (Web form/action params may remain <code>reservationId</code> for binding; the API payload is <code>bloodRequestId</code>).</li>
+            <li>Views updated: <code>Reservation/Index</code>, <code>Reservation/Details</code>, <code>CrossMatch/Create</code>, <code>CrossMatch/Details</code>, <code>Issue/Index</code>, <code>Issue/Create</code>.</li>
+        </ul>
+    </div>
+
+    <h2 id="verify">4. Verification performed</h2>
+    <div class="card">
+        <table>
+            <thead><tr><th>Check</th><th>Result</th></tr></thead>
+            <tbody>
+                <tr><td><code>dotnet build BloodCenterOS.API</code></td><td class="ok">✅ 0 warnings / 0 errors</td></tr>
+                <tr><td><code>dotnet build BloodCenterOS.Web</code></td><td class="ok">✅ 0 warnings / 0 errors</td></tr>
+                <tr><td><code>BloodRequest</code> / <code>BloodRequestDetail</code> tables + union columns</td><td class="ok">✅</td></tr>
+                <tr><td>Identity columns renamed at physical layer</td><td class="ok">✅</td></tr>
+                <tr><td>Sequences renamed + column defaults re-pointed</td><td class="ok">✅</td></tr>
+                <tr><td><code>CrossMatchRecord</code> dropped (incl. writer SP)</td><td class="ok">✅</td></tr>
+                <tr><td>Stale <code>reservationid</code>/<code>reservationdetailid</code> references in any function body</td><td class="ok">0 found</td></tr>
+                <tr><td><code>fn_reservation_get_by_center(1,...)</code> — smoke test</td><td class="ok">✅ 4 rows</td></tr>
+                <tr><td><code>fn_crossmatch_get_pending_reservations(1)</code> — smoke test</td><td class="ok">✅ executes cleanly</td></tr>
+            </tbody>
+        </table>
+        <p class="note">⚠️ <strong>Note:</strong> the old <code>BloodCenterOS.sln</code> was replaced by <code>BloodCenterOS.slnx</code> (new .NET solution format). Always open <code>BloodCenterOS.slnx</code>.</p>
+    </div>
+
+    <h2 id="pending">5. Still pending / recommended follow-ups</h2>
+    <div class="card">
+        <ul>
+            <li>Commit the rename changeset (currently all uncommitted in the working tree).</li>
+            <li>Run <code>BloodCenterOS.API.IntegrationTests</code> (Issue-flow tests reference the new names).</li>
+            <li>Verify the React Native / mobile app does not still post <code>reservationId</code> body properties.</li>
+            <li>Decide retirement of <code>PatientRequest_legacy</code> / <code>EmergencyRequest_legacy</code> after confirming no reporting queries depend on them.</li>
+            <li>Re-run full dump + patches against a fresh staging DB to validate the migration script end-to-end.</li>
+        </ul>
+    </div>
+
+    <p style="margin-top:40px; font-size:12px; color:#888;">
+        BloodCenterOS v2.0 — Developed &amp; Maintained by Sadu Consultancy Services, Pune, Maharashtra, India.
+    </p>
+</div>
+</body>
+</html>

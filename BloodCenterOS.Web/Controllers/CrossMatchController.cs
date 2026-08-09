@@ -33,7 +33,7 @@ public class CrossMatchController : Controller
     [HttpPost]
     public async Task<IActionResult> Start(long reservationId)
     {
-        await _api.StartCrossMatchAsync(new { reservationId });
+        await _api.StartCrossMatchAsync(new { bloodRequestId = reservationId });
         return RedirectToAction("Index");
     }
 

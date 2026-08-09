@@ -10,7 +10,7 @@ public class IssueControllerTests : IntegrationTestBase
     {
         var token = await GetTokenAsync();
 
-        var result = await GetAsync<List<PatientRequest>>("/api/issues/pending-requests", token);
+        var result = await GetAsync<List<PatientRequest>>("/api/issues/ready-for-issue", token);
 
         Assert.True(result.Success);
         Assert.NotNull(result.Data);

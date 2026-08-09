@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BloodCenterOS — Database Tables &amp; Data Flow Guide</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; background: #f4f5f7; color: #1a1d23; padding: 24px; }
+  .container { max-width: 1400px; margin: 0 auto; }
+  h1 { font-size: 22px; font-weight: 700; margin-bottom: 4px; }
+  .subtitle { color: #5b6778; font-size: 13px; margin-bottom: 20px; }
+  .stats { display: flex; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; }
+  .stat-card { background: #fff; border-radius: 8px; padding: 12px 18px; box-shadow: 0 1px 3px rgba(0,0,0,.08); flex: 1; min-width: 130px; }
+  .stat-card .num { font-size: 24px; font-weight: 700; color: #2563eb; }
+  .stat-card .lbl { font-size: 11px; color: #6b7280; text-transform: uppercase; letter-spacing: .5px; }
+  .section { background: #fff; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,.08); margin-bottom: 16px; overflow: hidden; }
+  .section-header { background: #1e293b; color: #fff; padding: 11px 16px; font-size: 14px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px; }
+  .section-header:hover { background: #334155; }
+  .section-header .count { font-weight: 400; font-size: 11px; color: #94a3b8; margin-left: auto; }
+  .section-body { display: none; padding: 12px 16px; }
+  .section-body.open { display: block; }
+  .card { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px 14px; margin-bottom: 10px; }
+  .card h3 { font-size: 13px; font-weight: 600; margin-bottom: 6px; color: #1e293b; }
+  .card p, .card li { font-size: 12.5px; color: #374151; line-height: 1.5; }
+  .card ul, .card ol { padding-left: 18px; }
+  table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+  thead th { background: #f8fafc; color: #475569; font-weight: 600; padding: 8px 12px; text-align: left; border-bottom: 2px solid #e2e8f0; position: sticky; top: 0; }
+  tbody td { padding: 7px 12px; border-bottom: 1px solid #eef2f6; vertical-align: top; }
+  tbody tr:hover { background: #f8fafc; }
+  .tname { font-weight: 600; color: #2563eb; font-family: 'SF Mono', 'Cascadia Code', monospace; font-size: 12px; white-space: nowrap; }
+  .desc { color: #374151; line-height: 1.45; }
+  .badge { display: inline-block; font-size: 10px; padding: 1px 7px; border-radius: 10px; font-weight: 500; }
+  .bg-green { background: #dcfce7; color: #166534; }
+  .bg-blue { background: #dbeafe; color: #1e40af; }
+  .bg-amber { background: #fef3c7; color: #92400e; }
+  .bg-red { background: #fee2e2; color: #991b1b; }
+  .bg-purple { background: #ede9fe; color: #5b21b6; }
+  .note { margin-top: 5px; background: #fffbeb; border-left: 3px solid #f59e0b; padding: 5px 9px; font-size: 11.5px; color: #78350f; line-height: 1.4; border-radius: 0 4px 4px 0; }
+  .note strong { color: #92400e; }
+  .flow { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; padding: 8px 0 4px; }
+  .flow-box { background: #eff6ff; border: 1px solid #bfdbfe; color: #1e40af; border-radius: 6px; padding: 6px 10px; font-size: 11.5px; font-weight: 600; text-align: center; min-width: 90px; }
+  .flow-box.alt { background: #f0fdf4; border-color: #bbf7d0; color: #166534; }
+  .flow-arrow { color: #94a3b8; font-size: 13px; font-weight: 700; }
+  .warn { background: #fef2f2; border-left: 3px solid #ef4444; padding: 8px 12px; font-size: 12.5px; color: #7f1d1d; border-radius: 0 4px 4px 0; margin-bottom: 10px; line-height: 1.5; }
+  .info { background: #eff6ff; border-left: 3px solid #2563eb; padding: 8px 12px; font-size: 12.5px; color: #1e3a8a; border-radius: 0 4px 4px 0; margin-bottom: 10px; line-height: 1.5; }
+  .flow-list { counter-reset: step; list-style: none; }
+  .flow-list li { position: relative; padding: 8px 10px 8px 40px; border: 1px solid #e2e8f0; border-radius: 6px; margin-bottom: 8px; background: #fff; font-size: 12.5px; color: #374151; line-height: 1.5; }
+  .flow-list li::before { counter-increment: step; content: counter(step); position: absolute; left: 10px; top: 9px; width: 22px; height: 22px; background: #2563eb; color: #fff; border-radius: 50%; font-size: 11px; font-weight: 700; display: flex; align-items: center; justify-content: center; }
+  .flow-list li strong { color: #1e293b; }
+  .toc { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 16px; }
+  .toc a { background: #fff; border: 1px solid #e2e8f0; color: #2563eb; text-decoration: none; font-size: 11.5px; padding: 5px 10px; border-radius: 14px; }
+  .toc a:hover { background: #eff6ff; }
+  @media (max-width: 900px) { table, thead, tbody, tr, th, td { display: block; } thead { display: none; } td { padding: 6px 10px; } }
+</style>
+</head>
+<body>
+<div class="container">
+
+<h1>BloodCenterOS — Database Tables &amp; Data Flow Guide</h1>
+<div class="subtitle">Version 1.1 &middot; Generated 2026-08-09 &middot; 101 Tables in live backup (PostgreSQL) &middot; .NET 10 stack &middot; For developers, DBAs &amp; reviewers</div>
+
+<div class="stats">
+  <div class="stat-card"><div class="num">101</div><div class="lbl">Tables in Backup (09-Aug)</div></div>
+  <div class="stat-card"><div class="num">89</div><div class="lbl">Core Schema</div></div>
+  <div class="stat-card"><div class="num">12</div><div class="lbl">Patch Tables Applied</div></div>
+  <div class="stat-card"><div class="num">+2 ✅</div><div class="lbl">Patch 013 Restored</div></div>
+  <div class="stat-card"><div class="num">~22</div><div class="lbl">Duplicate / Merge Candidates</div></div>
+</div>
+
+<div class="toc">
+  <a href="#overview">Overview</a>
+  <a href="#dataflow">End-to-End Data Flow</a>
+  <a href="#catalog">Table Catalog by Module</a>
+  <a href="#consolidation">Duplicate / Merge Candidates</a>
+</div>
+
+<!-- ======================= OVERVIEW ======================= -->
+<div class="section" id="overview">
+  <div class="section-header"><span>1. Overview &amp; Conventions</span></div>
+  <div class="section-body open">
+    <div class="info">
+      BloodCenterOS uses a <strong>PostgreSQL schema without Entity Framework</strong>. All business logic is written as
+      <strong>Stored Procedures / Functions</strong> called from .NET 10 (ASP.NET Core Web API + MVC) through ADO.NET / Dapper.
+      Every business table carries a <code>CenterId</code> for multi-center (multi-tenant) isolation. Tables are <em>snake_case</em>
+      in the base schema, while newer patch tables use <em>PascalCase</em> — this inconsistency itself is a cleanup candidate.
+    </div>
+    <div class="info">
+      <strong>Patch 013 gap — FIXED 2026-08-09.</strong> <code>InvItems</code>/<code>InvTrans</code> + CRUD SPs were missing from the
+      09-Aug backup. Restored from <code>DB/patch_20260724_013_store_inventory.sql</code> and applied to the live database.
+      Also applied <code>DB/patch_20260809_017_store_inventory_fix.sql</code> which corrected a sign bug: outward transactions
+      were stored as negative <code>TransQty</code> while every read treated them as positive, double-counting stock
+      (10 in − 4 out = 14 instead of 6). Verified: <code>fn_report_inv_stock</code> and <code>fn_report_inv_inout</code> now return
+      correct results and outward overdraw raises <code>Insufficient stock</code>.
+    </div>
+    <div class="warn">
+      <strong>Note:</strong> Some tables overlap in purpose because features were added iteratively (patches 001–016,
+      24-Jul-2026) rather than by refactoring the original design. A "🔄 Review" flag below marks tables the team
+      should consolidate or drop in a future schema migration. All flags are collected in the final section.
+    </div>
+    <div class="card">
+      <h3>Legend</h3>
+      <p>
+        <span class="badge bg-blue">Master</span> reference / setup data &nbsp;&nbsp;
+        <span class="badge bg-green">Transactional</span> records daily operations &nbsp;&nbsp;
+        <span class="badge bg-purple">Log / Audit</span> history &amp; traceability &nbsp;&nbsp;
+        <span class="badge bg-amber">Reporting</span> summaries &amp; exports &nbsp;&nbsp;
+        <span class="badge bg-red">🔄 Review</span> possible duplicate — consider merge / remove
+      </p>
+    </div>
+  </div>
+</div>
+
+<!-- ======================= DATA FLOW ======================= -->
+<div class="section" id="dataflow">
+  <div class="section-header"><span>2. End-to-End Data Flow (Blood Center Management Lifecycle)</span></div>
+  <div class="section-body open">
+    <div class="card">
+      <h3>High-Level Flow</h3>
+      <div class="flow">
+        <span class="flow-box">Setup &amp; Masters</span><span class="flow-arrow">→</span>
+        <span class="flow-box">Donor Registration</span><span class="flow-arrow">→</span>
+        <span class="flow-box">Screening / Deferral</span><span class="flow-arrow">→</span>
+        <span class="flow-box">Camp / Collection</span><span class="flow-arrow">→</span>
+        <span class="flow-box">Blood Bag Entry</span><span class="flow-arrow">→</span>
+        <span class="flow-box">Testing &amp; QC</span><span class="flow-arrow">→</span>
+        <span class="flow-box">Component Prep</span><span class="flow-arrow">→</span>
+        <span class="flow-box">Inventory Stock</span><span class="flow-arrow">→</span>
+        <span class="flow-box">Reservation / Crossmatch / Issue</span><span class="flow-arrow">→</span>
+        <span class="flow-box">Billing / Payment</span><span class="flow-arrow">→</span>
+        <span class="flow-box">Returns / Discard</span><span class="flow-arrow">→</span>
+        <span class="flow-box">Reports &amp; Compliance</span>
+      </div>
+      <p style="margin-top:6px;">
+        Two parallel procurement paths feed stock: <strong>(A) In-house donation</strong> (donor → collection → testing → components)
+        and <strong>(B) Mother Blood Bank reception</strong> (BloodReception → auto component creation). Stock then flows through
+        reservation (FIFO), crossmatch, issue (to hospitals/patients or external storage units), billing, and finally
+        returns/discards.
+      </p>
+    </div>
+
+    <ol class="flow-list">
+      <li><strong>System Setup &amp; Master Data</strong> — Admin creates the center (<code>BloodCenterMaster</code>), branches, departments, designations, employees, devices &amp; fridges. Users are created (<code>UserMaster</code>) with roles &amp; permissions (<code>RolePermissionMap</code>, <code>UserRoleMap</code>, <code>CenterUserMap</code>). Reference data seeded: states/cities/pincodes, blood groups, lookup types/values, reasons, holidays, component types, test kits, service charges and rates (<code>RateMaster</code>).</li>
+      <li><strong>Donor Registration</strong> — <code>DonorMaster</code> is the single donor registry. Registrations can be walk-in, replacement (<code>ReplacementDonor</code>), or camp-based (<code>CampDonorMap</code>).</li>
+      <li><strong>Pre-donation Screening</strong> — Vital signs &amp; eligibility checked into <code>DonorHealthHistory</code>. If ineligible, a <code>DeferralRecord</code> is created (temporary/permanent). Appointment optional via <code>DonorAppointment</code>. <code>DonorDonationHistory</code> is the per-donor donation ledger.</li>
+      <li><strong>Camp Planning &amp; Execution</strong> — <code>BloodCampMaster</code> (+ <code>CampOrganizer</code>) schedules events; <code>CampInventory</code> allocates bags/consumables and <code>CampExpenseLog</code> tracks costs.</li>
+      <li><strong>Blood Collection</strong> — <code>CollectionRecord</code> captures the donation event (donor, camp, bag number, volume, phlebotomist); staff mapped via <code>CollectionStaffMap</code>. A <code>BloodBagMaster</code> row (unique bag no + barcode) is created and linked to the donor.</li>
+      <li><strong>Mother Blood Bank Reception (Procurement)</strong> — <code>BloodReception</code> / <code>BloodReceptionDetail</code> record received bags; the SP <code>fn_blood_reception_create</code> auto-creates donors, bags, donation history, components (WB/PCV/FFP/PC by bag type) and updates <code>InventoryStock</code> in one transaction.</li>
+      <li><strong>Testing &amp; Quality Control</strong> — <code>BloodTestRecord</code> (header) + <code>BloodTestResult</code> (HIV, HBsAg, HCV, VDRL, Malaria) per bag. Reactive units are segregated. Laboratory reagent QC logged in <code>QCRegister</code> (Pool Cell, Anticera, Saline, Copper Sulphate, Coombs/AHG, BSA); device QC in <code>QualityControlRecord</code>. Kits tracked via <code>TestKitMaster</code>, technicians via <code>TestTechnicianMap</code>.</li>
+      <li><strong>Component Preparation</strong> — <code>ComponentPreparation</code> (+ <code>ComponentPreparationLog</code>) converts a whole bag into components; each resulting unit becomes a <code>ComponentMaster</code> row with status <em>Available</em>. Storage location recorded in <code>ComponentStorage</code> / fridges. <code>InventoryStock</code> is updated (available/reserved/issued counts by component × blood group).</li>
+      <li><strong>Hospital / Patient Request &amp; Reservation</strong> — Hospitals register in <code>HospitalMaster</code>. Requests come as <code>PatientRequest</code> (classic flow) or <code>PatientReservation</code> + <code>ReservationDetail</code> (newer FIFO booking flow, patch-007) where <code>fn_reservation_create</code> allocates the oldest-expiring available components and marks them <em>Reserved</em>. Emergency needs handled via <code>EmergencyRequest</code> / <code>EmergencyDonorResponse</code>. Status transitions logged in <code>RequestStatusLog</code>.</li>
+      <li><strong>Crossmatching</strong> — <code>CrossMatchEntry</code> (header) + <code>CrossMatchTestResult</code> run Saline / Bovine / Coombs tests per reserved component; overall result Pass / Reject. (Legacy <code>CrossMatchRecord</code> overlaps — see review.)</li>
+      <li><strong>Issue</strong> — After crossmatch pass, components are issued to hospitals/patients via <code>IssueRecord</code>, or to external storage units via <code>IssueStorage</code> + <code>StorageMaster</code>. Component status → <em>Issued</em>; stock updated.</li>
+      <li><strong>Billing &amp; Payment</strong> — <code>BillingTransaction</code> (invoice header) + <code>InvoiceDetail</code> (line items) + <code>PaymentRecord</code>. Rates come from <code>RateMaster</code> / <code>ServiceChargeMaster</code>. Dues register &amp; credit notes are computed against these tables. Payables to Mother Blood Banks recorded in <code>MbbBill</code> / <code>MbbBillDetail</code>. General operations costs in <code>ExpenseMaster</code>.</li>
+      <li><strong>Returns, Discards &amp; Destruction</strong> — Unused/returned units: <code>ReturnRecord</code>. Unsuitable/reactive/expired units: <code>DiscardRecord</code> with disposal/autoclave tracking.</li>
+      <li><strong>Store Inventory (Non-blood)</strong> — Reagents &amp; consumables managed separately in <code>InvItems</code> / <code>InvTrans</code> (inward/outward with min-order validation).</li>
+      <li><strong>Communication &amp; Notifications</strong> — SMS/email via templates (<code>SmsTemplateMaster</code>, <code>EmailTemplateMaster</code>), sent messages logged to <code>OutboxLog</code> / <code>DonorCommunicationLog</code>; in-app alerts in <code>NotificationMaster</code>; feedback &amp; newsletter subscriptions stored.</li>
+      <li><strong>Reporting &amp; Compliance</strong> — Summaries via report SPs (donor, camp, inventory, blood stock, procurement); export/upload logs (<code>ExportFileLog</code>, <code>MonthlyReportLog</code>, <code>DataUploadHistory</code>, <code>PortalUploadQueue</code>); cached dashboard metrics in <code>AnalyticsDashboardData</code>.</li>
+      <li><strong>Security &amp; Audit</strong> — <code>LoginHistory</code>, <code>AuditLog</code>, <code>ChangeLog</code>, <code>ErrorLog</code>, <code>BackupLog</code>, <code>SchedulerJobLog</code>; API integrations via <code>ApiIntegrationMaster</code> / <code>ApiResponseLog</code>; numbering via <code>SequenceCounters</code>; config via <code>SystemConfig</code> / <code>CenterConfig</code>; attachments in <code>AttachmentStore</code>.</li>
+    </ol>
+
+    <div class="card">
+      <h3>Key Status Lifecycle for a Blood Component</h3>
+      <div class="flow">
+        <span class="flow-box">Collected / Received</span><span class="flow-arrow">→</span>
+        <span class="flow-box">Quarantined</span><span class="flow-arrow">→</span>
+        <span class="flow-box">Tested &amp; Released → Available</span><span class="flow-arrow">→</span>
+        <span class="flow-box">Reserved</span><span class="flow-arrow">→</span>
+        <span class="flow-box">Crossmatched → Issued</span><span class="flow-arrow">→</span>
+        <span class="flow-box">Returned / Discarded</span>
+      </div>
+      <p style="margin-top:6px;">
+        Stored in <code>ComponentMaster.CurrentStatus</code> (Available / Reserved / Issued / Discarded / Transferred) and mirrored
+        in <code>InventoryStock</code> counts. Every movement should also write an <code>InventoryTransactionLog</code> row for audit.
+      </p>
+    </div>
+  </div>
+</div>
+
+<!-- ======================= CATALOG ======================= -->
+<div class="section" id="catalog">
+  <div class="section-header"><span>3. Table Catalog by Module (101 Tables in Live Backup)</span></div>
+  <div class="section-body open">
+
+    <div class="section" style="box-shadow:none; border:1px solid #e2e8f0;">
+      <div class="section-header"><span>M1 · User, Role &amp; Access Security</span><span class="count">9 tables</span></div>
+      <div class="section-body open">
+        <table>
+          <thead><tr><th style="width:20%">Table</th><th style="width:60%">Description</th><th style="width:20%">Type</th></tr></thead>
+          <tbody>
+            <tr><td class="tname">UserMaster</td><td class="desc">System user accounts — credentials, name, contact, lock status.</td><td><span class="badge bg-blue">Master</span></td></tr>
+            <tr><td class="tname">RoleMaster</td><td class="desc">Named roles (Administrator, Technician, Medical Officer, etc.).</td><td><span class="badge bg-blue">Master</span></td></tr>
+            <tr><td class="tname">PermissionMaster</td><td class="desc">Granular permissions (e.g. donor.create, report.view), seeded.</td><td><span class="badge bg-blue">Master</span></td></tr>
+            <tr><td class="tname">RolePermissionMap</td><td class="desc">Many-to-many: role ↔ permission.</td><td><span class="badge bg-blue">Master</span></td></tr>
+            <tr><td class="tname">UserRoleMap</td><td class="desc">Many-to-many: user ↔ role.</td><td><span class="badge bg-blue">Master</span></td></tr>
+            <tr><td class="tname">CenterUserMap</td><td class="desc">Links users to centers (multi-center access).</td><td><span class="badge bg-blue">Master</span></td></tr>
+            <tr><td class="tname">LoginHistory</td><td class="desc">Login/logout audit with IP &amp; user-agent.</td><td><span class="badge bg-purple">Log</span></td></tr>
+            <tr><td class="tname">AuditLog</td><td class="desc">General audit trail — who did what on which record.</td><td><span class="badge bg-purple">Log</span></td></tr>
+            <tr><td class="tname">UserSettings</td><td class="desc">Per-user key-value preferences.</td><td><span class="badge bg-blue">Master</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="section" style="box-shadow:none; border:1px solid #e2e8f0;">
+      <div class="section-header"><span>M2 · Center, Organization &amp; Infrastructure</span><span class="count">8 tables</span></div>
+      <div class="section-body open">
+        <table>
+          <thead><tr><th style="width:20%">Table</th><th style="width:60%">Description</th><th style="width:20%">Type</th></tr></thead>
+          <tbody>
+            <tr><td class="tname">BloodCenterMaster</td><td class="desc">Blood center entity — name, code, license, address, contact.</td><td><span class="badge bg-blue">Master</span></td></tr>
+            <tr><td class="tname">BranchMaster</td><td class="desc">Physical branches / collection points under a center.</td><td><span class="badge bg-blue">Master</span></td></tr>
+            <tr><td class="tname">DepartmentMaster</td><td class="desc">Organisational departments.</td><td><span class="badge bg-blue">Master</span></td></tr>
+            <tr><td class="tname">DesignationMaster</td><td class="desc">Job titles (Phlebotomist, Lab Technician, Manager…).</td><td><span class="badge bg-blue">Master</span></td></tr>
+            <tr><td class="tname">EmployeeMaster</td><td class="desc">Staff records linked to department/designation.</td><td><span class="badge bg-blue">Master</span></td></tr>
+            <tr><td class="tname">DeviceMaster</td><td class="desc">Equipment registry (name, type, serial, warranty).</td><td><span class="badge bg-blue">Master</span></td></tr>
+            <tr><td class="tname">FridgeStorageMaster</td><td class="desc">Cold storage units (fridge/freezer) — capacity, location.</td><td><span class="badge bg-blue">Master</span></td></tr>
+            <tr><td class="tname">CenterConfig</td><td class="desc">Per-center key-value configuration overrides.</td><td><span class="badge bg-blue">Master</span></td></tr>
+          </tbody>
+        </table>
+        <div class="note">🔄 <strong>Review:</strong> <em>FridgeStorageMaster</em> vs <em>DeviceMaster</em> — fridges are devices; consider unifying (device subtype = Fridge). <em>BranchMaster</em> overlaps the newer <em>StorageMaster</em> concept (M10) in spirit; confirm intent.</div>
+      </div>
+    </div>
+
+    <div class="section" style="box-shadow:none; border:1px solid #e2e8f0;">
+      <div class="section-header"><span>M3 · Donor Management</span><span class="count">6 tables</span></div>
+      <div class="section-body open">
+        <table>
+          <thead><tr><th style="width:20%">Table</th><th style="width:60%">Description</th><th style="width:20%">Type</th></tr></thead>
+          <tbody>
+            <tr><td class="tname">DonorMaster</td><td class="desc">Core donor registry — personal details, blood group, contact, Aadhaar.</td><td><span class="badge bg-blue">Master</span></td></tr>
+            <tr><td class="tname">DonorHealthHistory</td><td class="desc">Pre-donation screening (weight, BP, Hb, pulse, eligibility).</td><td><span class="badge bg-green">Transactional</span></td></tr>
+            <tr><td class="tname">DonorDonationHistory</td><td class="desc">Per-donor donation ledger (type, volume, bag no).</td><td><span class="badge bg-green">Transactional</span></td></tr>
+            <tr><td class="tname">DeferralRecord</td><td class="desc">Temporary/permanent deferrals with reason &amp; period.</td><td><span class="badge bg-green">Transactional</span></td></tr>
+            <tr><td class="tname">DonorAppointment</td><td class="desc">Scheduled donation appointments.</td><td><span class="badge bg-green">Transactional</span></td></tr>
+            <tr><td class="tname">DonorCommunicationLog</td><td class="desc">Outbound SMS/email to donors.</td><td><span class="badge bg-purple">Log</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="section" style="box-shadow:none; border:1px solid #e2e8f0;">
+      <div class="section-header"><span>M4 · Blood Camps</span><span class="count">5 tables</span></div>
+      <div class="section-body open">
+        <table>
+          <thead><tr><th style="width:20%">Table</th><th style="width:60%">Description</th><th style="width:20%">Type</th></tr></thead>
+          <tbody>
+            <tr><td class="tname">BloodCampMaster</td><td class="desc">Camp events — venue, date, expected donors.</td><td><span class="badge bg-green">Transactional</span></td></tr>
+            <tr><td class="tname">CampOrganizer</td><td class="desc">Organisations running camps (Rotary, NGO, Corporate…).</td><td><span class="badge bg-blue">Master</span></td></tr>
+            <tr><td class="tname">CampDonorMap</td><td class="desc">Donor ↔ camp attendance.</td><td><span class="badge bg-green">Transactional</span></td></tr>
+            <tr><td class="tname">CampInventory</td><td class="desc">Bags/consumables allocated to a camp.</td><td><span class="badge bg-green">Transactional</span></td></tr>
+            <tr><td class="tname">CampExpenseLog</td><td class="desc">Per-camp expenses.</td><td><span class="badge bg-green">Transactional</span></td></tr>
+          </tbody>
+        </table>
+        <div class="note">🔄 <strong>Review:</strong> <em>CampInventory</em> overlaps the newer non-blood store inventory (<em>InvItems/InvTrans</em>, M12). <em>CampExpenseLog</em> overlaps <em>ExpenseMaster</em> (M11). Consider reusing a single expense/inventory model with a <code>campId</code> reference.</div>
+      </div>
+    </div>
+
+    <div class="section" style="box-shadow:none; border:1px solid #e2e8f0;">
+      <div class="section-header"><span>M5 · Blood Collection</span><span class="count">2 tables</span></div>
+      <div class="section-body open">
+        <table>
+          <thead><tr><th style="width:20%">Table</th><th style="width:60%">Description</th><th style="width:20%">Type</th></tr></thead>
+          <tbody>
+            <tr><td class="tname">CollectionRecord</td><td class="desc">Collection event — donor, camp, bag, volume, staff, timestamps.</td><td><span class="badge bg-green">Transactional</span></td></tr>
+            <tr><td class="tname">CollectionStaffMap</td><td class="desc">Staff roles at a collection (phlebotomist, nurse).</td><td><span class="badge bg-green">Transactional</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="section" style="box-shadow:none; border:1px solid #e2e8f0;">
+      <div class="section-header"><span>M6 · Blood Reception (Mother Blood Bank / Procurement) — Patch 006</span><span class="count">2 tables</span></div>
+      <div class="section-body open">
+        <table>
+          <thead><tr><th style="width:20%">Table</th><th style="width:60%">Description</th><th style="width:20%">Type</th></tr></thead>
+          <tbody>
+            <tr><td class="tname">BloodReception</td><td class="desc">Header of received blood from Mother Blood Bank (MBB name, bill no, bag count).</td><td><span class="badge bg-green">Transactional</span></td></tr>
+            <tr><td class="tname">BloodReceptionDetail</td><td class="desc">Per-bag detail (donor name, blood group, bag no/type, expiry, volume). SP auto-creates donors, bags, components &amp; stock.</td><td><span class="badge bg-green">Transactional</span></td></tr>
+          </tbody>
+        </table>
+        <div class="note">🔄 <strong>Review:</strong> Auto-generating <em>DonorMaster</em> rows from MBB bags creates "synthetic donors" mixed with real donors. Consider a separate <code>IsProcurement</code> flag or a source field instead.</div>
+      </div>
+    </div>
+
+    <div class="section" style="box-shadow:none; border:1px solid #e2e8f0;">
+      <div class="section-header"><span>M7 · Testing &amp; Quality Control</span><span class="count">6 tables</span></div>
+      <div class="section-body open">
+        <table>
+          <thead><tr><th style="width:20%">Table</th><th style="width:60%">Description</th><th style="width:20%">Type</th></tr></thead>
+          <tbody>
+            <tr><td class="tname">BloodTestRecord</td><td class="desc">Test header per bag — groups marker results, overall status.</td><td><span class="badge bg-green">Transactional</span></td></tr>
+            <tr><td class="tname">BloodTestResult</td><td class="desc">Individual markers (HIV, HBV, HCV, Syphilis, Malaria) with kit lot &amp; technician.</td><td><span class="badge bg-green">Transactional</span></td></tr>
+            <tr><td class="tname">TestKitMaster</td><td class="desc">Test kit inventory (name, manufacturer, lot, expiry).</td><td><span class="badge bg-blue">Master</span></td></tr>
+            <tr><td class="tname">TestTechnicianMap</td><td class="desc">Technician ↔ test record assignment.</td><td><span class="badge bg-green">Transactional</span></td></tr>
+            <tr><td class="tname">QualityControlRecord</td><td class="desc">Equipment QC checks (device inspections, calibration).</td><td><span class="badge bg-green">Transactional</span></td></tr>
+            <tr><td class="tname">QCRegister</td><td class="desc">6-type reagent QC register (Pool Cell, Anticera, Saline, Copper Sulphate, Coombs/AHG, BSA) — Patch 011.</td><td><span class="badge bg-green">Transactional</span></td></tr>
+          </tbody>
+        </table>
+        <div class="note">🔄 <strong>Review:</strong> <em>QualityControlRecord</em> (device QC) vs <em>QCRegister</em> (reagent QC) have different foci, but both are "QC logs". Decide whether to keep two tables or add a <code>QCType</code> discriminator and merge. Test kit stock also overlaps <em>InvItems</em> (M12) — kits could be store-inventory items with type=Kit.</div>
+      </div>
+    </div>
+
+    <div class="section" style="box-shadow:none; border:1px solid #e2e8f0;">
+      <div class="section-header"><span>M8 · Components &amp; Blood Inventory</span><span class="count">10 tables</span></div>
+      <div class="section-body open">
+        <table>
+          <thead><tr><th style="width:20%">Table</th><th style="width:60%">Description</th><th style="width:20%">Type</th></tr></thead>
+          <tbody>
+            <tr><td class="tname">BloodBagMaster</td><td class="desc">Blood bag registry — unique number, barcode, type, lot, expiry.</td><td><span class="badge bg-green">Transactional</span></td></tr>
+            <tr><td class="tname">ComponentTypeMaster</td><td class="desc">Component definitions (WB, PRBC/PCV, FFP, Platelet, Cryo) with shelf life.</td><td><span class="badge bg-blue">Master</span></td></tr>
+            <tr><td class="tname">ComponentMaster</td><td class="desc">Individual component unit — type, blood group, volume, expiry, status, storage.</td><td><span class="badge bg-green">Transactional</span></td></tr>
+            <tr><td class="tname">ComponentPreparation</td><td class="desc">Component preparation events (bag → components).</td><td><span class="badge bg-green">Transactional</span></td></tr>
+            <tr><td class="tname">ComponentPreparationLog</td><td class="desc">Step-by-step preparation audit log.</td><td><span class="badge bg-purple">Log</span></td></tr>
+            <tr><td class="tname">ComponentStorage</td><td class="desc">Physical storage location of components (fridge, shelf).</td><td><span class="badge bg-green">Transactional</span></td></tr>
+            <tr><td class="tname">ComponentTransferLog</td><td class="desc">Inter-center component transfers.</td><td><span class="badge bg-green">Transactional</span></td></tr>
+            <tr><td class="tname">DiscardRecord</td><td class="desc">Discard/destruction of reactive/expired/unsuitable units.</td><td><span class="badge bg-green">Transactional</span></td></tr>
+            <tr><td class="tname">InventoryStock</td><td class="desc">Real-time stock counts by component type × blood group (available/reserved/issued).</td><td><span class="badge bg-green">Transactional</span></td></tr>
+            <tr><td class="tname">InventoryTransactionLog</td><td class="desc">Audit of every stock movement.</td><td><span class="badge bg-purple">Log</span></td></tr>
+          </tbody>
+        </table>
+        <div class="note">🔄 <strong>Review (high priority):</strong> <em>ComponentPreparation</em> + <em>ComponentPreparationLog</em> + <em>ComponentMaster</em> all capture "component was created" — the prep tables may be redundant. <em>ComponentStorage</em> overlaps <em>FridgeStorageMaster</em> and the <code>storagelocation</code> column on <em>ComponentMaster</em>. <em>ComponentTypeMaster</em> duplicates values already present in <em>LookupValue</em>.</div>
+      </div>
+    </div>
+
+    <div class="section" style="box-shadow:none; border:1px solid #e2e8f0;">
+      <div class="section-header"><span>M9 · Hospitals, Requests, Reservations &amp; Emergency</span><span class="count">8 tables</span></div>
+      <div class="section-body open">
+        <table>
+          <thead><tr><th style="width:20%">Table</th><th style="width:60%">Description</th><th style="width:20%">Type</th></tr></thead>
+          <tbody>
+            <tr><td class="tname">HospitalMaster</td><td class="desc">Registered hospitals receiving blood/components.</td><td><span class="badge bg-blue">Master</span></td></tr>
+            <tr><td class="tname">PatientRequest</td><td class="desc">Classic hospital blood/component request (urgency, units, status).</td><td><span class="badge bg-green">Transactional</span></td></tr>
+            <tr><td class="tname">PatientReservation</td><td class="desc">Patient booking header — FIFO allocation of components (Patch 007).</td><td><span class="badge bg-green">Transactional</span></td></tr>
+            <tr><td class="tname">ReservationDetail</td><td class="desc">Reserved component lines under a reservation (status Reserved/Issued/Released).</td><td><span class="badge bg-green">Transactional</span></td></tr>
+            <tr><td class="tname">RequestStatusLog</td><td class="desc">Status transition history for requests.</td><td><span class="badge bg-purple">Log</span></td></tr>
+            <tr><td class="tname">ReplacementDonor</td><td class="desc">Replacement donors arranged by patients/families.</td><td><span class="badge bg-green">Transactional</span></td></tr>
+            <tr><td class="tname">EmergencyRequest</td><td class="desc">Emergency blood requests.</td><td><span class="badge bg-green">Transactional</span></td></tr>
+            <tr><td class="tname">EmergencyDonorResponse</td><td class="desc">Donor responses to emergency calls.</td><td><span class="badge bg-green">Transactional</span></td></tr>
+          </tbody>
+        </table>
+        <div class="note">🔄 <strong>Review (high priority):</strong> <em>PatientRequest</em> vs <em>PatientReservation</em> vs <em>EmergencyRequest</em> overlap heavily — all are "request for blood from a patient". Recommend one <code>BloodRequest</code> table with a <code>Type</code> (Normal / Reservation / Emergency) + optional reservation lines, or explicitly mark EmergencyRequest as a subtype of PatientRequest. <em>PatientReservation</em> also duplicates <em>PatientRequest</em> fields (patient name, blood group, hospital, units).</div>
+      </div>
+    </div>
+
+    <div class="section" style="box-shadow:none; border:1px solid #e2e8f0;">
+      <div class="section-header"><span>M10 · Crossmatch, Issue, Storage Units &amp; Returns</span><span class="count">7 tables</span></div>
+      <div class="section-body open">
+        <table>
+          <thead><tr><th style="width:20%">Table</th><th style="width:60%">Description</th><th style="width:20%">Type</th></tr></thead>
+          <tbody>
+            <tr><td class="tname">CrossMatchRecord</td><td class="desc">Legacy crossmatch result log (v3.1).</td><td><span class="badge bg-green">Transactional</span></td></tr>
+            <tr><td class="tname">CrossMatchEntry</td><td class="desc">Crossmatch header per reservation (Patch 008).</td><td><span class="badge bg-green">Transactional</span></td></tr>
+            <tr><td class="tname">CrossMatchTestResult</td><td class="desc">Saline / Bovine / Coombs results per component (Patch 008).</td><td><span class="badge bg-green">Transactional</span></td></tr>
+            <tr><td class="tname">IssueRecord</td><td class="desc">Component issue to hospital/patient (slip no, type, issued by).</td><td><span class="badge bg-green">Transactional</span></td></tr>
+            <tr><td class="tname">StorageMaster</td><td class="desc">External blood storage units that receive issues (Patch 012).</td><td><span class="badge bg-blue">Master</span></td></tr>
+            <tr><td class="tname">IssueStorage</td><td class="desc">Batch issue of components to storage units with auto-invoicing (Patch 012).</td><td><span class="badge bg-green">Transactional</span></td></tr>
+            <tr><td class="tname">ReturnRecord</td><td class="desc">Returned/unused components from hospitals.</td><td><span class="badge bg-green">Transactional</span></td></tr>
+          </tbody>
+        </table>
+        <div class="note">🔄 <strong>Review (high priority):</strong> <em>CrossMatchRecord</em> is fully superseded by <em>CrossMatchEntry</em> + <em>CrossMatchTestResult</em> — drop or migrate. <em>IssueStorage</em> vs <em>IssueRecord</em> are both "issues" with different receivers; consider one <code>IssueRecord</code> with an <code>IssueTo</code> discriminator (Hospital/Patient/Storage). <em>StorageMaster</em> overlaps <em>BranchMaster</em>/<em>HospitalMaster</em> conceptually.</div>
+      </div>
+    </div>
+
+    <div class="section" style="box-shadow:none; border:1px solid #e2e8f0;">
+      <div class="section-header"><span>M11 · Billing, Rates &amp; Finance</span><span class="count">8 tables</span></div>
+      <div class="section-body open">
+        <table>
+          <thead><tr><th style="width:20%">Table</th><th style="width:60%">Description</th><th style="width:20%">Type</th></tr></thead>
+          <tbody>
+            <tr><td class="tname">ServiceChargeMaster</td><td class="desc">Fee schedule for services.</td><td><span class="badge bg-blue">Master</span></td></tr>
+            <tr><td class="tname">RateMaster</td><td class="desc">Component rates per blood group (Unit/Reservation rate) — Patch 007.</td><td><span class="badge bg-blue">Master</span></td></tr>
+            <tr><td class="tname">BillingTransaction</td><td class="desc">Invoice header (receivables) — number, totals, payment status.</td><td><span class="badge bg-green">Transactional</span></td></tr>
+            <tr><td class="tname">InvoiceDetail</td><td class="desc">Invoice line items.</td><td><span class="badge bg-green">Transactional</span></td></tr>
+            <tr><td class="tname">PaymentRecord</td><td class="desc">Payments against invoices (mode, amount, reference).</td><td><span class="badge bg-green">Transactional</span></td></tr>
+            <tr><td class="tname">ExpenseMaster</td><td class="desc">General operational expenses.</td><td><span class="badge bg-green">Transactional</span></td></tr>
+            <tr><td class="tname">MbbBill</td><td class="desc">Mother Blood Bank bills (payables) header — Patch 009.</td><td><span class="badge bg-green">Transactional</span></td></tr>
+            <tr><td class="tname">MbbBillDetail</td><td class="desc">MBB bill line items (component, blood group, qty, price, bag refs).</td><td><span class="badge bg-green">Transactional</span></td></tr>
+          </tbody>
+        </table>
+        <div class="note">🔄 <strong>Review:</strong> <em>BillingTransaction/InvoiceDetail</em> (receivables) vs <em>MbbBill/MbbBillDetail</em> (payables) are structurally identical — could share one generic bill model with a direction field. <em>RateMaster</em> vs <em>ServiceChargeMaster</em> both define pricing; consider unifying into one price table with a <code>PricingType</code>.</div>
+      </div>
+    </div>
+
+    <div class="section" style="box-shadow:none; border:1px solid #e2e8f0;">
+      <div class="section-header"><span>M12 · Store Inventory (Non-blood / Reagents &amp; Consumables) — Patch 013</span><span class="count">2 tables — RESTORED 09-Aug</span></div>
+      <div class="section-body open">
+        <div class="info"><strong>✅ Restored 2026-08-09.</strong> Applied Patch 013 (<code>InvItems</code>, <code>InvTrans</code> + CRUD SPs) and Patch 017 (sign fix). Report SPs <code>fn_report_inv_stock</code> / <code>fn_report_inv_inout</code> now work.</div>
+        <table>
+          <thead><tr><th style="width:20%">Table</th><th style="width:60%">Description</th><th style="width:20%">Type</th></tr></thead>
+          <tbody>
+            <tr><td class="tname">InvItems</td><td class="desc">Store items (reagents, consumables) with min-order qty &amp; unit.</td><td><span class="badge bg-blue">Master</span></td></tr>
+            <tr><td class="tname">InvTrans</td><td class="desc">Inward (I) / outward (O) stock transactions with validation.</td><td><span class="badge bg-green">Transactional</span></td></tr>
+          </tbody>
+        </table>
+        <div class="note">🔄 <strong>Review:</strong> Naming is confusing vs blood inventory (<em>InventoryStock</em>/<em>InventoryTransactionLog</em>). Consider renaming to <code>StoreItem</code>/<code>StoreTransaction</code> and deciding whether <em>TestKitMaster</em> and <em>CampInventory</em> should reuse this model.</div>
+      </div>
+    </div>
+
+    <div class="section" style="box-shadow:none; border:1px solid #e2e8f0;">
+      <div class="section-header"><span>M13 · Communication, Notifications &amp; Outreach</span><span class="count">6 tables</span></div>
+      <div class="section-body open">
+        <table>
+          <thead><tr><th style="width:20%">Table</th><th style="width:60%">Description</th><th style="width:20%">Type</th></tr></thead>
+          <tbody>
+            <tr><td class="tname">NotificationMaster</td><td class="desc">In-app notifications (alerts, announcements, reminders).</td><td><span class="badge bg-green">Transactional</span></td></tr>
+            <tr><td class="tname">SmsTemplateMaster</td><td class="desc">SMS templates for automated messaging.</td><td><span class="badge bg-blue">Master</span></td></tr>
+            <tr><td class="tname">EmailTemplateMaster</td><td class="desc">Email templates (subject + body).</td><td><span class="badge bg-blue">Master</span></td></tr>
+            <tr><td class="tname">OutboxLog</td><td class="desc">Outbound SMS/email log (recipient, channel, status).</td><td><span class="badge bg-purple">Log</span></td></tr>
+            <tr><td class="tname">FeedbackMaster</td><td class="desc">User/visitor feedback.</td><td><span class="badge bg-green">Transactional</span></td></tr>
+            <tr><td class="tname">NewsletterSubscription</td><td class="desc">Newsletter subscribers.</td><td><span class="badge bg-blue">Master</span></td></tr>
+          </tbody>
+        </table>
+        <div class="note">🔄 <strong>Review:</strong> <em>DonorCommunicationLog</em> (M3) vs <em>OutboxLog</em> — both log outgoing messages to donors. Merge into a single communication log with a <code>RecipientType</code> (Donor/Hospital/User) column.</div>
+      </div>
+    </div>
+
+    <div class="section" style="box-shadow:none; border:1px solid #e2e8f0;">
+      <div class="section-header"><span>M14 · System Configuration, Audit &amp; Infrastructure</span><span class="count">10 tables</span></div>
+      <div class="section-body open">
+        <table>
+          <thead><tr><th style="width:20%">Table</th><th style="width:60%">Description</th><th style="width:20%">Type</th></tr></thead>
+          <tbody>
+            <tr><td class="tname">SystemConfig</td><td class="desc">Global key-value configuration.</td><td><span class="badge bg-blue">Master</span></td></tr>
+            <tr><td class="tname">SequenceCounters</td><td class="desc">Auto-number generators for codes (donor/invoice/camp).</td><td><span class="badge bg-blue">Master</span></td></tr>
+            <tr><td class="tname">BackupLog</td><td class="desc">Database backup history.</td><td><span class="badge bg-purple">Log</span></td></tr>
+            <tr><td class="tname">ErrorLog</td><td class="desc">Application error log.</td><td><span class="badge bg-purple">Log</span></td></tr>
+            <tr><td class="tname">SchedulerJobLog</td><td class="desc">Background job run history.</td><td><span class="badge bg-purple">Log</span></td></tr>
+            <tr><td class="tname">ChangeLog</td><td class="desc">Entity change history (create/update/delete).</td><td><span class="badge bg-purple">Log</span></td></tr>
+            <tr><td class="tname">AttachmentStore</td><td class="desc">Uploaded files (reports, photos, certificates).</td><td><span class="badge bg-purple">Log</span></td></tr>
+            <tr><td class="tname">ApiIntegrationMaster</td><td class="desc">Third-party API configurations.</td><td><span class="badge bg-blue">Master</span></td></tr>
+            <tr><td class="tname">ApiResponseLog</td><td class="desc">API request/response log.</td><td><span class="badge bg-purple">Log</span></td></tr>
+            <tr><td class="tname">PortalUploadQueue</td><td class="desc">Batch upload queue to external portals/registries.</td><td><span class="badge bg-green">Transactional</span></td></tr>
+          </tbody>
+        </table>
+        <div class="note">🔄 <strong>Review:</strong> <em>AuditLog</em> (M1) vs <em>ChangeLog</em> serve the same purpose. Keep one and archive the other.</div>
+      </div>
+    </div>
+
+    <div class="section" style="box-shadow:none; border:1px solid #e2e8f0;">
+      <div class="section-header"><span>M15 · Reference / Master Data</span><span class="count">9 tables</span></div>
+      <div class="section-body open">
+        <table>
+          <thead><tr><th style="width:20%">Table</th><th style="width:60%">Description</th><th style="width:20%">Type</th></tr></thead>
+          <tbody>
+            <tr><td class="tname">StateMaster</td><td class="desc">Indian states/UTs.</td><td><span class="badge bg-blue">Master</span></td></tr>
+            <tr><td class="tname">DistrictMaster</td><td class="desc">Districts within states.</td><td><span class="badge bg-blue">Master</span></td></tr>
+            <tr><td class="tname">CityMaster</td><td class="desc">Cities/towns.</td><td><span class="badge bg-blue">Master</span></td></tr>
+            <tr><td class="tname">PincodeMaster</td><td class="desc">Postal codes mapped to city/district.</td><td><span class="badge bg-blue">Master</span></td></tr>
+            <tr><td class="tname">BloodGroupMaster</td><td class="desc">Blood groups + Rh compatibility.</td><td><span class="badge bg-blue">Master</span></td></tr>
+            <tr><td class="tname">LookupType</td><td class="desc">Lookup categories (Occupation, DonorStatus…).</td><td><span class="badge bg-blue">Master</span></td></tr>
+            <tr><td class="tname">LookupValue</td><td class="desc">Values under each lookup type.</td><td><span class="badge bg-blue">Master</span></td></tr>
+            <tr><td class="tname">ReasonMaster</td><td class="desc">Reason codes for deferral/discard/return/cancel.</td><td><span class="badge bg-blue">Master</span></td></tr>
+            <tr><td class="tname">HolidayMaster</td><td class="desc">Holidays/closure dates.</td><td><span class="badge bg-blue">Master</span></td></tr>
+          </tbody>
+        </table>
+        <div class="note">🔄 <strong>Review:</strong> <em>State/District/City/PincodeMaster</em> could become one geo table (region_type, parent). <em>BloodGroupMaster</em>, <em>ComponentTypeMaster</em>, <em>ReasonMaster</em> and <em>HolidayMaster</em> duplicate data that could live in <em>LookupType/LookupValue</em>. Keep masters only where extra attributes exist.</div>
+      </div>
+    </div>
+
+    <div class="section" style="box-shadow:none; border:1px solid #e2e8f0;">
+      <div class="section-header"><span>M16 · Reporting &amp; Analytics</span><span class="count">5 tables</span></div>
+      <div class="section-body open">
+        <table>
+          <thead><tr><th style="width:20%">Table</th><th style="width:60%">Description</th><th style="width:20%">Type</th></tr></thead>
+          <tbody>
+            <tr><td class="tname">MonthlyReportLog</td><td class="desc">Generated monthly report metadata.</td><td><span class="badge bg-amber">Reporting</span></td></tr>
+            <tr><td class="tname">ExportFileLog</td><td class="desc">PDF/Excel export job history.</td><td><span class="badge bg-amber">Reporting</span></td></tr>
+            <tr><td class="tname">DataUploadHistory</td><td class="desc">Data import records.</td><td><span class="badge bg-amber">Reporting</span></td></tr>
+            <tr><td class="tname">ReportTemplate</td><td class="desc">Report layout templates.</td><td><span class="badge bg-blue">Master</span></td></tr>
+            <tr><td class="tname">AnalyticsDashboardData</td><td class="desc">Cached dashboard aggregates for performance.</td><td><span class="badge bg-amber">Reporting</span></td></tr>
+          </tbody>
+        </table>
+        <div class="note">🔄 <strong>Review:</strong> <em>MonthlyReportLog</em> / <em>ExportFileLog</em> / <em>DataUploadHistory</em> / <em>PortalUploadQueue</em> all record "file was produced or consumed" — could be one <code>FileOperationLog</code> with a direction/type column.</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ======================= CONSOLIDATION ======================= -->
+<div class="section" id="consolidation">
+  <div class="section-header"><span>4. Duplicate / Merge Candidates (Recommended Cleanup)</span></div>
+  <div class="section-body open">
+    <div class="warn">
+      The items below are <strong>suggestions only</strong> — verify usage in code before migrating. Mark each decision as
+      <strong>Keep</strong> / <strong>Merge</strong> / <strong>Drop</strong> in the "Action" column and track it in a schema-migration ticket.
+    </div>
+    <table>
+      <thead><tr><th style="width:18%">Table(s) Affected</th><th style="width:42%">Why Duplicate / Overlap</th><th style="width:18%">Suggested Action</th><th style="width:22%">Priority</th></tr></thead>
+      <tbody>
+        <tr><td class="tname">CrossMatchRecord</td><td class="desc">Legacy crossmatch log fully replaced by CrossMatchEntry + CrossMatchTestResult (Patch 008).</td><td class="desc">Drop / migrate</td><td><span class="badge bg-red">High</span></td></tr>
+        <tr><td class="tname">PatientRequest · PatientReservation · EmergencyRequest</td><td class="desc">All three describe "a patient needs blood". Same core fields (patient, blood group, units, hospital, status).</td><td class="desc">Merge into one BloodRequest + status/type</td><td><span class="badge bg-red">High</span></td></tr>
+        <tr><td class="tname">ComponentPreparation · ComponentPreparationLog</td><td class="desc">Both log component creation; ComponentMaster already records the result.</td><td class="desc">Keep one log or drop</td><td><span class="badge bg-red">High</span></td></tr>
+        <tr><td class="tname">IssueRecord · IssueStorage</td><td class="desc">Both issue components; differ only in receiver type (Hospital/Patient vs Storage unit).</td><td class="desc">Unify with IssueTo column</td><td><span class="badge bg-amber">Medium</span></td></tr>
+        <tr><td class="tname">InventoryStock · InventoryTransactionLog · InvItems · InvTrans</td><td class="desc">Confusing dual inventory systems — one for blood, one for store items, plus generic transaction logs.</td><td class="desc">Rename/redesign StoreItem, keep blood stock separate</td><td><span class="badge bg-amber">Medium</span></td></tr>
+        <tr><td class="tname">BillingTransaction/InvoiceDetail · MbbBill/MbbBillDetail</td><td class="desc">Identical bill structure (header + lines); only receivables vs payables differ.</td><td class="desc">Unify with direction flag</td><td><span class="badge bg-amber">Medium</span></td></tr>
+        <tr><td class="tname">RateMaster · ServiceChargeMaster</td><td class="desc">Both are pricing tables.</td><td class="desc">Unify into one price table with type</td><td><span class="badge bg-amber">Medium</span></td></tr>
+        <tr><td class="tname">DonorCommunicationLog · OutboxLog</td><td class="desc">Both log outbound donor messages.</td><td class="desc">Merge into one communication log</td><td><span class="badge bg-amber">Medium</span></td></tr>
+        <tr><td class="tname">AuditLog · ChangeLog</td><td class="desc">Same purpose — audit of changes.</td><td class="desc">Keep one</td><td><span class="badge bg-amber">Medium</span></td></tr>
+        <tr><td class="tname">QualityControlRecord · QCRegister</td><td class="desc">Two QC log tables (device QC vs reagent QC).</td><td class="desc">Merge with QCType discriminator</td><td><span class="badge bg-amber">Medium</span></td></tr>
+        <tr><td class="tname">FridgeStorageMaster · DeviceMaster · ComponentStorage</td><td class="desc">Fridges are devices; ComponentStorage overlaps fridge + location fields on ComponentMaster.</td><td class="desc">Fridge = device subtype; fold storage location into ComponentMaster</td><td><span class="badge bg-amber">Medium</span></td></tr>
+        <tr><td class="tname">CampInventory · TestKitMaster · InvItems</td><td class="desc">All track non-blood physical items; camps &amp; kits use ad-hoc tables.</td><td class="desc">Reuse InvItems model with category</td><td><span class="badge bg-amber">Medium</span></td></tr>
+        <tr><td class="tname">CampExpenseLog · ExpenseMaster</td><td class="desc">Camp expenses are just expenses with a camp reference.</td><td class="desc">Merge with campId column</td><td><span class="badge bg-amber">Medium</span></td></tr>
+        <tr><td class="tname">StorageMaster · BranchMaster · HospitalMaster</td><td class="desc">Storage units (Patch 012) resemble branches/hospitals as receivers of blood.</td><td class="desc">Confirm receiver model (Party table)</td><td><span class="badge bg-amber">Medium</span></td></tr>
+        <tr><td class="tname">StateMaster · DistrictMaster · CityMaster · PincodeMaster</td><td class="desc">4 tables for a single geographic hierarchy.</td><td class="desc">Merge into one geo table</td><td><span class="badge bg-green">Low</span></td></tr>
+        <tr><td class="tname">BloodGroupMaster · ComponentTypeMaster · ReasonMaster · HolidayMaster</td><td class="desc">Candidates for LookupType/LookupValue consolidation where no extra attributes exist.</td><td class="desc">Review &amp; migrate to lookups</td><td><span class="badge bg-green">Low</span></td></tr>
+        <tr><td class="tname">MonthlyReportLog · ExportFileLog · DataUploadHistory · PortalUploadQueue</td><td class="desc">All record file produce/consume operations.</td><td class="desc">One FileOperationLog</td><td><span class="badge bg-green">Low</span></td></tr>
+        <tr><td class="tname">EmergencyDonorResponse</td><td class="desc">If merged into BloodRequest flow, response handling belongs with donor communication.</td><td class="desc">Review</td><td><span class="badge bg-green">Low</span></td></tr>
+        <tr><td class="tname">ReturnRecord · DiscardRecord</td><td class="desc">Returned units are either restocked or discarded; overlapping outcome tracking.</td><td class="desc">Link return → restock/discard explicitly</td><td><span class="badge bg-green">Low</span></td></tr>
+        <tr><td class="tname">DonorMaster (synthetic MBB donors)</td><td class="desc">MBB reception auto-creates donor rows that are not real voluntary donors.</td><td class="desc">Add source/isProcurement flag</td><td><span class="badge bg-amber">Medium</span></td></tr>
+      </tbody>
+    </table>
+
+    <div class="card" style="margin-top:12px;">
+      <h3>Suggested Next Steps</h3>
+      <ol>
+        <li><strong>✅ Done 2026-08-09:</strong> Patch 013 restored (<code>InvItems</code>/<code>InvTrans</code> + CRUD SPs) and sign-bug fixed via Patch 017. <code>fn_report_inv_stock</code>/<code>fn_report_inv_inout</code> verified working.</li>
+        <li>Freeze current schema (v1.1) and create a <strong>v2.0 schema migration plan</strong> implementing the High-priority merges first.</li>
+        <li>Add a <code>party_type</code> concept to unify Hospital / Branch / Storage receivers.</li>
+        <li>Standardise table naming (all snake_case) and add explicit FK constraints for the newer patch tables (many reference logical IDs without FK enforcement).</li>
+        <li>Move business-critical lookups into <code>LookupType/LookupValue</code> so dropdowns are centrally configurable.</li>
+        <li>Re-verify every SP/API endpoint references before dropping any table (search codebase for table names).</li>
+      </ol>
+    </div>
+  </div>
+</div>
+
+<p style="color:#6b7280; font-size:11.5px; margin-top:8px;">
+  BloodCenterOS &middot; Generated for internal developer reference &middot; Sources: <code>DB/bloodcenter_20260722_1.sql</code> + patches
+  <code>patch_20260724_001…016</code> &middot; PostgreSQL &middot; © Sadu Consultancy Services
+</p>
+
+</div>
+
+<script>
+  document.querySelectorAll('.section-header').forEach(h => {
+    h.addEventListener('click', () => {
+      const body = h.nextElementSibling;
+      if (body) body.classList.toggle('open');
+    });
+  });
+</script>
+</body>
+</html>

@@ -27,7 +27,7 @@ public class IssueController : ControllerBase
     [HttpPost("from-reservation")]
     public async Task<IActionResult> IssueFromReservation([FromBody] IssueFromReservationRequest req)
     {
-        var count = await _repo.IssueFromReservationAsync(CenterId, req.ReservationId, req.PaymentMode, UserId, req.Notes);
+        var count = await _repo.IssueFromReservationAsync(CenterId, req.BloodRequestId, req.PaymentMode, UserId, req.Notes);
         return Ok(ApiResponse<long>.Ok(count, "Issued successfully"));
     }
 

@@ -34,7 +34,7 @@ public class ReservationRepository : IReservationRepository
             });
     }
 
-    public async Task<PatientReservation?> GetByIdAsync(long id)
+    public async Task<BloodRequest?> GetByIdAsync(long id)
     {
         using var conn = _db.CreateConnection();
         var r = await conn.QueryFirstOrDefaultAsync<dynamic>(
@@ -42,21 +42,21 @@ public class ReservationRepository : IReservationRepository
         return r == null ? null : MapReservation(r);
     }
 
-    public async Task<IEnumerable<PatientReservation>> GetAllAsync(long centerId, string? status, DateTime? from, DateTime? to, string? keyword)
+    public async Task<IEnumerable<BloodRequest>> GetAllAsync(long centerId, string? status, DateTime? from, DateTime? to, string? keyword)
     {
         using var conn = _db.CreateConnection();
         var rows = await conn.QueryAsync<dynamic>(
             "SELECT * FROM fn_reservation_get_by_center(@p_center_id, @p_status, @p_from_date, @p_to_date, @p_keyword)",
             new { p_center_id = centerId, p_status = status, p_from_date = from, p_to_date = to, p_keyword = keyword });
-        return rows.Select(r => (PatientReservation?)MapReservation(r)).Where(x => x != null).Cast<PatientReservation>();
+        return rows.Select(r => (BloodRequest?)MapReservation(r)).Where(x => x != null).Cast<BloodRequest>();
     }
 
-    public async Task<IEnumerable<ReservationDetail>> GetDetailsAsync(long reservationId)
+    public async Task<IEnumerable<BloodRequestDetail>> GetDetailsAsync(long requestId)
     {
         using var conn = _db.CreateConnection();
         var rows = await conn.QueryAsync<dynamic>(
-            "SELECT * FROM fn_reservation_get_details(@p_reservation_id)", new { p_reservation_id = reservationId });
-        return rows.Select(r => (ReservationDetail?)MapDetail(r)).Where(x => x != null).Cast<ReservationDetail>();
+            "SELECT * FROM fn_reservation_get_details(@p_reservation_id)", new { p_reservation_id = requestId });
+        return rows.Select(r => (BloodRequestDetail?)MapDetail(r)).Where(x => x != null).Cast<BloodRequestDetail>();
     }
 
     public async Task<IEnumerable<AvailableComponentItem>> GetAvailableComponentsAsync(long centerId, string bloodGroup, string componentType, int units)
@@ -68,24 +68,24 @@ public class ReservationRepository : IReservationRepository
         return rows.Select(r => (AvailableComponentItem?)MapAvailable(r)).Where(x => x != null).Cast<AvailableComponentItem>();
     }
 
-    public async Task<IEnumerable<PatientReservation>> GetPendingAsync(long centerId)
+    public async Task<IEnumerable<BloodRequest>> GetPendingAsync(long centerId)
     {
         using var conn = _db.CreateConnection();
         var rows = await conn.QueryAsync<dynamic>(
             "SELECT * FROM fn_reservation_get_pending(@p_center_id)", new { p_center_id = centerId });
-        return rows.Select(r => (PatientReservation?)MapSimple(r)).Where(x => x != null).Cast<PatientReservation>();
+        return rows.Select(r => (BloodRequest?)MapSimple(r)).Where(x => x != null).Cast<BloodRequest>();
     }
 
-    public async Task CancelAsync(long reservationId, string? reason)
+    public async Task CancelAsync(long requestId, string? reason)
     {
         using var conn = _db.CreateConnection();
         await conn.ExecuteAsync("SELECT * FROM fn_reservation_cancel(@p_reservation_id, @p_reason)",
-            new { p_reservation_id = reservationId, p_reason = reason });
+            new { p_reservation_id = requestId, p_reason = reason });
     }
 
-    private static PatientReservation MapReservation(dynamic r) => new()
+    private static BloodRequest MapReservation(dynamic r) => new()
     {
-        ReservationId = (long)r.reservationid,
+        BloodRequestId = (long)r.bloodrequestid,
         CenterId = (long)r.centerid,
         PatientName = (string)r.patientname,
         PatientAddress = (string?)r.patientaddress,
@@ -105,9 +105,9 @@ public class ReservationRepository : IReservationRepository
         CreatedBy = (long?)r.createdby
     };
 
-    private static PatientReservation MapSimple(dynamic r) => new()
+    private static BloodRequest MapSimple(dynamic r) => new()
     {
-        ReservationId = (long)r.reservationid,
+        BloodRequestId = (long)r.bloodrequestid,
         PatientName = (string)r.patientname,
         PatientBloodGroup = (string)r.patientbloodgroup,
         RequiredBloodGroup = (string)r.requiredbloodgroup,
@@ -118,10 +118,10 @@ public class ReservationRepository : IReservationRepository
         Status = "Active"
     };
 
-    private static ReservationDetail MapDetail(dynamic r) => new()
+    private static BloodRequestDetail MapDetail(dynamic r) => new()
     {
-        ReservationDetailId = (long)r.reservationdetailid,
-        ReservationId = (long)r.reservationid,
+        BloodRequestDetailId = (long)r.bloodrequestdetailid,
+        BloodRequestId = (long)r.bloodrequestid,
         ComponentId = (long)r.componentid,
         ComponentCode = (string?)r.componentcode,
         BloodGroup = (string?)r.bloodgroup,

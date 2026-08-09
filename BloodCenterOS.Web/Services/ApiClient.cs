@@ -196,7 +196,7 @@ public class ApiClient
         DeleteAsync<object>($"/api/rates/{id}");
 
     // ── Patient Reservation ──
-    public Task<ApiResponse<List<PatientReservation>>?> GetReservationsAsync(
+    public Task<ApiResponse<List<BloodRequest>>?> GetReservationsAsync(
         string? status = null, DateTime? from = null, DateTime? to = null, string? keyword = null)
     {
         var q = new List<string>();
@@ -205,12 +205,12 @@ public class ApiClient
         if (to.HasValue) q.Add($"toDate={to:yyyy-MM-dd}");
         if (!string.IsNullOrEmpty(keyword)) q.Add($"keyword={Uri.EscapeDataString(keyword)}");
         var qs = q.Count > 0 ? "?" + string.Join("&", q) : "";
-        return GetAsync<List<PatientReservation>>($"/api/reservations{qs}");
+        return GetAsync<List<BloodRequest>>($"/api/reservations{qs}");
     }
-    public Task<ApiResponse<List<PatientReservation>>?> GetPendingReservationsAsync() =>
-        GetAsync<List<PatientReservation>>("/api/reservations/pending");
-    public Task<ApiResponse<PatientReservation>?> GetReservationAsync(long id) =>
-        GetAsync<PatientReservation>($"/api/reservations/{id}");
+    public Task<ApiResponse<List<BloodRequest>>?> GetPendingReservationsAsync() =>
+        GetAsync<List<BloodRequest>>("/api/reservations/pending");
+    public Task<ApiResponse<BloodRequest>?> GetReservationAsync(long id) =>
+        GetAsync<BloodRequest>($"/api/reservations/{id}");
     public Task<ApiResponse<long>?> CreateReservationAsync(object body) =>
         PostAsync<long>("/api/reservations", body);
     public Task<ApiResponse<object>?> CancelReservationAsync(long id, string? reason = null) =>
